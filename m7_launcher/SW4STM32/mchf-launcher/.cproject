@@ -34,6 +34,7 @@
 								<option id="gnu.c.compiler.option.debugging.level.1545688264" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.include.paths.328290999" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="../"/>
+									<listOptionValue builtIn="false" value="../../../../common"/>
 									<listOptionValue builtIn="false" value="../../../hw"/>
 									<listOptionValue builtIn="false" value="../../../app"/>
 									<listOptionValue builtIn="false" value="../../../app/ui"/>

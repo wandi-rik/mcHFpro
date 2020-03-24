@@ -38,7 +38,7 @@
 		<link>
 			<name>hw/mchf_types.h</name>
 			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/hw/mchf_types.h</locationURI>
+			<locationURI>PARENT-3-PROJECT_LOC/common/mchf_types.h</locationURI>
 		</link>
 		<link>
 			<name>hw/stm32h747i_discovery_conf.h</name>
