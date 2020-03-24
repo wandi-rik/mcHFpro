@@ -16,6 +16,7 @@
 ************************************************************************************/
 
 #include "mchf_board.h"
+#include "version.h"
 
 #include "icc_proc.h"
 
@@ -1026,7 +1027,10 @@ int main(void)
 	BSP_LED_On(LED_RED);
 
 	//
-	printf("dsp core v 0.62\r\n");
+	//printf("dsp core v 0.62\r\n");
+	printf("--------------------------------------\r\n");
+    printf("--- Debug Print Session on (dsp) ---\r\n");
+	printf("Firmware v: %d.%d.%d.%d\r\n", MCHF_D_VER_MAJOR, MCHF_D_VER_MINOR, MCHF_D_VER_RELEASE, MCHF_D_VER_BUILD);
 	//
 
 	// ICC driver init
