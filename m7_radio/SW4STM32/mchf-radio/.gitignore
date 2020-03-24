@@ -1,0 +1,9 @@
+/.settings/
+/Debug_CM7/
+/Drivers/
+/hw/
+/Middlewares/
+/proc/
+/startup/
+/mchf-radio_Debug.hex
+/STM32H747I-DISCO.xml
