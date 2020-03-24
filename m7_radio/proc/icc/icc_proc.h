@@ -41,13 +41,6 @@
 #endif
 
 // -----------------------------------------------------------------------
-// List of ICC commands
-//
-#define ICC_BROADCAST					0
-#define ICC_START_I2S_PROC				1
-#define ICC_TOGGLE_LED					2
-
-// -----------------------------------------------------------------------
 
 void api_proc_hw_init(void);
 void icc_proc_task(void const * argument);

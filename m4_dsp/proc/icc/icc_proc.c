@@ -26,6 +26,8 @@
 #include <stdio.h>
 
 #include "icc_proc.h"
+#include "mchf_icc_def.h"
+
 #include "audio_proc.h"
 
 #define RPMSG_SERVICE_NAME              "stm32_icc_service"

@@ -19,7 +19,9 @@
 #include "main.h"
 
 #include "hw\openamp.h"
+
 #include "icc_proc.h"
+#include "mchf_icc_def.h"
 
 // Public radio state
 extern struct	TRANSCEIVER_STATE_UI	tsu;
