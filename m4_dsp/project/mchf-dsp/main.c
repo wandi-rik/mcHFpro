@@ -1026,7 +1026,7 @@ int main(void)
 	BSP_LED_On(LED_RED);
 
 	//
-	printf("dsp core v 0.60\r\n");
+	printf("dsp core v 0.61\r\n");
 	//
 
 	// ICC driver init
