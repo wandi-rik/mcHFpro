@@ -55,6 +55,7 @@
 									<listOptionValue builtIn="false" value="../../../proc/icc"/>
 									<listOptionValue builtIn="false" value="../../../proc/icc/hw"/>
 									<listOptionValue builtIn="false" value="../../../proc/audio"/>
+									<listOptionValue builtIn="false" value="../../../proc/audio/hw"/>
 									<listOptionValue builtIn="false" value="../../../misc/v_eeprom"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.2125220164" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">

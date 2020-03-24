@@ -216,11 +216,6 @@
 			<locationURI>copy_PARENT1/STM32CubeH7/Drivers/BSP/STM32H747I-DISCO/stm32h747i_discovery.c</locationURI>
 		</link>
 		<link>
-			<name>Drivers/BSP/STM32H747I-DISCO/stm32h747i_discovery_audio.c</name>
-			<type>1</type>
-			<locationURI>PARENT-3-PROJECT_LOC/STM32CubeH7/Drivers/BSP/STM32H747I-DISCO/stm32h747i_discovery_audio.c</locationURI>
-		</link>
-		<link>
 			<name>Drivers/BSP/STM32H747I-DISCO/stm32h747i_discovery_bus.c</name>
 			<type>1</type>
 			<locationURI>copy_PARENT1/STM32CubeH7/Drivers/BSP/STM32H747I-DISCO/stm32h747i_discovery_bus.c</locationURI>
@@ -294,6 +289,16 @@
 			<name>Middlewares/OpenAMP/open-amp/virtqueue.c</name>
 			<type>1</type>
 			<locationURI>copy_PARENT123/Middlewares/Third_Party/OpenAMP/open-amp/lib/virtio/virtqueue.c</locationURI>
+		</link>
+		<link>
+			<name>proc/audio/hw/stm32h747i_discovery_audio.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/audio/hw/stm32h747i_discovery_audio.c</locationURI>
+		</link>
+		<link>
+			<name>proc/audio/hw/stm32h747i_discovery_audio.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/audio/hw/stm32h747i_discovery_audio.h</locationURI>
 		</link>
 		<link>
 			<name>proc/icc/hw/mbox_hsem.c</name>
