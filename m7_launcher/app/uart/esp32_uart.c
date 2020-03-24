@@ -21,6 +21,7 @@
 #include "esp32_uart.h"
 
 #include "wifi.h"
+#include "mchf_ipc_def.h"
 
 #ifdef ESP32_UART_TASK
 
@@ -333,22 +334,22 @@ static void check_msg(void)
 	{
 		// Read firmware version
 		case 1:
-			esp_msg->ucExecResult = esp32_uart_exchange(0x10, NULL, 0, esp_msg->ucData,&esp_msg->ucDataReady, 200);
+			esp_msg->ucExecResult = esp32_uart_exchange(MENU_READ_ESP_32_VERSION, NULL, 0, esp_msg->ucData,&esp_msg->ucDataReady, 200);
 			break;
 
 		// Read WiFi details
 		case 2:
-			esp_msg->ucExecResult = esp32_uart_exchange(0x06, NULL, 0, esp_msg->ucData,&esp_msg->ucDataReady, 200);
+			esp_msg->ucExecResult = esp32_uart_exchange(MENU_WIFI_GET_DETAILS, NULL, 0, esp_msg->ucData,&esp_msg->ucDataReady, 200);
 			break;
 
 		// Connect to WiFi network
 		case 3:
 		{
-			esp_msg->ucExecResult = esp32_uart_exchange(0x23, (uchar *)vc, sizeof(vc), esp_msg->ucData,&esp_msg->ucDataReady, 200);
+			esp_msg->ucExecResult = esp32_uart_exchange(MENU_WIFI_CONNECT_TO_NETWORK, (uchar *)vc, sizeof(vc), esp_msg->ucData,&esp_msg->ucDataReady, 200);
 			if(esp_msg->ucExecResult == 0)
 			{
 				// Reboot it
-				esp32_uart_exchange(0xF0, NULL, 0, NULL, NULL, 200);
+				esp32_uart_exchange(MENU_ESP32_REBOOT, NULL, 0, NULL, NULL, 200);
 				// Give it time to reboot and connect to wifi network
 				vTaskDelay(3000);
 			}
