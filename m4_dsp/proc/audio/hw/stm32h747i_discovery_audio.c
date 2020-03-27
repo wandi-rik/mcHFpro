@@ -210,29 +210,25 @@ int32_t BSP_AUDIO_INOUT_Init(uint32_t Instance, BSP_AUDIO_Init_t* AudioInitOut, 
 	WM8994_Init_t 		codec_init;
 
 	// Fill Audio_Out_Ctx structure
-	Audio_Out_Ctx[Instance].Device         = AudioInitOut->Device;
-	Audio_Out_Ctx[Instance].Instance       = Instance;
-	Audio_Out_Ctx[Instance].SampleRate     = AudioInitOut->SampleRate;
-	Audio_Out_Ctx[Instance].BitsPerSample  = AudioInitOut->BitsPerSample;
-	Audio_Out_Ctx[Instance].ChannelsNbr    = AudioInitOut->ChannelsNbr;
+	//Audio_Out_Ctx[Instance].Device         = AudioInitOut->Device;
+	//Audio_Out_Ctx[Instance].SampleRate     = AUDIO_FREQUENCY_48K;	//AudioInitOut->SampleRate;
+	//Audio_Out_Ctx[Instance].BitsPerSample  = AudioInitOut->BitsPerSample;
+	//Audio_Out_Ctx[Instance].ChannelsNbr    = AudioInitOut->ChannelsNbr;
 	Audio_Out_Ctx[Instance].Volume         = AudioInitOut->Volume;
 	Audio_Out_Ctx[Instance].State          = AUDIO_OUT_STATE_RESET;
 
-	Audio_In_Ctx[Instance].Device          = AudioInitIn->Device;
-	Audio_In_Ctx[Instance].ChannelsNbr     = AudioInitIn->ChannelsNbr;
-	Audio_In_Ctx[Instance].SampleRate      = AudioInitIn->SampleRate;
-	Audio_In_Ctx[Instance].BitsPerSample   = AudioInitIn->BitsPerSample;
+	//Audio_In_Ctx[Instance].Device          = AudioInitIn->Device;
+	//Audio_In_Ctx[Instance].ChannelsNbr     = AudioInitIn->ChannelsNbr;
+	//Audio_In_Ctx[Instance].SampleRate      = AUDIO_FREQUENCY_48K;	//AudioInitIn->SampleRate;
+	//Audio_In_Ctx[Instance].BitsPerSample   = AudioInitIn->BitsPerSample;
 	Audio_In_Ctx[Instance].Volume          = AudioInitIn->Volume;
 	Audio_In_Ctx[Instance].State           = AUDIO_IN_STATE_RESET;
 
 	if(WM8994_Probe() != BSP_ERROR_NONE)
 		return BSP_ERROR_COMPONENT_FAILURE;
 
-	// PLL clock is set depending by the AudioFreq (44.1khz vs 48khz groups)
-	if(MX_SAI1_ClockConfig(&haudio_out_sai, AudioInitOut->SampleRate) != HAL_OK)
-		return BSP_ERROR_CLOCK_FAILURE;
-
-	if(MX_SAI1_ClockConfig(&haudio_in_sai, AudioInitIn->SampleRate) != HAL_OK)
+	// PLL clock
+	if(MX_SAI1_ClockConfig(NULL, AUDIO_FREQUENCY_48K) != HAL_OK)
 		return BSP_ERROR_CLOCK_FAILURE;
 
 	haudio_out_sai.Instance = AUDIO_OUT_SAIx;
@@ -241,14 +237,14 @@ int32_t BSP_AUDIO_INOUT_Init(uint32_t Instance, BSP_AUDIO_Init_t* AudioInitOut, 
 	haudio_in_sai.Instance = AUDIO_IN_SAIx;
 	SAI_MspInit(&haudio_in_sai);
 
-	mx_config.MonoStereoMode 	= (AudioInitIn->ChannelsNbr == 1U) ? SAI_MONOMODE : SAI_STEREOMODE;
-	mx_config.DataSize 			= (AudioInitIn->BitsPerSample == AUDIO_RESOLUTION_32B)?SAI_DATASIZE_32: SAI_DATASIZE_16;
-	mx_config.FrameLength		= (AudioInitIn->BitsPerSample == AUDIO_RESOLUTION_32B)?128: 64;
-	mx_config.ActiveFrameLength	= (AudioInitIn->BitsPerSample == AUDIO_RESOLUTION_32B)?64: 32;
+	mx_config.MonoStereoMode 	= SAI_STEREOMODE;	//(AudioInitIn->ChannelsNbr == 1U) ? SAI_MONOMODE : SAI_STEREOMODE;
+	mx_config.DataSize 			= SAI_DATASIZE_16;	//(AudioInitIn->BitsPerSample == AUDIO_RESOLUTION_32B)?SAI_DATASIZE_32: SAI_DATASIZE_16;
+	mx_config.FrameLength		= 64;	//(AudioInitIn->BitsPerSample == AUDIO_RESOLUTION_32B)?128: 64;
+	mx_config.ActiveFrameLength	= 32;	//(AudioInitIn->BitsPerSample == AUDIO_RESOLUTION_32B)?64: 32;
 	mx_config.OutputDrive       = SAI_OUTPUTDRIVE_DISABLE;
-	mx_config.SlotActive 		= (AudioInitIn->Device==AUDIO_IN_DEVICE_ANALOG_MIC)? CODEC_AUDIOFRAME_SLOT_02:CODEC_AUDIOFRAME_SLOT_13;
+	mx_config.SlotActive 		= CODEC_AUDIOFRAME_SLOT_02;	//(AudioInitIn->Device==AUDIO_IN_DEVICE_ANALOG_MIC)? CODEC_AUDIOFRAME_SLOT_02:CODEC_AUDIOFRAME_SLOT_13;
 
-	mx_config.AudioFrequency    = Audio_In_Ctx[Instance].SampleRate;
+	mx_config.AudioFrequency    = AUDIO_FREQUENCY_48K;	//Audio_In_Ctx[Instance].SampleRate;
 	mx_config.AudioMode         = SAI_MODESLAVE_RX;
 	mx_config.ClockStrobing     = SAI_CLOCKSTROBING_RISINGEDGE;
 	mx_config.Synchro           = SAI_SYNCHRONOUS;
@@ -262,15 +258,15 @@ int32_t BSP_AUDIO_INOUT_Init(uint32_t Instance, BSP_AUDIO_Init_t* AudioInitOut, 
 	mx_config.OutputDrive       = SAI_OUTPUTDRIVE_ENABLE;
 	mx_config.Synchro           = SAI_ASYNCHRONOUS;
 	mx_config.SynchroExt        = SAI_SYNCEXT_DISABLE;
-	mx_config.SlotActive        = CODEC_AUDIOFRAME_SLOT_0123;
+	mx_config.SlotActive        = CODEC_AUDIOFRAME_SLOT_02;	//CODEC_AUDIOFRAME_SLOT_0123;
 
 	if(MX_SAI1_Block_A_Init(&haudio_out_sai, &mx_config) != HAL_OK)
 		return BSP_ERROR_PERIPH_FAILURE;
 
-	codec_init.Frequency    	= AudioInitIn->SampleRate;
+	codec_init.Frequency    	= AUDIO_FREQUENCY_48K;	//AudioInitIn->SampleRate;
 	codec_init.InputDevice 		= WM8994_IN_LINE1;
 	codec_init.OutputDevice 	= AUDIO_OUT_DEVICE_HEADPHONE;
-	codec_init.Resolution		= (AudioInitIn->BitsPerSample==AUDIO_RESOLUTION_32B)? 3:0;
+	codec_init.Resolution		= 0;	//(AudioInitIn->BitsPerSample==AUDIO_RESOLUTION_32B)? 3:0;
 	codec_init.Volume       	= VOLUME_IN_CONVERT(AudioInitIn->Volume);
 
 	// Initialise the codec internal registers
@@ -2698,6 +2694,7 @@ static void SAI_MspInit(SAI_HandleTypeDef *hsai)
     AUDIO_OUT_SAIx_SCK_ENABLE();
     AUDIO_OUT_SAIx_SD_ENABLE();
     AUDIO_OUT_SAIx_FS_ENABLE();
+
     /* CODEC_SAI pins configuration: FS, SCK, MCK and SD pins ------------------*/
     gpio_init_structure.Pin = AUDIO_OUT_SAIx_FS_PIN;
     gpio_init_structure.Mode = GPIO_MODE_AF_PP;
@@ -2734,6 +2731,7 @@ static void SAI_MspInit(SAI_HandleTypeDef *hsai)
   /* CODEC_SAI pins configuration: FS, SCK and SD pins */
   /* Enable FS, SCK and SD clocks */
  __HAL_RCC_GPIOE_CLK_ENABLE();
+
   /* Enable FS, SCK and SD pins */
   gpio_init_structure.Pin = GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6;
   gpio_init_structure.Mode = GPIO_MODE_AF_PP;
@@ -2744,25 +2742,25 @@ static void SAI_MspInit(SAI_HandleTypeDef *hsai)
 
   /* Enable MCLK clock */
    __HAL_RCC_GPIOG_CLK_ENABLE();
+
   /* Enable MCLK pin */
   gpio_init_structure.Pin = GPIO_PIN_7;
   HAL_GPIO_Init(GPIOG, &gpio_init_structure);
-
 
     /* Enable the DMA clock */
     AUDIO_OUT_SAIx_DMAx_CLK_ENABLE();
 
     /* Configure the hdma_saiTx handle parameters */
-    if(Audio_Out_Ctx[0].BitsPerSample == AUDIO_RESOLUTION_16B)
-    {
+    //if(Audio_Out_Ctx[0].BitsPerSample == AUDIO_RESOLUTION_16B)
+    //{
       hdma_sai_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
       hdma_sai_tx.Init.MemDataAlignment    = DMA_MDATAALIGN_HALFWORD;
-    }
-    else
-    {
-      hdma_sai_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
-      hdma_sai_tx.Init.MemDataAlignment    = DMA_MDATAALIGN_WORD;
-    }
+    //}
+    //else
+   // {
+   //   hdma_sai_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+   //   hdma_sai_tx.Init.MemDataAlignment    = DMA_MDATAALIGN_WORD;
+   // }
 
     hdma_sai_tx.Init.Request             = AUDIO_OUT_SAIx_DMAx_REQUEST;
     hdma_sai_tx.Init.PeriphInc           = DMA_PINC_DISABLE;
@@ -2852,6 +2850,7 @@ static void SAI_MspInit(SAI_HandleTypeDef *hsai)
     HAL_NVIC_SetPriority(AUDIO_IN_SAI_PDMx_DMAx_IRQ, BSP_AUDIO_IN_IT_PRIORITY, 0);
     HAL_NVIC_EnableIRQ(AUDIO_IN_SAI_PDMx_DMAx_IRQ);
   }
+
    /* Audio In Msp initialization */
   if(hsai->Instance == AUDIO_IN_SAIx)
   {
@@ -2860,6 +2859,7 @@ static void SAI_MspInit(SAI_HandleTypeDef *hsai)
 
     /* Enable SD GPIO clock */
     AUDIO_IN_SAIx_SD_ENABLE();
+
     /* CODEC_SAI pin configuration: SD pin */
     gpio_init_structure.Pin = AUDIO_IN_SAIx_SD_PIN;
     gpio_init_structure.Mode = GPIO_MODE_AF_PP;
