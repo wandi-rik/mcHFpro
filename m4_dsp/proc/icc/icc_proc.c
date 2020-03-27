@@ -29,6 +29,7 @@
 #include "mchf_icc_def.h"
 
 #include "audio_proc.h"
+#include "audio_sai.h"		// temp to dump samples
 
 #define RPMSG_SERVICE_NAME              "stm32_icc_service"
 
@@ -122,7 +123,7 @@ void api_dsp_post(void)
 	}
 	#endif
 
-	audio_proc_get_buffer(icc_out_buffer + 0x28);
+	audio_sai_get_buffer(icc_out_buffer + 0x28);
 
 	// Footer
 	icc_out_buffer[298] = 0x55;
@@ -182,7 +183,7 @@ static uchar icc_proc_cmd_handler(uchar cmd)
 			api_dsp_post();
 			break;
 		case ICC_START_I2S_PROC:
-			audio_proc_hw_init();
+			audio_driver_init();
 			break;
 		case ICC_TOGGLE_LED:
 			BSP_LED_Toggle(LED_BLUE);

@@ -1,9 +1,9 @@
 /************************************************************************************
 **                                                                                 **
 **                             mcHF Pro QRP Transceiver                            **
-**                         Krassi Atanassov - M0NKA 2012-2019                      **
+**                         Krassi Atanassov - M0NKA 2012-2020                      **
 **                            mail: djchrismarc@gmail.com                          **
-**                                 twitter: @M0NKA_                                **
+**                                 twitter: @bph_co                                **
 **---------------------------------------------------------------------------------**
 **                                                                                 **
 **  File name:                                                                     **
@@ -14,14 +14,12 @@
 **          non-commercial use only. All source files under GPL-3.0, unless        **
 **          third party drivers specifies otherwise. Thank you!                    **
 ************************************************************************************/
+#ifndef __AUDIO_SAI_H
+#define __AUDIO_SAI_H
 
-#ifndef __I2S_H
-#define __I2S_H
+#define DMA_BUFF_SIZE       	128
 
-void I2S_Block_Init(void);
-
-void I2S_Block_Process(uint32_t txAddr, uint32_t rxAddr, uint32_t Size);
-void I2S_Block_Stop(void);
+void audio_sai_hw_init(void);
+void audio_sai_get_buffer(uchar *buffer);
 
 #endif
-

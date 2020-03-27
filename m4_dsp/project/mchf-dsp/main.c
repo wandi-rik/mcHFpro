@@ -1,9 +1,9 @@
 /************************************************************************************
 **                                                                                 **
 **                             mcHF Pro QRP Transceiver                            **
-**                         Krassi Atanassov - M0NKA 2012-2019                      **
+**                         Krassi Atanassov - M0NKA 2012-2020                      **
 **                            mail: djchrismarc@gmail.com                          **
-**                                 twitter: @M0NKA_                                **
+**                                 twitter: @bph_co                                **
 **---------------------------------------------------------------------------------**
 **                                                                                 **
 **  File name:                                                                     **
@@ -19,11 +19,6 @@
 #include "version.h"
 
 #include "icc_proc.h"
-
-#define HSEM_ID_0 (0U)
-
-// Common
-//clude "mchf_board.h"
 
 //#include <stdio.h>
 
@@ -44,563 +39,10 @@
 // Misc
 //#include "softdds.h"
 
-// Eeprom
-//#include "eeprom.h"
-//
-//
-//
+#define HSEM_ID_0 (0U)
 
 // Transceiver state public structure
-//__IO TransceiverState ts;
-
-// ----------------------------------------------------
-// Create a time reference incremented by 1 mS and 10mS
-//__IO uint32_t LocalTime_1MS  = 0;
-//__IO uint32_t LocalTime_10MS = 0;
-//__IO uint32_t LocalTime_Over = 0;
-// ----------------------------------------------------
-
-// USB Host
-//extern USB_OTG_CORE_HANDLE          USB_OTG_Core_dev;
-
-// TIM5 publics
-//extern __IO uint32_t PeriodValue;
-//extern __IO uint32_t CaptureNumber;
-//uint16_t tmpCC4[2] = {0, 0};
-//
-#if 0
-// If more EEPROM variables are added, make sure that you add to this table - and the index to it in "eeprom.h"
-const uint16_t VirtAddVarTab[NB_OF_VAR] =
-{
-		VAR_ADDR_1,
-		VAR_ADDR_2,
-		VAR_ADDR_3,
-		VAR_ADDR_4,
-		VAR_ADDR_5,
-		VAR_ADDR_6,
-		VAR_ADDR_7,
-		VAR_ADDR_8,
-		VAR_ADDR_9,
-		VAR_ADDR_10,
-		VAR_ADDR_11,
-		VAR_ADDR_12,
-		VAR_ADDR_13,
-		VAR_ADDR_14,
-		VAR_ADDR_15,
-		VAR_ADDR_16,
-		VAR_ADDR_17,
-		VAR_ADDR_18,
-		VAR_ADDR_19,
-		VAR_ADDR_20,
-		VAR_ADDR_21,
-		VAR_ADDR_22,
-		VAR_ADDR_23,
-		VAR_ADDR_24,
-		VAR_ADDR_25,
-		VAR_ADDR_26,
-		VAR_ADDR_27,
-		VAR_ADDR_28,
-		VAR_ADDR_29,
-		VAR_ADDR_30,
-		VAR_ADDR_31,
-		VAR_ADDR_32,
-		VAR_ADDR_33,
-		VAR_ADDR_34,
-		VAR_ADDR_35,
-		VAR_ADDR_36,
-		VAR_ADDR_37,
-		VAR_ADDR_38,
-		VAR_ADDR_39,
-		VAR_ADDR_40,
-		VAR_ADDR_41,
-		VAR_ADDR_42,
-		VAR_ADDR_43,
-		VAR_ADDR_44,
-		VAR_ADDR_45,
-		VAR_ADDR_46,
-		VAR_ADDR_47,
-		VAR_ADDR_48,
-		VAR_ADDR_49,
-		VAR_ADDR_50,
-		VAR_ADDR_51,
-		VAR_ADDR_52,
-		VAR_ADDR_53,
-		VAR_ADDR_54,
-		VAR_ADDR_55,
-		VAR_ADDR_56,
-		VAR_ADDR_57,
-		VAR_ADDR_58,
-		VAR_ADDR_59,
-		VAR_ADDR_60,
-		VAR_ADDR_61,
-		VAR_ADDR_62,
-		VAR_ADDR_63,
-		VAR_ADDR_64,
-		VAR_ADDR_65,
-		VAR_ADDR_66,
-		VAR_ADDR_67,
-		VAR_ADDR_68,
-		VAR_ADDR_69,
-		VAR_ADDR_70,
-		VAR_ADDR_71,
-		VAR_ADDR_72,
-		VAR_ADDR_73,
-		VAR_ADDR_74,
-		VAR_ADDR_75,
-		VAR_ADDR_76,
-		VAR_ADDR_77,
-		VAR_ADDR_78,
-		VAR_ADDR_79,
-		VAR_ADDR_80,
-		VAR_ADDR_81,
-		VAR_ADDR_82,
-		VAR_ADDR_83,
-		VAR_ADDR_84,
-		VAR_ADDR_85,
-		VAR_ADDR_86,
-		VAR_ADDR_87,
-		VAR_ADDR_88,
-		VAR_ADDR_89,
-		VAR_ADDR_90,
-		VAR_ADDR_91,
-		VAR_ADDR_92,
-		VAR_ADDR_93,
-		VAR_ADDR_94,
-		VAR_ADDR_95,
-		VAR_ADDR_96,
-		VAR_ADDR_97,
-		VAR_ADDR_98,
-		VAR_ADDR_99,
-		VAR_ADDR_100,
-		VAR_ADDR_101,
-		VAR_ADDR_102,
-		VAR_ADDR_103,
-		VAR_ADDR_104,
-		VAR_ADDR_105,
-		VAR_ADDR_106,
-		VAR_ADDR_107,
-		VAR_ADDR_108,
-		VAR_ADDR_109,
-		VAR_ADDR_110,
-		VAR_ADDR_111,
-		VAR_ADDR_112,
-		VAR_ADDR_113,
-		VAR_ADDR_114,
-		VAR_ADDR_115,
-		VAR_ADDR_116,
-		VAR_ADDR_117,
-		VAR_ADDR_118,
-		VAR_ADDR_119,
-		VAR_ADDR_120,
-		VAR_ADDR_121,
-		VAR_ADDR_122,
-		VAR_ADDR_123,
-		VAR_ADDR_124,
-		VAR_ADDR_125,
-		VAR_ADDR_126,
-		VAR_ADDR_127,
-		VAR_ADDR_128,
-		VAR_ADDR_129,
-		VAR_ADDR_130,
-		VAR_ADDR_131,
-		VAR_ADDR_132,
-		VAR_ADDR_133,
-		VAR_ADDR_134,
-		VAR_ADDR_135,
-		VAR_ADDR_136,
-		VAR_ADDR_137,
-		VAR_ADDR_138,
-		VAR_ADDR_139,
-		VAR_ADDR_140,
-		VAR_ADDR_141,
-		VAR_ADDR_142,
-		VAR_ADDR_143,
-		VAR_ADDR_144,
-		VAR_ADDR_145,
-		VAR_ADDR_146,
-		VAR_ADDR_147,
-		VAR_ADDR_148,
-		VAR_ADDR_149,
-		VAR_ADDR_150,
-		VAR_ADDR_151,
-		VAR_ADDR_152,
-		VAR_ADDR_153,
-		VAR_ADDR_154,
-		VAR_ADDR_155,
-		VAR_ADDR_156,
-		VAR_ADDR_157,
-		VAR_ADDR_158,
-		VAR_ADDR_159,
-		VAR_ADDR_160,
-		VAR_ADDR_161,
-		VAR_ADDR_162,
-		VAR_ADDR_163,
-		VAR_ADDR_164,
-		VAR_ADDR_165,
-		VAR_ADDR_166,
-		VAR_ADDR_167,
-		VAR_ADDR_168,
-		VAR_ADDR_169,
-		VAR_ADDR_170,
-		VAR_ADDR_171,
-		VAR_ADDR_172,
-		VAR_ADDR_173,
-		VAR_ADDR_174,
-		VAR_ADDR_175,
-		VAR_ADDR_176,
-		VAR_ADDR_177,
-		VAR_ADDR_178,
-		VAR_ADDR_179,
-		VAR_ADDR_180,
-		VAR_ADDR_181,
-		VAR_ADDR_182,
-		VAR_ADDR_183,
-		VAR_ADDR_184,
-		VAR_ADDR_185,
-		VAR_ADDR_186,
-		VAR_ADDR_187,
-		VAR_ADDR_188,
-		VAR_ADDR_189,
-		VAR_ADDR_190,
-		VAR_ADDR_191,
-		VAR_ADDR_192,
-		VAR_ADDR_193,
-		VAR_ADDR_194,
-		VAR_ADDR_195,
-		VAR_ADDR_196,
-		VAR_ADDR_197,
-		VAR_ADDR_198,
-		VAR_ADDR_199,
-		VAR_ADDR_200,
-		VAR_ADDR_201,
-		VAR_ADDR_202,
-		VAR_ADDR_203,
-		VAR_ADDR_204,
-		VAR_ADDR_205,
-		VAR_ADDR_206,
-		VAR_ADDR_207,
-		VAR_ADDR_208,
-		VAR_ADDR_209,
-		VAR_ADDR_210,
-		VAR_ADDR_211,
-		VAR_ADDR_212,
-		VAR_ADDR_213,
-		VAR_ADDR_214,
-		VAR_ADDR_215,
-		VAR_ADDR_216,
-		VAR_ADDR_217,
-		VAR_ADDR_218,
-		VAR_ADDR_219,
-		VAR_ADDR_220,
-		VAR_ADDR_221,
-		VAR_ADDR_222,
-		VAR_ADDR_223,
-		VAR_ADDR_224,
-		VAR_ADDR_225,
-		VAR_ADDR_226,
-		VAR_ADDR_227,
-		VAR_ADDR_228,
-		VAR_ADDR_229,
-		VAR_ADDR_230,
-		VAR_ADDR_231,
-		VAR_ADDR_232,
-		VAR_ADDR_233,
-		VAR_ADDR_234,
-		VAR_ADDR_235,
-		VAR_ADDR_236,
-		VAR_ADDR_237,
-		VAR_ADDR_238,
-		VAR_ADDR_239,
-		VAR_ADDR_240,
-		VAR_ADDR_241,
-		VAR_ADDR_242,
-		VAR_ADDR_243,
-		VAR_ADDR_244,
-		VAR_ADDR_245,
-		VAR_ADDR_246,
-		VAR_ADDR_247,
-		VAR_ADDR_248,
-		VAR_ADDR_249,
-		VAR_ADDR_250,
-		VAR_ADDR_251,
-		VAR_ADDR_252,
-		VAR_ADDR_253,
-		VAR_ADDR_254,
-		VAR_ADDR_255,
-		VAR_ADDR_256,
-		VAR_ADDR_257,
-		VAR_ADDR_258,
-		VAR_ADDR_259,
-		VAR_ADDR_260,
-		VAR_ADDR_261,
-		VAR_ADDR_262,
-		VAR_ADDR_263,
-		VAR_ADDR_264,
-		VAR_ADDR_265,
-		VAR_ADDR_266,
-		VAR_ADDR_267,
-		VAR_ADDR_268,
-		VAR_ADDR_269,
-		VAR_ADDR_270,
-		VAR_ADDR_271,
-		VAR_ADDR_272,
-		VAR_ADDR_273,
-		VAR_ADDR_274,
-		VAR_ADDR_275,
-		VAR_ADDR_276,
-		VAR_ADDR_277,
-		VAR_ADDR_278,
-		VAR_ADDR_279,
-		VAR_ADDR_280,
-		VAR_ADDR_281,
-		VAR_ADDR_282,
-		VAR_ADDR_283,
-		VAR_ADDR_284,
-		VAR_ADDR_285,
-		VAR_ADDR_286,
-		VAR_ADDR_287,
-		VAR_ADDR_288,
-		VAR_ADDR_289,
-		VAR_ADDR_290,
-		VAR_ADDR_291,
-		VAR_ADDR_292,
-		VAR_ADDR_293,
-		VAR_ADDR_294,
-		VAR_ADDR_295,
-		VAR_ADDR_296,
-		VAR_ADDR_297,
-		VAR_ADDR_298,
-		VAR_ADDR_299,
-		VAR_ADDR_300,
-		VAR_ADDR_301,
-		VAR_ADDR_302,
-		VAR_ADDR_303,
-		VAR_ADDR_304,
-		VAR_ADDR_305,
-		VAR_ADDR_306,
-		VAR_ADDR_307,
-		VAR_ADDR_308,
-		VAR_ADDR_309,
-		VAR_ADDR_310,
-		VAR_ADDR_311,
-		VAR_ADDR_312,
-		VAR_ADDR_313,
-		VAR_ADDR_314,
-		VAR_ADDR_315,
-		VAR_ADDR_316,
-		VAR_ADDR_317,
-		VAR_ADDR_318,
-		VAR_ADDR_319,
-		VAR_ADDR_320,
-		VAR_ADDR_321,
-		VAR_ADDR_322,
-		VAR_ADDR_323,
-		VAR_ADDR_324,
-		VAR_ADDR_325,
-		VAR_ADDR_326,
-		VAR_ADDR_327,
-		VAR_ADDR_328,
-		VAR_ADDR_329,
-		VAR_ADDR_330,
-		VAR_ADDR_331,
-		VAR_ADDR_332,
-		VAR_ADDR_333,
-		VAR_ADDR_334,
-		VAR_ADDR_335,
-		VAR_ADDR_336,
-		VAR_ADDR_337,
-		VAR_ADDR_338,
-		VAR_ADDR_339,
-		VAR_ADDR_340,
-		VAR_ADDR_341,
-		VAR_ADDR_342,
-		VAR_ADDR_343,
-		VAR_ADDR_344,
-		VAR_ADDR_345,
-		VAR_ADDR_346,
-		VAR_ADDR_347,
-		VAR_ADDR_348,
-		VAR_ADDR_349,
-		VAR_ADDR_350,
-		VAR_ADDR_351,
-		VAR_ADDR_352,
-		VAR_ADDR_353,
-		VAR_ADDR_354,
-		VAR_ADDR_355,
-		VAR_ADDR_356,
-		VAR_ADDR_357,
-		VAR_ADDR_358,
-		VAR_ADDR_359,
-		VAR_ADDR_360,
-		VAR_ADDR_361,
-		VAR_ADDR_362,
-		VAR_ADDR_363,
-		VAR_ADDR_364,
-		VAR_ADDR_365,
-		VAR_ADDR_366,
-		VAR_ADDR_367,
-		VAR_ADDR_368,
-		VAR_ADDR_369,
-		VAR_ADDR_370,
-		VAR_ADDR_371,
-		VAR_ADDR_372,
-		VAR_ADDR_373,
-		VAR_ADDR_374,
-		VAR_ADDR_375,
-		VAR_ADDR_376,
-		VAR_ADDR_377,
-		VAR_ADDR_378,
-		VAR_ADDR_379,
-		VAR_ADDR_380,
-		VAR_ADDR_381,
-		VAR_ADDR_382,
-		VAR_ADDR_383
-};
-#endif
-
-#if 0
-// System tick if needed
-__IO uint32_t TimingDelay = 0;
-
-uchar wd_init_enabled = 0;
-
-void USB_OTG_BSP_mDelay(int x)
-{
-	__asm(".word 0x46004600");
-}
-
-
-
-//*----------------------------------------------------------------------------
-//* Function Name       : SysTick_Handler
-//* Object              :
-//* Object              :
-//* Input Parameters    :
-//* Output Parameters   :
-//* Functions called    :
-//*----------------------------------------------------------------------------
-void SysTick_Handler(void)
-{
-	api_dsp_systick();
-}
-
-//*----------------------------------------------------------------------------
-//* Function Name       : EXTI0_IRQHandler
-//* Object              : paddles dah
-//* Object              :
-//* Input Parameters    :
-//* Output Parameters   :
-//* Functions called    :
-//*----------------------------------------------------------------------------
-void EXTI0_IRQHandler(void)
-{
-	// Checks whether the User Button EXTI line is asserted
-	//
-	// WARNING:
-	// Due to an apparent HARDWARE bug in the MCU this interrupt seems to be occasionally triggered by transitions
-	// of lines OTHER than the PADDLE_DAH (PE0) line, specifically the PC4 and PC5 (Step- and Step+) lines.
-	//
-	if (EXTI_GetITStatus(EXTI_Line0) != RESET)
-	{
-		// Call handler
-		if(ts.dmod_mode == DEMOD_CW)	{
-			if(!GPIO_ReadInputDataBit(PADDLE_DAH_PIO,PADDLE_DAH))	{	// was DAH line low?
-				cw_gen_dah_IRQ();		// Yes - go to CW state machine
-			}
-		}
-		//
-		// PTT activate
-		else if((ts.dmod_mode == DEMOD_USB)||(ts.dmod_mode == DEMOD_LSB) || (ts.dmod_mode == DEMOD_AM))
-		{
-			if(!GPIO_ReadInputDataBit(PADDLE_DAH_PIO,PADDLE_DAH))	{	// was PTT line low?
-				ts.ptt_req = 1;		// yes - ONLY then do we activate PTT!  (e.g. prevent hardware bug from keying PTT!)
-			}
-		}
-	}
-
-	// Clears the EXTI's line pending bit
-	EXTI_ClearITPendingBit(EXTI_Line0);
-}
-
-//*----------------------------------------------------------------------------
-//* Function Name       : EXTI1_IRQHandler
-//* Object              : paddles dit
-//* Object              :
-//* Input Parameters    :
-//* Output Parameters   :
-//* Functions called    :
-//*----------------------------------------------------------------------------
-void EXTI1_IRQHandler(void)
-{
-#if 0
-	// Checks whether the User Button EXTI line (paddle DIT) is asserted
-	if (EXTI_GetITStatus(EXTI_Line1) != RESET)
-	{
-		// Call handler
-		if(ts.dmod_mode == DEMOD_CW)
-			if(!GPIO_ReadInputDataBit(PADDLE_DIT_PIO,PADDLE_DIT))	// was Dit line low?  (Validate to prevent extraneous interrupts)
-				cw_gen_dit_IRQ();
-	}	// do nothing if not in CW mode!
-#endif
-	// Clears the EXTI's line pending bit
-	EXTI_ClearITPendingBit(EXTI_Line1);
-}
-
-#ifdef DSP_MODE
-void EXTI4_IRQHandler(void)
-{
-#if 0
-	// Checks whether the User Button EXTI line is asserted
-	if (EXTI_GetITStatus(EXTI_Line4) != RESET)
-	{
-		api_dsp_irq();
-	}
-#endif
-	// Clears the EXTI's line pending bit
-	EXTI_ClearITPendingBit(EXTI_Line4);
-}
-#endif
-
-//*----------------------------------------------------------------------------
-//* Function Name       : EXTI15_10_IRQHandler
-//* Object              : power button irq here
-//* Object              :
-//* Input Parameters    :
-//* Output Parameters   :
-//* Functions called    :
-//*----------------------------------------------------------------------------
-void EXTI15_10_IRQHandler(void)
-{
-	// power button interrupt
-	if(EXTI_GetITStatus(EXTI_Line13) != RESET)
-	{
-//		if(!GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_13))	// Signal power off
-
-	}
-	// Clear interrupt pending bit
-	EXTI_ClearITPendingBit(EXTI_Line13);
-}
-
-/*void TIM5_IRQHandler(void)
-{
-  if (TIM_GetITStatus(TIM5, TIM_IT_CC4) != RESET)
-  {
-    // Get the Input Capture value
-    tmpCC4[CaptureNumber++] = TIM_GetCapture4(TIM5);
-
-    // Clear CC4 Interrupt pending bit
-    TIM_ClearITPendingBit(TIM5, TIM_IT_CC4);
-
-    if (CaptureNumber >= 2)
-    {
-      // Compute the period length
-      PeriodValue = (uint16_t)(0xFFFF - tmpCC4[0] + tmpCC4[1] + 1);
-    }
-  }
-}*/
-#endif
-
-#if 0
+__IO TransceiverState ts;
 
 //*----------------------------------------------------------------------------
 //* Function Name       : TransceiverStateInit
@@ -612,6 +54,7 @@ void EXTI15_10_IRQHandler(void)
 //*----------------------------------------------------------------------------
 void TransceiverStateInit(void)
 {
+#if 0
 	// Defaults always
 	ts.txrx_mode 		= TRX_MODE_RX;				// start in RX
 	ts.samp_rate		= I2S_AudioFreq_48k;		// set sampling rate
@@ -806,7 +249,10 @@ void TransceiverStateInit(void)
 	ts.filter_disp_colour = FILTER_DISP_COLOUR_DEFAULT;	//
 	ts.vfo_mem_flag = 0;					// when TRUE, memory mode is enabled
 	ts.mem_disp = 0;						// when TRUE, memory display is enabled
+#endif
 }
+
+#if 0
 
 //*----------------------------------------------------------------------------
 //* Function Name       : MiscInit
@@ -976,12 +422,12 @@ void DebugMon_Handler(void)
 
 void SysTick_Handler(void)
 {
-  HAL_IncTick();
+	HAL_IncTick();
 }
 
 void HSEM2_IRQHandler(void)
 {
-  HAL_HSEM_IRQHandler();
+	HAL_HSEM_IRQHandler();
 }
 
 extern void printf_init(unsigned char is_shared);
@@ -1023,15 +469,15 @@ int main(void)
 	BSP_LED_Init(LED_RED);
 	BSP_LED_Init(LED_BLUE);
 
+	// Set default transceiver state
+	TransceiverStateInit();
+
 	// Core power on
 	BSP_LED_On(LED_RED);
 
-	//
-	//printf("dsp core v 0.62\r\n");
 	printf("--------------------------------------\r\n");
     printf("--- Debug Print Session on (dsp) ---\r\n");
 	printf("Firmware v: %d.%d.%d.%d\r\n", MCHF_D_VER_MAJOR, MCHF_D_VER_MINOR, MCHF_D_VER_RELEASE, MCHF_D_VER_BUILD);
-	//
 
 	// ICC driver init
 	icc_proc_hw_init();

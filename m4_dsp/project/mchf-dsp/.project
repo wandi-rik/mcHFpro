@@ -171,16 +171,6 @@
 			<locationURI>PARENT-2-PROJECT_LOC/misc/v_eeprom/eeprom.h</locationURI>
 		</link>
 		<link>
-			<name>proc/audio/audio_driver.c</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/proc/audio/audio_driver.c</locationURI>
-		</link>
-		<link>
-			<name>proc/audio/audio_driver.h</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/proc/audio/audio_driver.h</locationURI>
-		</link>
-		<link>
 			<name>proc/audio/audio_proc.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/proc/audio/audio_proc.c</locationURI>
@@ -289,6 +279,16 @@
 			<name>Middlewares/OpenAMP/open-amp/virtqueue.c</name>
 			<type>1</type>
 			<locationURI>copy_PARENT123/Middlewares/Third_Party/OpenAMP/open-amp/lib/virtio/virtqueue.c</locationURI>
+		</link>
+		<link>
+			<name>proc/audio/hw/audio_sai.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/audio/hw/audio_sai.c</locationURI>
+		</link>
+		<link>
+			<name>proc/audio/hw/audio_sai.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/audio/hw/audio_sai.h</locationURI>
 		</link>
 		<link>
 			<name>proc/audio/hw/stm32h747i_discovery_audio.c</name>
