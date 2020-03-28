@@ -436,7 +436,7 @@ int main(void)
 	FMC_Bank1_R->BTCR[0] &= ~FMC_BCRx_MBKEN;
 
 	// Copy CM4 code from Flash to D2_SRAM memory
-	memcpy((void *)D2_AXISRAM_BASE, (void *)0x081E0000, 0x20000);
+	memcpy((void *)D2_AXISRAM_BASE, (void *)0x081D0000, 0x30000);
 	HAL_SYSCFG_CM4BootAddConfig(SYSCFG_BOOT_ADDR0, D2_AXISRAM_BASE);
 	HAL_RCCEx_EnableBootCore(RCC_BOOT_C2);
 

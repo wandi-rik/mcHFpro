@@ -35,8 +35,8 @@ BSP_AUDIO_Init_t 				AudioOutInit;
 extern SAI_HandleTypeDef		haudio_out_sai;
 extern SAI_HandleTypeDef		haudio_in_sai;
 
-ALIGN_32BYTES (uint16_t TxBuff[DMA_BUFF_SIZE]);
-ALIGN_32BYTES (uint16_t RxBuff[DMA_BUFF_SIZE]);
+ALIGN_32BYTES (uint16_t TxBuff[DMA_BUFF_SIZE + 1]);
+ALIGN_32BYTES (uint16_t RxBuff[DMA_BUFF_SIZE + 1]);
 
 void AUDIO_OUT_SAIx_DMAx_IRQHandler(void)
 {

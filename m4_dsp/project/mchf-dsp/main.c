@@ -23,11 +23,12 @@
 //#include <stdio.h>
 
 // Audio Driver
-//#include "audio_driver.h"
+#include "audio_proc.h"
 //#include "cw_gen.h"
+#include "stm32h747i_discovery_audio.h"
 
 // UI Driver
-//#include "ui_driver.h"
+#include "ui_driver.h"
 //#include "ui_rotary.h"
 //#include "ui_lcd_hy28.h"
 
@@ -37,12 +38,14 @@
 //#include "api_dsp.h"
 
 // Misc
-//#include "softdds.h"
+#include "softdds.h"
 
 #define HSEM_ID_0 (0U)
 
 // Transceiver state public structure
 __IO TransceiverState ts;
+
+//extern void printf_init(unsigned char is_shared);
 
 //*----------------------------------------------------------------------------
 //* Function Name       : TransceiverStateInit
@@ -54,10 +57,9 @@ __IO TransceiverState ts;
 //*----------------------------------------------------------------------------
 void TransceiverStateInit(void)
 {
-#if 0
 	// Defaults always
 	ts.txrx_mode 		= TRX_MODE_RX;				// start in RX
-	ts.samp_rate		= I2S_AudioFreq_48k;		// set sampling rate
+	ts.samp_rate		= AUDIO_FREQUENCY_48K;		// set sampling rate
 
 	ts.enc_one_mode 	= ENC_ONE_MODE_AUDIO_GAIN;
 	ts.enc_two_mode 	= ENC_TWO_MODE_RF_GAIN;
@@ -144,9 +146,9 @@ void TransceiverStateInit(void)
 	ts.scope_filter		= SPECTRUM_SCOPE_FILTER_DEFAULT;	// default filter strength for spectrum scope
 	ts.scope_trace_colour	= SPEC_COLOUR_TRACE_DEFAULT;	// default colour for the spectrum scope trace
 	ts.scope_grid_colour	= SPEC_COLOUR_GRID_DEFAULT;		// default colour for the spectrum scope grid
-	ts.scope_grid_colour_active = Grid;
+//!	ts.scope_grid_colour_active = Grid;
 	ts.scope_centre_grid_colour = SPEC_COLOUR_GRID_DEFAULT;		// color of center line of scope grid
-	ts.scope_centre_grid_colour_active = Grid;
+//!	ts.scope_centre_grid_colour_active = Grid;
 	ts.scope_scale_colour	= SPEC_COLOUR_SCALE_DEFAULT;	// default colour for the spectrum scope frequency scale at the bottom
 	ts.scope_agc_rate	= SPECTRUM_SCOPE_AGC_DEFAULT;		// load default spectrum scope AGC rate
 	ts.spectrum_db_scale = DB_DIV_10;					// default to 10dB/division
@@ -249,63 +251,7 @@ void TransceiverStateInit(void)
 	ts.filter_disp_colour = FILTER_DISP_COLOUR_DEFAULT;	//
 	ts.vfo_mem_flag = 0;					// when TRUE, memory mode is enabled
 	ts.mem_disp = 0;						// when TRUE, memory display is enabled
-#endif
 }
-
-#if 0
-
-//*----------------------------------------------------------------------------
-//* Function Name       : MiscInit
-//* Object              :
-//* Object              :
-//* Input Parameters    :
-//* Output Parameters   :
-//* Functions called    :
-//*----------------------------------------------------------------------------
-void MiscInit(void)
-{
-	//printf("misc init...\n\r");
-
-	// Init Soft DDS
-	softdds_setfreq(0.0,ts.samp_rate,0);
-	//softdds_setfreq(500.0,ts.samp_rate,0);
-	//softdds_setfreq(1000.0,ts.samp_rate,0);
-	//softdds_setfreq(2000.0,ts.samp_rate,0);
-	//softdds_setfreq(3000.0,ts.samp_rate,0);
-	//softdds_setfreq(4000.0,ts.samp_rate,0);
-
-	//printf("misc init ok\n\r");
-}
-
-#if 0
-static void wd_reset(void)
-{
-	// Init WD
-	if(!wd_init_enabled)
-	{
-		// Start watchdog
-		WWDG_Enable(WD_REFRESH_COUNTER);
-
-		// Reset
-		wd_init_enabled = 1;
-		TimingDelay 	= 0;
-
-		return;
-	}
-
-	// 40mS flag for WD reset
-	if(TimingDelay > 40)
-	{
-		TimingDelay = 0;
-		//GREEN_LED_PIO->ODR ^= RED_LED;
-
-		// Update WWDG counter
-		WWDG_SetCounter(WD_REFRESH_COUNTER);
-	}
-}
-#endif
-
-#endif
 
 //*----------------------------------------------------------------------------
 //* Function Name       : CriticalError
@@ -418,19 +364,57 @@ void DebugMon_Handler(void)
 	CriticalError(7);
 }
 
-//volatile uint32_t Notif_Recieved;
-
+//*----------------------------------------------------------------------------
+//* Function Name       :
+//* Object              :
+//* Object              :
+//* Input Parameters    :
+//* Output Parameters   :
+//* Functions called    :
+//*----------------------------------------------------------------------------
 void SysTick_Handler(void)
 {
 	HAL_IncTick();
 }
 
+//*----------------------------------------------------------------------------
+//* Function Name       :
+//* Object              :
+//* Object              :
+//* Input Parameters    :
+//* Output Parameters   :
+//* Functions called    :
+//*----------------------------------------------------------------------------
 void HSEM2_IRQHandler(void)
 {
 	HAL_HSEM_IRQHandler();
 }
 
-extern void printf_init(unsigned char is_shared);
+//*----------------------------------------------------------------------------
+//* Function Name       :
+//* Object              :
+//* Object              :
+//* Input Parameters    :
+//* Output Parameters   :
+//* Functions called    :
+//*----------------------------------------------------------------------------
+void misc_init(void)
+{
+	// Set default transceiver state
+	TransceiverStateInit();
+
+	// Init Soft DDS
+	softdds_setfreq(0.0,ts.samp_rate,0);
+
+	// Init the RX Hilbert transform/filter prior to initializing the audio!
+	UiCalcRxPhaseAdj();
+
+	// Init TX Hilbert transform/filter
+	UiCalcTxPhaseAdj();
+
+	// Get filter value so we can init audio with it
+	UiDriverLoadFilterValue();
+}
 
 //*----------------------------------------------------------------------------
 //* Function Name       : main
@@ -452,7 +436,7 @@ int main(void)
     HAL_HSEM_ActivateNotification(__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_0));
 
 	// Domain D2 goes to STOP mode (Cortex-M4 in deep-sleep) waiting for Cortex-M7 to
-	//    perform system initialization (system clock config, external memory configuration.. )
+	// perform system initialization (system clock config, external memory configuration.. )
     HAL_PWREx_ClearPendingEvent();
     HAL_PWREx_EnterSTOPMode(PWR_MAINREGULATOR_ON, PWR_STOPENTRY_WFE, PWR_D2_DOMAIN);
 
@@ -469,8 +453,8 @@ int main(void)
 	BSP_LED_Init(LED_RED);
 	BSP_LED_Init(LED_BLUE);
 
-	// Set default transceiver state
-	TransceiverStateInit();
+	// Radio init
+	misc_init();
 
 	// Core power on
 	BSP_LED_On(LED_RED);
@@ -482,99 +466,7 @@ int main(void)
 	// ICC driver init
 	icc_proc_hw_init();
 
-	while (1)
-	{
-		// ICC driver process
-		icc_proc_task(NULL);
-	}
+main_loop:
+	icc_proc_task(NULL);
+	goto main_loop;
 }
-
-#if 0
-//*----------------------------------------------------------------------------
-//* Function Name       : main
-//* Object              :
-//* Object              :
-//* Input Parameters    :
-//* Output Parameters   :
-//* Functions called    :
-//*----------------------------------------------------------------------------
-int main(void)
-{
-
-	// HW init
-//!	mchf_board_init();
-
-	// Power on
-//!	mchf_board_green_led(1);
-
-	// Set default transceiver state
-//!	TransceiverStateInit();
-
-	// Virtual Eeprom init
-	//ts.ee_init_stat = EE_Init();	// get status of EEPROM initialization
-
-	// Show logo
-	//UiLcdHy28_ShowStartUpScreen(100);
-
-	// Extra init
-//!	MiscInit();
-
-	// Init the RX Hilbert transform/filter prior
-	// to initializing the audio!
-	//
-//!	UiCalcRxPhaseAdj();
-	//
-	// Init TX Hilbert transform/filter
-	//
-//!	UiCalcTxPhaseAdj();	//
-
-//!	UiDriverLoadFilterValue();	// Get filter value so we can init audio with it
-
-	// Audio HW init
-//!	audio_driver_init();
-
-	// Usb Host driver init
-	//keyb_driver_init();
-
-	// UI HW init
-//!	ui_driver_init();
-
-	// Audio HW init - again, using EEPROM-loaded values
-//!	audio_driver_init();
-	//
-//!	ts.audio_gain_change = 99;		// Force update of volume control
-//!	uiCodecMute(0);					// make cure codec is un-muted
-
-	#ifdef DSP_MODE
-	// Api driver - reuse the SPI from LCD
-//!	api_dsp_init();
-	#endif
-
-	#ifdef DEBUG_BUILD
-	printf("== main loop starting ==\n\r");
-	#endif
-
-	// Transceiver main loop
-	for(;;)
-	{
-		// UI events processing
-//!		ui_driver_thread();
-
-		// Audio driver processing
-		//audio_driver_thread();
-
-		#ifdef DSP_MODE
-		// talk to UI board
-//!		api_dsp_thread();
-		#endif
-
-		// USB Host driver processing
-		//usbh_driver_thread();
-
-		// Reset WD - not working
-		//wd_reset();
-
-		//----------printf("board revision: %d\n\r",get_pcb_rev());
-	}
-}
-#endif

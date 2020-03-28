@@ -1388,7 +1388,7 @@ do {							\
     __asm__ __volatile__ ("nop\n\t":::"memory");	\
 } while (0)
 
-#define assert_param(expr) ((void)0)
+//#define assert_param(expr) ((void)0)
 
 extern		ulong get_pcb_rev(void);
 
@@ -1409,6 +1409,8 @@ void mchf_board_power_button_input_init(void);
 //uint16_t Read_VirtEEPROM(uint16_t addr, uint16_t *value);
 //uint16_t Write_VirtEEPROM(uint16_t addr, uint16_t value);
 //uint16_t Write_VirtEEPROM_Signed(uint16_t addr, int value);
+
+void printf_init(unsigned char is_shared);
 
 // in main.c
 void CriticalError(ulong error);

@@ -27,7 +27,7 @@
 #include "ui_driver.h"
 #include "softdds.h"
 #include "cw_sm_tbl.h"
-#include "codec.h"
+//#include "codec.h"
 
 #include "cw_gen.h"
 
@@ -47,7 +47,7 @@ __IO PaddleState				ps;
 //*----------------------------------------------------------------------------
 static uchar cw_gen_get_line_state(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 {
-
+#if 0
 #ifdef DSP_MODE
 	// Try API requests
 
@@ -61,6 +61,7 @@ static uchar cw_gen_get_line_state(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 
 	// Just normal hardware keyer
 	return GPIO_ReadInputDataBit(GPIOx,GPIO_Pin);
+#endif
 }
 
 //*----------------------------------------------------------------------------
@@ -171,6 +172,7 @@ void cw_gen_remove_click_on_falling_edge(float *i_buffer,float *q_buffer,ulong s
 //*----------------------------------------------------------------------------
 void cw_gen_check_keyer_state(void)
 {
+#if 0
 	if(!ts.paddle_reverse)	{	// Paddles NOT reversed
 		if(!cw_gen_get_line_state(PADDLE_DAH_PIO,PADDLE_DAH))
 			ps.port_state |= CW_DAH_L;
@@ -185,7 +187,7 @@ void cw_gen_check_keyer_state(void)
 		if(!cw_gen_get_line_state(PADDLE_DIT_PIO,PADDLE_DIT))
 			ps.port_state |= CW_DAH_L;
 	}
-
+#endif
 }
 
 //*----------------------------------------------------------------------------
@@ -214,6 +216,7 @@ ulong cw_gen_process(float32_t *i_buffer,float32_t *q_buffer,ulong size)
 //*----------------------------------------------------------------------------
 ulong cw_gen_process_strk(float32_t *i_buffer,float32_t *q_buffer,ulong size)
 {
+#if 0
 	// Exit to RX
 	if(ps.key_timer == 0)
 	{
@@ -269,7 +272,7 @@ ulong cw_gen_process_strk(float32_t *i_buffer,float32_t *q_buffer,ulong size)
 
 		if(ps.key_timer) ps.key_timer--;
 	}
-
+#endif
 	return 1;
 }
 
@@ -283,6 +286,7 @@ ulong cw_gen_process_strk(float32_t *i_buffer,float32_t *q_buffer,ulong size)
 //*----------------------------------------------------------------------------
 ulong cw_gen_process_iamb(float32_t *i_buffer,float32_t *q_buffer,ulong size)
 {
+#if 0
 	//printf("%d ",ps.cw_state);
 	switch(ps.cw_state)
 	{
@@ -421,6 +425,7 @@ ulong cw_gen_process_iamb(float32_t *i_buffer,float32_t *q_buffer,ulong size)
 		default:
 			return 0;
 	}
+#endif
 	return 0;
 }
 
@@ -434,6 +439,7 @@ ulong cw_gen_process_iamb(float32_t *i_buffer,float32_t *q_buffer,ulong size)
 //*----------------------------------------------------------------------------
 void cw_gen_dah_IRQ(void)
 {
+#if 0
 	if(ts.keyer_mode != CW_MODE_STRAIGHT)
 	{
 		// Just flag change - nothing to call
@@ -460,6 +466,7 @@ void cw_gen_dah_IRQ(void)
 			}
 		}
 	}
+#endif
 }
 
 //*----------------------------------------------------------------------------

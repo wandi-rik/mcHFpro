@@ -19,16 +19,16 @@
 #include "mchf_board.h"
 
 #include "audio_sai.h"
-//#include "cw_gen.h"
+#include "cw_gen.h"
 
 #include <limits.h>
-//#include "softdds.h"
+#include "softdds.h"
 
 #include "audio_proc.h"
-//#include "ui_driver.h"
+#include "ui_driver.h"
 
 // Encoders
-//#include "ui_rotary.h"
+#include "ui_rotary.h"
 
 // SSB filters - now handled in ui_driver to allow I/Q phase adjustment
 //#include "filters/q_rx_filter.h"
@@ -62,7 +62,7 @@ static void Audio_Init(void);
 
 // ---------------------------------
 // DMA buffers for I2S
-//__IO int16_t 	tx_buffer[BUFF_LEN+1];
+//__IO int16_t 	tx_buffer[BUFF_LEN+1];	- moved to hw/audio_sai.c !
 //__IO int16_t	rx_buffer[BUFF_LEN+1];
 
 //! static int16_t	test_a[5000];	// grab a large chunk of RAM - for testing, and to prevent "memory leak" anomalies (kludgy work-around - problem to be solved!)
@@ -141,7 +141,7 @@ extern __IO TransceiverState 	ts;
 
 // ------------------------------------------------
 // Frequency public
-//! __IO DialFrequency 				df;
+__IO DialFrequency 				df;
 
 // Spectrum display public
 __IO	SpectrumDisplay			sd;
@@ -155,7 +155,7 @@ __IO	SMeter					sm;
 // Keypad driver publics
 //! extern __IO	KeypadState				ks;
 //
-//! extern __IO	FilterCoeffs		fc;
+__IO	FilterCoeffs		fc;
 //
 //
 //*----------------------------------------------------------------------------
@@ -181,10 +181,10 @@ void audio_driver_config_nco(void)
 	ads.Osc_I = 0;
 #endif
 
-//!	if(loc_nco_freq == df.nco_freq)
-//!		return;
+	if(loc_nco_freq == df.nco_freq)
+		return;
 
-//!	loc_nco_freq = df.nco_freq;
+	loc_nco_freq = df.nco_freq;
 
 	float rate = 2 * PI * (loc_nco_freq) / (48000);
 
@@ -207,7 +207,6 @@ void audio_driver_config_nco(void)
 //*----------------------------------------------------------------------------
 void audio_driver_init(void)
 {
-	ulong word_size;
 	uchar x;
 
 	static uchar audio_init_done = 0;
@@ -215,16 +214,9 @@ void audio_driver_init(void)
 	if(audio_init_done)
 		return;
 
-	#ifdef DEBUG_BUILD
-	printf("audio driver init...\n\r");
-	#endif
-
-//!	word_size = WORD_SIZE_16;
-
 	// CW module init
-//!	cw_gen_init();
+	cw_gen_init();
 
-#if 0
 	// Audio filter disabled
 	ads.af_dissabled = 1;
 
@@ -242,20 +234,19 @@ void audio_driver_init(void)
 	ads.alc_val = 1;			// init TX audio auto-level-control (ALC)
 	//
 	ads.decimation_rate	=	RX_DECIMATION_RATE_12KHZ;		// Decimation rate, when enabled
-#endif
 
 	//
-//!	UiCalcAGCDecay();	// initialize AGC decay ("hang time") values
+	UiCalcAGCDecay();	// initialize AGC decay ("hang time") values
 	//
-//!	UiCalcRFGain();		// convert from user RF gain value to "working" RF gain value
+	UiCalcRFGain();		// convert from user RF gain value to "working" RF gain value
 	//
-//!	UiCalcALCDecay();	// initialize ALC decay values
+	UiCalcALCDecay();	// initialize ALC decay values
 	//
-//!	UiCalcAGCVals();	// calculate AGC internal values from user settings
+	UiCalcAGCVals();	// calculate AGC internal values from user settings
 	//
-//!	UiCalcNB_AGC();		// set up noise blanker AGC values
+	UiCalcNB_AGC();		// set up noise blanker AGC values
 	//
-//!	UiCWSidebandMode();	// set up CW sideband mode setting
+	UiCWSidebandMode();	// set up CW sideband mode setting
 	//
 	// The "active" NCO in the frequency translate function is NOT used, but rather a "static" sine that is an integer divisor of the sample rate.
 	//
@@ -266,20 +257,16 @@ void audio_driver_init(void)
 	ads.tx_filter_adjusting = 0;	// used to disable TX I/Q filter during adjustment
 
 	// Audio init
-//!	Audio_Init();
+	Audio_Init();
 
 	// SAI hardware init/Start DMA transfers
 	audio_sai_hw_init();
 
 	// Audio filter enabled
-//!	ads.af_dissabled = 0;
+	ads.af_dissabled = 0;
 
 	// Prevent multiple init
 	audio_init_done = 1;
-
-	#ifdef DEBUG_BUILD
-	printf("audio driver init ok\n\r");
-	#endif
 }
 
 //*----------------------------------------------------------------------------
@@ -324,7 +311,6 @@ void audio_driver_thread(void)
 
 void audio_driver_set_rx_audio_filter(void)
 {
-#if 0
 	uint32_t	i;
 	float	mu_calc;
 	bool	dsp_inhibit_temp;
@@ -609,7 +595,6 @@ void audio_driver_set_rx_audio_filter(void)
 	ads.af_dissabled = 0;
 	ts.dsp_inhibit = dsp_inhibit_temp;
 	//
-#endif
 }
 
 uchar audio_check_nr_dsp_state(void)
@@ -649,16 +634,15 @@ static void Audio_Init(void)
     }
     IIR_TXFilter.pState = (float32_t *)&iir_tx_state;
 
-
     // Decimation/Interpolation is set up "manually" because the built-in functions do NOT work reliably with coefficients
     // stored in CONST memory!
     //
-//!	if((ts.dsp_nr_delaybuf_len < DSP_NR_BUFLEN_MIN) || (ts.dsp_nr_delaybuf_len > DSP_NR_BUFLEN_MAX))
-//!		ts.dsp_nr_delaybuf_len = DSP_NR_BUFLEN_DEFAULT;
+	if((ts.dsp_nr_delaybuf_len < DSP_NR_BUFLEN_MIN) || (ts.dsp_nr_delaybuf_len > DSP_NR_BUFLEN_MAX))
+		ts.dsp_nr_delaybuf_len = DSP_NR_BUFLEN_DEFAULT;
 	//
 	// -------------------
 	// Init RX audio filters
-	audio_driver_set_rx_audio_filter();
+//	audio_driver_set_rx_audio_filter();
 }
 //
 //
@@ -672,7 +656,7 @@ static void Audio_Init(void)
 //*----------------------------------------------------------------------------
 static void audio_rx_noise_blanker(int16_t *src, int16_t size)
 {
-#if 0
+#if 1
 	static int16_t	delay_buf[34];
 	static uchar	delbuf_inptr = 0, delbuf_outptr = 2;
 	ulong	i;
@@ -856,8 +840,8 @@ static void audio_rx_freq_conv(int16_t size, int16_t dir)
 	static float32_t	q_temp, i_temp;
 
 	// Do we need NCO off ?
-//!	if(df.nco_freq == 0)
-//!		return;
+	if(df.nco_freq == 0)
+		return;
 
 	// Recalculate NCO, if needed
 	audio_driver_config_nco();
@@ -940,7 +924,7 @@ static void audio_rx_freq_conv(int16_t size, int16_t dir)
 //*----------------------------------------------------------------------------
 static void audio_rx_agc_processor(int16_t psize)
 {
-#if 0
+#if 1
 	static float		agc_calc, agc_var;
 	static ulong 		i;
 	static ulong		agc_delay_inbuf = 0, agc_delay_outbuf = 0;
@@ -1013,7 +997,6 @@ static void audio_rx_agc_processor(int16_t psize)
 //*----------------------------------------------------------------------------
 static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 {
-
 	static ulong 		i;
 	//
 	int16_t				psize;		// processing size, with decimation
@@ -1021,7 +1004,6 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 	static ulong		lms1_inbuf = 0, lms1_outbuf = 0;
 	static ulong		lms2_inbuf = 0, lms2_outbuf = 0;
 	float				post_agc_gain_scaling;
-
 
 	psize = size/(int16_t)ads.decimation_rate;	// rescale sample size inside decimated portion based on decimation factor
 	//
@@ -1064,6 +1046,7 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 		ads.q_buffer[i] = (float32_t)*src++;
 		//
 	}
+
 	//
 	// Apply gain corrections for I/Q gain balancing
 	//
@@ -1082,7 +1065,7 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 	#endif
 
 	#ifdef DSP_MODE
-	audio_rx_freq_conv(size, 0);
+//!	audio_rx_freq_conv(size, 0);
 	#endif
 	//
 	// ------------------------
@@ -1093,10 +1076,10 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 	//
 	arm_fir_f32((arm_fir_instance_f32 *)&FIR_I,(float32_t *)(ads.i_buffer),(float32_t *)(ads.i_buffer),size/2);	// shift 0 degree FIR
 	arm_fir_f32((arm_fir_instance_f32 *)&FIR_Q,(float32_t *)(ads.q_buffer),(float32_t *)(ads.q_buffer),size/2);	// shift +90 degrees FIR (plus RX IQ phase adjustment)
+
 	//
 	//	Demodulation, optimized using fast ARM math functions as much as possible
 	//
-#if 0
 	switch(ts.dmod_mode)	{
 		case DEMOD_LSB:
 			arm_sub_f32((float32_t *)ads.i_buffer, (float32_t *)ads.q_buffer, (float32_t *)ads.a_buffer, size/2);	// difference of I and Q - LSB
@@ -1120,10 +1103,12 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 		case DEMOD_USB:
 		case DEMOD_DIGI:
 		default:
-#endif
 			arm_add_f32((float32_t *)ads.i_buffer, (float32_t *)ads.q_buffer, (float32_t *)ads.a_buffer, size/2);	// sum of I and Q - USB
-//!			break;
-//!	}
+		break;
+	}
+
+	//goto copy_out_buff;
+#if 0
 	//
 	// Do decimation down to lower rate for heavy-duty processing to reduce processor load
 	//
@@ -1171,15 +1156,15 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 	//
 	// ------------------------
 	// Apply audio filter
-	if((!ads.af_dissabled)	&& (ts.filter_id != AUDIO_WIDE))	{	// we don't need to filter if running in "wide" mode (Hilbert/FIR does the job!)
-		// IIR ARMA-type lattice filter
-		arm_iir_lattice_f32(&IIR_PreFilter, (float32_t *)ads.a_buffer, (float32_t *)ads.a_buffer, psize/2);
-	}
+//!	if((!ads.af_dissabled)	&& (ts.filter_id != AUDIO_WIDE))	{	// we don't need to filter if running in "wide" mode (Hilbert/FIR does the job!)
+//!		// IIR ARMA-type lattice filter
+//!		arm_iir_lattice_f32(&IIR_PreFilter, (float32_t *)ads.a_buffer, (float32_t *)ads.a_buffer, psize/2);
+//!	}
 
 	//
 	// now process the samples and perform the receiver AGC function
 	//
-	audio_rx_agc_processor(psize);
+//!	audio_rx_agc_processor(psize);
 
 	//
 	// DSP noise reduction using LMS (Least Mean Squared) algorithm
@@ -1213,10 +1198,10 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 	//
 	// Calculate scaling based on decimation rate since this affects the audio gain
 	//
-	if(ts.filter_id != AUDIO_WIDE)
-		post_agc_gain_scaling = POST_AGC_GAIN_SCALING_DECIMATE_4;
-	else
-		post_agc_gain_scaling = POST_AGC_GAIN_SCALING_DECIMATE_2;
+//!	if(ts.filter_id != AUDIO_WIDE)
+//!		post_agc_gain_scaling = POST_AGC_GAIN_SCALING_DECIMATE_4;
+//!	else
+//!		post_agc_gain_scaling = POST_AGC_GAIN_SCALING_DECIMATE_2;
 	//
 	// Scale audio to according to AGC setting, demodulation mode and required fixed levels
 	//
@@ -1229,6 +1214,9 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 	//
 	arm_fir_interpolate_f32(&INTERPOLATE_RX, (float32_t *)ads.a_buffer,(float32_t *) ads.b_buffer, psize/2);
 	//
+#endif
+
+#if 0
 	if(ts.rx_muting)	{
 		arm_fill_f32(0, (float32_t *)ads.a_buffer, size/2);
 		arm_fill_f32(0, (float32_t *)ads.b_buffer, size/2);
@@ -1243,6 +1231,8 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 		if(ts.audio_gain > 16)	// is volume control above highest hardware setting?
 			arm_scale_f32((float32_t *)ads.b_buffer, (float32_t)ts.audio_gain_active, (float32_t *)ads.b_buffer, size/2);	// yes, do software volume control adjust on "b" buffer
 	}
+#endif
+
 	//
 	// Transfer processed audio to DMA buffer
 	//
@@ -1275,7 +1265,7 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 //* Functions called    :
 //*----------------------------------------------------------------------------
 
-extern ulong sample_count;
+//!extern ulong sample_count;
 
 static void audio_dv_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 {
@@ -1395,7 +1385,7 @@ static void audio_dv_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 	//sample_count = psize;						// 16
 	//sample_count = size;						// 64
 	//sample_count = ads.decimation_rate;		// 4
-	sample_count += psize;
+//!	sample_count += psize;
 
 	//
 	// Calculate scaling based on decimation rate since this affects the audio gain
@@ -1959,10 +1949,10 @@ static void audio_dv_tx_processor(int16_t *src, int16_t *dst, int16_t size)
 //*----------------------------------------------------------------------------
 void I2S_RX_CallBack(int16_t *src, int16_t *dst, int16_t size, uint16_t ht)
 {
+	#if 1
 	for(int i = 0; i < size; i++)
-	{
 		dst[i] = src[i];
-	}
+	#endif
 
 	#if 0
 	static bool to_rx = 0;	// used as a flag to clear the RX buffer
@@ -1977,10 +1967,10 @@ void I2S_RX_CallBack(int16_t *src, int16_t *dst, int16_t size, uint16_t ht)
 			arm_fill_q15(0, src, size);
 		}
 		//
-		if(!ts.dvmode)
+//		if(!ts.dvmode)
 			audio_rx_processor(src,dst,size);
-		else
-			audio_dv_rx_processor(src,dst,size);
+//		else
+//			audio_dv_rx_processor(src,dst,size);
 		//
 		to_tx = 1;		// Set flag to indicate that we WERE receiving when we go back to transmit mode
 	}
@@ -2027,6 +2017,7 @@ void I2S_RX_CallBack(int16_t *src, int16_t *dst, int16_t size, uint16_t ht)
 		LCD_BACKLIGHT_PIO->BSRRH = LCD_BACKLIGHT;	// LCD backlight off
 	#endif
 
+	#if 0
 	tcount+=CLOCKS_PER_DMA_CYCLE;		// add the number of clock cycles that would have passed between DMA cycles
 	if(tcount > CLOCKS_PER_CENTISECOND)	{	// has enough clock cycles for 0.01 second passed?
 		tcount -= CLOCKS_PER_CENTISECOND;	// yes - subtract that many clock cycles
@@ -2037,6 +2028,7 @@ void I2S_RX_CallBack(int16_t *src, int16_t *dst, int16_t size, uint16_t ht)
 	//
 	if(ts.spectrum_scope_scheduler)		// update thread timer if non-zero
 		ts.spectrum_scope_scheduler--;
+	#endif
 
 	#endif
 }

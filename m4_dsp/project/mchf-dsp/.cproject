@@ -56,6 +56,10 @@
 									<listOptionValue builtIn="false" value="../../../proc/icc/hw"/>
 									<listOptionValue builtIn="false" value="../../../proc/audio"/>
 									<listOptionValue builtIn="false" value="../../../proc/audio/hw"/>
+									<listOptionValue builtIn="false" value="../../../proc/audio/cw"/>
+									<listOptionValue builtIn="false" value="../../../proc/audio/softdds"/>
+									<listOptionValue builtIn="false" value="../../../proc/ui"/>
+									<listOptionValue builtIn="false" value="../../../proc/ui/encoder"/>
 									<listOptionValue builtIn="false" value="../../../misc/v_eeprom"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.2125220164" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
@@ -86,8 +90,13 @@
 							</tool>
 							<tool id="fr.ac6.managedbuild.tool.gnu.cross.c.linker.144996058" name="MCU GCC Linker" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.linker">
 								<option id="fr.ac6.managedbuild.tool.gnu.cross.c.linker.script.1326121048" name="Linker Script (-T)" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.linker.script" useByScannerDiscovery="false" value="../stm32h747xx_dsp.ld" valueType="string"/>
-								<option id="gnu.c.link.option.libs.1544854282" name="Libraries (-l)" superClass="gnu.c.link.option.libs" useByScannerDiscovery="false"/>
-								<option id="gnu.c.link.option.paths.1393756933" name="Library search path (-L)" superClass="gnu.c.link.option.paths" useByScannerDiscovery="false"/>
+								<option id="gnu.c.link.option.libs.1544854282" name="Libraries (-l)" superClass="gnu.c.link.option.libs" useByScannerDiscovery="false" valueType="libs">
+									<listOptionValue builtIn="false" value="arm_cortexM4lf_math"/>
+								</option>
+								<option id="gnu.c.link.option.paths.1393756933" name="Library search path (-L)" superClass="gnu.c.link.option.paths" useByScannerDiscovery="false" valueType="libPaths">
+									<listOptionValue builtIn="false" value="../../../../STM32CubeH7/Drivers/CMSIS/Lib/ARM"/>
+									<listOptionValue builtIn="false" value="../../../libs"/>
+								</option>
 								<option id="gnu.c.link.option.ldflags.446195159" name="Linker flags" superClass="gnu.c.link.option.ldflags" useByScannerDiscovery="false" value="-specs=nosys.specs " valueType="string"/>
 								<option id="gnu.c.link.option.nostart.1446654619" name="Do not use standard start files (-nostartfiles)" superClass="gnu.c.link.option.nostart" useByScannerDiscovery="false" value="false" valueType="boolean"/>
 								<option id="gnu.c.link.option.nodeflibs.1822884735" name="Do not use default libraries (-nodefaultlibs)" superClass="gnu.c.link.option.nodeflibs" useByScannerDiscovery="false" value="false" valueType="boolean"/>

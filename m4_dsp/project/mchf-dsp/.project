@@ -191,6 +191,16 @@
 			<locationURI>PARENT-2-PROJECT_LOC/proc/icc/icc_proc.h</locationURI>
 		</link>
 		<link>
+			<name>proc/ui/ui_driver.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/ui/ui_driver.c</locationURI>
+		</link>
+		<link>
+			<name>proc/ui/ui_driver.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/ui/ui_driver.h</locationURI>
+		</link>
+		<link>
 			<name>Drivers/BSP/Components/wm8994.c</name>
 			<type>1</type>
 			<locationURI>PARENT-3-PROJECT_LOC/STM32CubeH7/Drivers/BSP/Components/wm8994/wm8994.c</locationURI>
@@ -281,6 +291,21 @@
 			<locationURI>copy_PARENT123/Middlewares/Third_Party/OpenAMP/open-amp/lib/virtio/virtqueue.c</locationURI>
 		</link>
 		<link>
+			<name>proc/audio/cw/cw_gen.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/audio/cw/cw_gen.c</locationURI>
+		</link>
+		<link>
+			<name>proc/audio/cw/cw_gen.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/audio/cw/cw_gen.h</locationURI>
+		</link>
+		<link>
+			<name>proc/audio/cw/cw_sm_tbl.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/audio/cw/cw_sm_tbl.h</locationURI>
+		</link>
+		<link>
 			<name>proc/audio/hw/audio_sai.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/proc/audio/hw/audio_sai.c</locationURI>
@@ -299,6 +324,21 @@
 			<name>proc/audio/hw/stm32h747i_discovery_audio.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/proc/audio/hw/stm32h747i_discovery_audio.h</locationURI>
+		</link>
+		<link>
+			<name>proc/audio/softdds/dds_table.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/audio/softdds/dds_table.h</locationURI>
+		</link>
+		<link>
+			<name>proc/audio/softdds/softdds.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/audio/softdds/softdds.c</locationURI>
+		</link>
+		<link>
+			<name>proc/audio/softdds/softdds.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/audio/softdds/softdds.h</locationURI>
 		</link>
 		<link>
 			<name>proc/icc/hw/mbox_hsem.c</name>
