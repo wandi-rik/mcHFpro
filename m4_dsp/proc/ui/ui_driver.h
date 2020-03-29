@@ -747,4 +747,8 @@ STATE_SWITCH_OFF_PTT			//
 #define	STEP_PRESS_MINUS	1
 #define	STEP_PRESS_PLUS	2
 //
+
+
+void ui_driver_get_buffer(uchar *buffer);
+
 #endif

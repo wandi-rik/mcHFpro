@@ -1129,7 +1129,7 @@ static void api_ui_process_broadcast(void)
 
 	// Copy FFT
 	for(i = 0; i < 256; i++)
-		ui_sw.fft_dsp[i] = aRxBuffer[i + 0x28]/4;
+		ui_sw.fft_dsp[i] = aRxBuffer[i + 0x28];
 
 	//printf("got fft\r\n");
 

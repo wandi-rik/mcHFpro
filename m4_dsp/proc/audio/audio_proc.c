@@ -998,23 +998,22 @@ static void audio_rx_agc_processor(int16_t psize)
 static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 {
 	static ulong 		i;
-	//
 	int16_t				psize;		// processing size, with decimation
-	//
 	static ulong		lms1_inbuf = 0, lms1_outbuf = 0;
 	static ulong		lms2_inbuf = 0, lms2_outbuf = 0;
 	float				post_agc_gain_scaling;
 
+	int16_t *src_a = src; // test for crashing the IRQ only
+	int16_t *dst_a = dst;
+
 	psize = size/(int16_t)ads.decimation_rate;	// rescale sample size inside decimated portion based on decimation factor
-	//
+
 	audio_rx_noise_blanker(src, size);		// do noise blanker function
-	//
-	//
+
 	// ------------------------
 	// Split stereo channels
 	for(i = 0; i < size/2; i++)
 	{
-		//
 		// Collect I/Q samples
 		if(sd.state == 0)
 		{
@@ -1031,7 +1030,7 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 				sd.state    = 1;
 			}
 		}
-		//
+
 		if(*src > ADC_CLIP_WARN_THRESHOLD/4)	{		// This is the release threshold for the auto RF gain
 			ads.adc_quarter_clip = 1;
 			if(*src > ADC_CLIP_WARN_THRESHOLD/2)	{		// This is the trigger threshold for the auto RF gain
@@ -1040,21 +1039,16 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 						ads.adc_clip = 1;
 			}
 		}
-		//
+
 		// 16 bit format - convert to float and increment
 		ads.i_buffer[i] = (float32_t)*src++;
 		ads.q_buffer[i] = (float32_t)*src++;
-		//
 	}
 
-	//
 	// Apply gain corrections for I/Q gain balancing
-	//
-//!	arm_scale_f32((float32_t *)ads.i_buffer, (float32_t)ts.rx_adj_gain_var_i, (float32_t *)ads.i_buffer, size/2);
-	//
-//!	arm_scale_f32((float32_t *)ads.q_buffer, (float32_t)ts.rx_adj_gain_var_q, (float32_t *)ads.q_buffer, size/2);
-	//
-	//
+	arm_scale_f32((float32_t *)ads.i_buffer, (float32_t)ts.rx_adj_gain_var_i, (float32_t *)ads.i_buffer, size/2);
+	arm_scale_f32((float32_t *)ads.q_buffer, (float32_t)ts.rx_adj_gain_var_q, (float32_t *)ads.q_buffer, size/2);
+
 	#ifndef DSP_MODE
 	if(ts.iq_freq_mode)	{		// is receive frequency conversion to be done?
 		if(ts.iq_freq_mode == 1)			// Yes - "RX LO LOW" mode
@@ -1233,6 +1227,7 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 	}
 #endif
 
+#if 0
 	//
 	// Transfer processed audio to DMA buffer
 	//
@@ -1250,7 +1245,10 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 		*dst++ = (int16_t)ads.b_buffer[i];		// Speaker channel (variable level)
 		*dst++ = (int16_t)ads.a_buffer[i++];		// LINE OUT (constant level)
 	}
-	//
+#endif
+
+	for(int i = 0; i < size; i++)
+		dst_a[i] = src_a[i];
 }
 
 //
@@ -1264,9 +1262,7 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 //* Output Parameters   :
 //* Functions called    :
 //*----------------------------------------------------------------------------
-
 //!extern ulong sample_count;
-
 static void audio_dv_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 {
 
@@ -1949,12 +1945,12 @@ static void audio_dv_tx_processor(int16_t *src, int16_t *dst, int16_t size)
 //*----------------------------------------------------------------------------
 void I2S_RX_CallBack(int16_t *src, int16_t *dst, int16_t size, uint16_t ht)
 {
-	#if 1
+	#if 0
 	for(int i = 0; i < size; i++)
 		dst[i] = src[i];
 	#endif
 
-	#if 0
+	#if 1
 	static bool to_rx = 0;	// used as a flag to clear the RX buffer
 	static bool to_tx = 0;	// used as a flag to clear the TX buffer
 	static uchar lcd_dim = 0, lcd_dim_prescale = 0;

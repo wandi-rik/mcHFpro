@@ -30,6 +30,7 @@
 
 #include "audio_proc.h"
 #include "audio_sai.h"		// temp to dump samples
+#include "ui_driver.h"
 
 #define RPMSG_SERVICE_NAME              "stm32_icc_service"
 
@@ -55,7 +56,7 @@ static int rpmsg_recv_callback(struct rpmsg_endpoint *ept, void *data, size_t le
 	return 0;
 }
 
-void api_dsp_post(void)
+void icc_proc_post(void)
 {
 #ifndef API_DMA_MODE
 	ulong k;
@@ -123,7 +124,8 @@ void api_dsp_post(void)
 	}
 	#endif
 
-	audio_sai_get_buffer(icc_out_buffer + 0x28);
+	//audio_sai_get_buffer(icc_out_buffer + 0x28);
+	ui_driver_get_buffer(icc_out_buffer + 0x28);
 
 	// Footer
 	icc_out_buffer[298] = 0x55;
@@ -147,6 +149,8 @@ void api_dsp_post(void)
 void icc_proc_hw_init(void)
 {
 	int32_t status = 0;
+
+	printf("icc init...\r\n");
 
 	// Init the mailbox use notify the other core on new message
 	MAILBOX_Init();
@@ -180,7 +184,7 @@ static uchar icc_proc_cmd_handler(uchar cmd)
 	switch(cmd)
 	{
 		case ICC_BROADCAST:
-			api_dsp_post();
+			icc_proc_post();
 			break;
 		case ICC_START_I2S_PROC:
 			audio_driver_init();

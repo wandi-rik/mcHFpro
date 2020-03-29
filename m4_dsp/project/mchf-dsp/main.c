@@ -466,7 +466,11 @@ int main(void)
 	// ICC driver init
 	icc_proc_hw_init();
 
+	// Background DSP processor init
+	ui_driver_init();
+
 main_loop:
 	icc_proc_task(NULL);
+	ui_driver_thread();
 	goto main_loop;
 }
