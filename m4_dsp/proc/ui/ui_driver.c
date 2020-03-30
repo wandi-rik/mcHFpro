@@ -750,6 +750,7 @@ uchar ou_buffer[256];
 void ui_driver_get_buffer(uchar *buffer)
 {
 	memcpy(buffer, ou_buffer, 256);
+	//printf("- copy -\r\n");
 }
 
 void api_dsp_post(q15_t *fft)
@@ -761,11 +762,13 @@ void api_dsp_post(q15_t *fft)
 	{
 		// Left part of screen
 		for(k = 0; k < 128;k++)
-			ou_buffer[k] = (uchar)*(fft + k + 128);
+			ou_buffer[k +   0] = (uchar)*(fft + k + 128);
 
 		// Right part of screen
 		for(k = 0; k < 128;k++)
 			ou_buffer[k + 128] = (uchar)*(fft + k + 0);
+
+		//printf("- load -\r\n");
 	}
 }
 
@@ -918,6 +921,7 @@ static void UiDriverReDrawSpectrumDisplay(void)
 	q15_t		mean1, mean2, mean3;
 	float32_t	sig;
 
+#if 1
 	//
 	// De-linearize data with dB/division
 	//
@@ -930,6 +934,7 @@ static void UiDriverReDrawSpectrumDisplay(void)
 		else
 			sd_FFT_DspData[i] = 1;							// not greater than 1 - assign it to a base value of 1 for sanity's sake
 	}
+#endif
 
 	//
 	arm_copy_q15((q15_t *)sd_FFT_DspData, (q15_t *)sd_FFT_TempData, FFT_IQ_BUFF_LEN1/2);

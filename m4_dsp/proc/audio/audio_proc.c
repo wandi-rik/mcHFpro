@@ -30,18 +30,6 @@
 // Encoders
 #include "ui_rotary.h"
 
-// SSB filters - now handled in ui_driver to allow I/Q phase adjustment
-//#include "filters/q_rx_filter.h"
-//#include "filters/i_rx_filter.h"
-//#include "filters/q_tx_filter.h"
-//#include "filters/i_tx_filter.h"
-
-// Audio filters
-//#include "filters/fir_10k.h"
-//#include "filters/fir_3_6k.h"
-//#include "filters/fir_2_3k.h"
-//#include "filters/fir_1_8k.h"
-//
 // IIR lattice ARMA filters with time-reversed elements
 //
 #include "filters/iir_300hz.h"
@@ -65,7 +53,7 @@ static void Audio_Init(void);
 //__IO int16_t 	tx_buffer[BUFF_LEN+1];	- moved to hw/audio_sai.c !
 //__IO int16_t	rx_buffer[BUFF_LEN+1];
 
-//! static int16_t	test_a[5000];	// grab a large chunk of RAM - for testing, and to prevent "memory leak" anomalies (kludgy work-around - problem to be solved!)
+//static int16_t	test_a[1000];	// grab a large chunk of RAM - for testing, and to prevent "memory leak" anomalies (kludgy work-around - problem to be solved!)
 //
 float32_t	lms1_nr_delay[LMS_NR_DELAYBUF_SIZE_MAX+16];
 //
@@ -95,17 +83,17 @@ float32_t	agc_delay	[AGC_DELAY_BUFSIZE+16];
 //
 //
 //static int16_t	test_c[5000];	// grab a large chunk of RAM - for testing, and to prevent "memory leak" anomalies (kludgy work-around - problem to be solved!)
-//! static int16_t	test_c[2500];	// grab a large chunk of RAM - for testing, and to prevent "memory leak" anomalies (kludgy work-around - problem to be solved!)
+//static int16_t	test_c[1000];	// grab a large chunk of RAM - for testing, and to prevent "memory leak" anomalies (kludgy work-around - problem to be solved!)
 //
 // Audio RX - Decimator
 static	arm_fir_decimate_instance_f32	DECIMATE_RX;
-__IO float32_t			decimState[FIR_RXAUDIO_BLOCK_SIZE + FIR_RXAUDIO_NUM_TAPS];
+float32_t			decimState[FIR_RXAUDIO_BLOCK_SIZE + FIR_RXAUDIO_NUM_TAPS];
 //
 //static int16_t	test_d[1000];	// grab a large chunk of RAM - for testing, and to prevent "memory leak" anomalies (kludgy work-around - problem to be solved!)
 //
 // Audio RX - Interpolator
 static	arm_fir_interpolate_instance_f32 INTERPOLATE_RX;
-__IO float32_t			interpState[FIR_RXAUDIO_BLOCK_SIZE + FIR_RXAUDIO_NUM_TAPS];
+float32_t			interpState[FIR_RXAUDIO_BLOCK_SIZE + FIR_RXAUDIO_NUM_TAPS];
 //
 //static int16_t	test_e[1000];	// grab a large chunk of RAM - for testing, and to prevent "memory leak" anomalies (kludgy work-around - problem to be solved!)
 //
@@ -147,7 +135,8 @@ __IO DialFrequency 				df;
 __IO	SpectrumDisplay			sd;
 
 // Audio driver publics
-__IO	AudioDriverState		ads;
+//__IO
+AudioDriverState		ads;
 
 // S meter public
 __IO	SMeter					sm;
@@ -642,7 +631,7 @@ static void Audio_Init(void)
 	//
 	// -------------------
 	// Init RX audio filters
-//	audio_driver_set_rx_audio_filter();
+	audio_driver_set_rx_audio_filter();
 }
 //
 //
@@ -1059,7 +1048,7 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 	#endif
 
 	#ifdef DSP_MODE
-//!	audio_rx_freq_conv(size, 0);
+	audio_rx_freq_conv(size, 0);
 	#endif
 	//
 	// ------------------------
@@ -1101,15 +1090,10 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 		break;
 	}
 
-	//goto copy_out_buff;
-#if 0
-	//
 	// Do decimation down to lower rate for heavy-duty processing to reduce processor load
-	//
 	arm_fir_decimate_f32(&DECIMATE_RX, (float32_t *)ads.a_buffer, (float32_t *)ads.a_buffer, size/2);		// LPF built into decimation (Yes, you can decimate-in-place!)
-	//
+
 	// DSP Automatic Notch Filter using LMS (Least Mean Squared) algorithm
-	//
 	if((!ads.af_dissabled) && (ts.dsp_active & 4) && (ts.dmod_mode != DEMOD_CW) && (!ts.dsp_inhibit))	{	// No notch in CW mode
 		arm_copy_f32((float32_t *)ads.a_buffer, (float32_t *)&lms2_nr_delay[lms2_inbuf], psize/2);	// put new data into the delay buffer
 		//
@@ -1120,10 +1104,9 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 		lms2_inbuf %= ts.dsp_notch_delaybuf_len;
 		lms2_outbuf %= ts.dsp_notch_delaybuf_len;
 	}
-	//
+
 	// DSP noise reduction using LMS (Least Mean Squared) algorithm
 	// This is the pre-filter/AGC instance
-	//
 	if((ts.dsp_active & 1) && (!(ts.dsp_active & 2)) && (!ads.af_dissabled) && (!ts.dsp_inhibit))	{	// Do this if enabled and "Pre-AGC" DSP NR enabled
 		arm_copy_f32((float32_t *)ads.a_buffer, (float32_t *)&lms1_nr_delay[lms1_inbuf], psize/2);	// put new data into the delay buffer
 		//
@@ -1147,23 +1130,18 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 		lms1_inbuf %= ts.dsp_nr_delaybuf_len;
 		lms1_outbuf %= ts.dsp_nr_delaybuf_len;
 	}
-	//
-	// ------------------------
+
 	// Apply audio filter
-//!	if((!ads.af_dissabled)	&& (ts.filter_id != AUDIO_WIDE))	{	// we don't need to filter if running in "wide" mode (Hilbert/FIR does the job!)
-//!		// IIR ARMA-type lattice filter
-//!		arm_iir_lattice_f32(&IIR_PreFilter, (float32_t *)ads.a_buffer, (float32_t *)ads.a_buffer, psize/2);
-//!	}
+	if((!ads.af_dissabled)	&& (ts.filter_id != AUDIO_WIDE))	{	// we don't need to filter if running in "wide" mode (Hilbert/FIR does the job!)
+		// IIR ARMA-type lattice filter
+		arm_iir_lattice_f32(&IIR_PreFilter, (float32_t *)ads.a_buffer, (float32_t *)ads.a_buffer, psize/2);
+	}
 
-	//
 	// now process the samples and perform the receiver AGC function
-	//
-//!	audio_rx_agc_processor(psize);
+	audio_rx_agc_processor(psize);
 
-	//
 	// DSP noise reduction using LMS (Least Mean Squared) algorithm
 	// This is the post-filter, post-AGC instance
-	//
 	if((ts.dsp_active & 1) && (ts.dsp_active & 2) && (!ads.af_dissabled) && (!ts.dsp_inhibit))	{	// Do DSP NR if enabled and if post-DSP NR enabled
 		arm_copy_f32((float32_t *)ads.a_buffer, (float32_t *)&lms1_nr_delay[lms1_inbuf], psize/2);	// put new data into the delay buffer
 		//
@@ -1189,28 +1167,22 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 		lms1_inbuf %= ts.dsp_nr_delaybuf_len;
 		lms1_outbuf %= ts.dsp_nr_delaybuf_len;
 	}
-	//
+
 	// Calculate scaling based on decimation rate since this affects the audio gain
-	//
-//!	if(ts.filter_id != AUDIO_WIDE)
-//!		post_agc_gain_scaling = POST_AGC_GAIN_SCALING_DECIMATE_4;
-//!	else
-//!		post_agc_gain_scaling = POST_AGC_GAIN_SCALING_DECIMATE_2;
-	//
+	if(ts.filter_id != AUDIO_WIDE)
+		post_agc_gain_scaling = POST_AGC_GAIN_SCALING_DECIMATE_4;
+	else
+		post_agc_gain_scaling = POST_AGC_GAIN_SCALING_DECIMATE_2;
+
 	// Scale audio to according to AGC setting, demodulation mode and required fixed levels
-	//
 	if(ts.dmod_mode == DEMOD_AM)
 		arm_scale_f32((float32_t *)ads.a_buffer,(float32_t)(ads.post_agc_gain * post_agc_gain_scaling * (AM_SCALING * AM_AUDIO_SCALING)), (float32_t *)ads.a_buffer, psize/2);	// apply fixed amount of audio gain scaling to make the audio levels correct along with AGC
 	else
 		arm_scale_f32((float32_t *)ads.a_buffer,(float32_t)(ads.post_agc_gain * post_agc_gain_scaling), (float32_t *)ads.a_buffer, psize/2);	// apply fixed amount of audio gain scaling to make the audio levels correct along with AGC
-	//
-	// resample back to original sample rate while doing low-pass filtering to minimize aliasing effects
-	//
-	arm_fir_interpolate_f32(&INTERPOLATE_RX, (float32_t *)ads.a_buffer,(float32_t *) ads.b_buffer, psize/2);
-	//
-#endif
 
-#if 0
+	// resample back to original sample rate while doing low-pass filtering to minimize aliasing effects
+	arm_fir_interpolate_f32(&INTERPOLATE_RX, (float32_t *)ads.a_buffer,(float32_t *) ads.b_buffer, psize/2);
+
 	if(ts.rx_muting)	{
 		arm_fill_f32(0, (float32_t *)ads.a_buffer, size/2);
 		arm_fill_f32(0, (float32_t *)ads.b_buffer, size/2);
@@ -1225,12 +1197,8 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 		if(ts.audio_gain > 16)	// is volume control above highest hardware setting?
 			arm_scale_f32((float32_t *)ads.b_buffer, (float32_t)ts.audio_gain_active, (float32_t *)ads.b_buffer, size/2);	// yes, do software volume control adjust on "b" buffer
 	}
-#endif
 
-#if 0
-	//
 	// Transfer processed audio to DMA buffer
-	//
 	i = 0;			// init sample transfer counter
 	while(i < size/2)	{						// transfer to DMA buffer and do conversion to INT - Unrolled to speed it up
 		*dst++ = (int16_t)ads.b_buffer[i];		// Speaker channel (variable level)
@@ -1245,10 +1213,10 @@ static void audio_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 		*dst++ = (int16_t)ads.b_buffer[i];		// Speaker channel (variable level)
 		*dst++ = (int16_t)ads.a_buffer[i++];		// LINE OUT (constant level)
 	}
-#endif
 
-	for(int i = 0; i < size; i++)
-		dst_a[i] = src_a[i];
+	// Test only - monitor for DSP crash
+	//for(int i = 0; i < size; i++)
+	//	dst_a[i] = src_a[i];
 }
 
 //
@@ -1276,7 +1244,6 @@ static void audio_dv_rx_processor(int16_t *src, int16_t *dst, int16_t size)
 	static ulong		agc_delay_inbuf = 0, agc_delay_outbuf = 0;
 	//
 	float				post_agc_gain_scaling;
-
 
 	psize = size/(int16_t)ads.decimation_rate;	// rescale sample size inside decimated portion based on decimation factor:  This must be set to 6 for DV1300 mode!
 	//

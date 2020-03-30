@@ -17,6 +17,7 @@
 #include <math.h>
 #include "mchf_types.h"
 #include "mchf_pro_board.h"
+#include "version.h"
 
 #ifdef CONTEXT_DRIVER_UI
 
@@ -231,9 +232,9 @@ static void ui_controls_draw_needle(void * p)
 		GUI_DispStringAt(buf,S_METER_X + 312,S_METER_Y + 5);
 		#endif
 
-		#if 0
+		#if 1
 		// --------------------------------------------------------------------------------------------------
-		GUI_SetAlpha(168);
+		//GUI_SetAlpha(168);
 		// PEAK/AVER indicator
 		GUI_SetColor(GUI_DARKBLUE);
 		GUI_SetFont(&GUI_Font8x16_1);
@@ -244,7 +245,7 @@ static void ui_controls_draw_needle(void * p)
 		// Debug print CPU firmware version
 		//GUI_SetColor(GUI_BLUE);
 		//GUI_SetFont(&GUI_Font8x16_1);
-		sprintf(buf,"UI:%d.%d.%d.%d",MCHFX_VER_MAJOR,MCHFX_VER_MINOR,MCHFX_VER_RELEASE,MCHFX_VER_BUILD);
+		sprintf(buf,"UI:%d.%d.%d.%d",MCHF_R_VER_MAJOR, MCHF_R_VER_MINOR, MCHF_R_VER_RELEASE, MCHF_R_VER_BUILD);
 		GUI_DispStringAt(buf,S_METER_X + 5,	S_METER_Y + bmscale.YSize - 16);
 		// Debug print DSP firmware version
 		if(tsu.dsp_alive)
@@ -260,7 +261,7 @@ static void ui_controls_draw_needle(void * p)
 		sprintf(buf,"R=%d",sm.repaints);
 		GUI_DispStringAt(buf,S_METER_X + 5,S_METER_Y + 5);
 		// -------------
-		GUI_SetAlpha(0);
+		//GUI_SetAlpha(0);
 		// --------------------------------------------------------------------------------------------------
 		#endif
 	}

@@ -4,16 +4,8 @@
 
 **  File        : LinkerScript.ld
 **
-**  Abstract    : Linker script for STM32F437VIT7 Device with
-**                2048KByte FLASH, 256KByte RAM
-**
-**                Set heap size, stack size and stack location according
-**                to application requirements.
-**
-**                Set memory bank area and size if external memory is used.
-**
-**  Target      : STMicroelectronics STM32
-**
+**  Abstract    : Linker script for STM32H747 M4
+**                executing in 288KByte SRAM on D2 domains
 **
 **  Distribution: The file is distributed as is, without any warranty
 **                of any kind.
@@ -33,18 +25,16 @@
 ENTRY(Reset_Handler)
 
 /* Highest address of the user mode stack */
-/*_estack = 0x20030000;     x437, end of RAM */
-/*_estack = 0x20020000;      x407, end of RAM */
-_estack = 0x10048000;     /* x747, end of RAM */
+_estack = 0x10048000;     		/* end of RAM */
 /* Generate a link error if heap and stack don't fit into RAM */
-_Min_Heap_Size = 0xA000;      /* required amount of heap  */
-_Min_Stack_Size = 0x4000; /* required amount of stack */
+_Min_Heap_Size = 0x4000;      	/* required amount of heap  */
+_Min_Stack_Size = 0x3000; 		/* required amount of stack */
 
 /* Specify the memory areas */
 MEMORY
 {
-RAM_EXEC (rx)   : ORIGIN = 0x10000000, LENGTH = 196K	
-RAM (xrw)		: ORIGIN = 0x10030000, LENGTH = 92K 			
+RAM_EXEC (rx)   		: ORIGIN = 0x10000000, LENGTH = 224K	
+RAM (xrw)				: ORIGIN = 0x10038000, LENGTH = 64K 			
 OPEN_AMP_RSC_TAB (xrw)	: ORIGIN = 0x38000000, LENGTH = 1K
 OPEN_AMP_SHMEM (xrw)	: ORIGIN = 0x38000400, LENGTH = 63K
 }

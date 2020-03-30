@@ -1270,7 +1270,10 @@ void icc_proc_blink_remote_led(void)
 
 	// EVAL only ???
 	if(icc_proc_cmd_xchange(ICC_TOGGLE_LED) != 0)
+	{
 		tsu.dsp_alive = 0;								// Ack to UI lost comm to DSP
+		printf("dsp not alive!\r\n");
+	}
 	else
 		tsu.dsp_blinker = !tsu.dsp_blinker;				// Fill blinker
 

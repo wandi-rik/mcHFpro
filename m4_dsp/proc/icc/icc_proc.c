@@ -16,6 +16,7 @@
 ************************************************************************************/
 
 #include "mchf_board.h"
+#include "version.h"
 
 #include "stm32h7xx_hal.h"
 #include "stm32h747i_discovery.h"
@@ -31,6 +32,7 @@
 #include "audio_proc.h"
 #include "audio_sai.h"		// temp to dump samples
 #include "ui_driver.h"
+#include "ui_rotary.h"
 
 #define RPMSG_SERVICE_NAME              "stm32_icc_service"
 
@@ -40,6 +42,12 @@ static volatile unsigned int 			received_data;
 static struct rpmsg_endpoint 			rp_endpoint;
 
 HSEM_TypeDef * HSEM_DEBUG= HSEM;
+
+// ------------------------------------------------
+// Frequency public
+extern __IO DialFrequency 		df;
+// Transceiver state public structure
+extern __IO TransceiverState 	ts;
 
 unsigned long ui_blink = 0;
 
@@ -81,10 +89,10 @@ void icc_proc_post(void)
 	//icc_out_buffer[0x03] = as.pub_v;					// seq cnt
 
 	// DSP Version
-	//icc_out_buffer[0x04] = TRX4M_VER_MAJOR;
-	//icc_out_buffer[0x05] = TRX4M_VER_MINOR;
-	//icc_out_buffer[0x06] = TRX4M_VER_RELEASE;
-	//icc_out_buffer[0x07] = TRX4M_VER_BUILD;
+	icc_out_buffer[0x04] = MCHF_D_VER_MAJOR;
+	icc_out_buffer[0x05] = MCHF_D_VER_MINOR;
+	icc_out_buffer[0x06] = MCHF_D_VER_RELEASE;
+	icc_out_buffer[0x07] = MCHF_D_VER_BUILD;
 
 	// Frequency
 	icc_out_buffer[0x08] = tune_loc >> 24;
@@ -169,6 +177,12 @@ void icc_proc_hw_init(void)
 		printf("err 2\r\n");
 		return;
 	}
+
+	// Init values
+	ts.api_band 		= 0;
+	df.tune_upd 		= 0;
+	ts.api_iamb_type 	= 0;	// nothing
+
 }
 
 //*----------------------------------------------------------------------------
