@@ -81,7 +81,7 @@ void audio_sai_hw_init(void)
 	printf("sai init...\r\n");
 
 	AudioOutInit.Volume = 80;
-	AudioInInit.Volume 	= 10;
+	AudioInInit.Volume 	= 40;
 
 	if(BSP_AUDIO_INOUT_Init(0, &AudioOutInit, &AudioInInit) != BSP_ERROR_NONE)
 	{
