@@ -92,6 +92,8 @@
 #include <math.h>
 //
 #include "cpu_utils.h"
+
+#include "mchf_icc_def.h"
 //
 // What board are we running on ?
 //

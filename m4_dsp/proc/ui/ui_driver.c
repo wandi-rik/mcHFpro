@@ -791,10 +791,10 @@ static void UiDriverReDrawSpectrumDisplay(void)
 //!	if((ts.txrx_mode != TRX_MODE_RX) || (ts.powering_down) || (ts.menu_mode) || (ts.mem_disp))
 //!		return;
 
-//!	if((ts.spectrum_scope_scheduler) || (!ts.scope_speed))	// is it time to update the scan, or is this scope to be disabled?
-//!		return;
-//!	else
-//!		ts.spectrum_scope_scheduler = (ts.scope_speed-1)*2;
+	if((ts.spectrum_scope_scheduler) || (!ts.scope_speed))	// is it time to update the scan, or is this scope to be disabled?
+		return;
+	else
+		ts.spectrum_scope_scheduler = (ts.scope_speed-1)*2;
 
 	// Nothing to do here otherwise, or if scope is to be held off while other parts of the display are to be updated or the LCD is being blanked
 //!	if((!sd.enabled) || (ts.hold_off_spectrum_scope > ts.sysclock) || (ts.lcd_blanking_flag))

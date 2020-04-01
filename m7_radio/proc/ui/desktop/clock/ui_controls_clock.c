@@ -33,7 +33,7 @@ RTC_DateTypeDef sdatestructureget;
 RTC_TimeTypeDef stimestructureget;
 
 extern RTC_HandleTypeDef RtcHandle;
-extern TaskHandle_t hIccTask;
+//extern TaskHandle_t hIccTask;
 
 uchar time_skip = 0;
 

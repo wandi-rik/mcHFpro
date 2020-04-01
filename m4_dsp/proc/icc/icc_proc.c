@@ -27,7 +27,7 @@
 #include <stdio.h>
 
 #include "icc_proc.h"
-#include "mchf_icc_def.h"
+//#include "mchf_icc_def.h"
 
 #include "audio_proc.h"
 #include "audio_sai.h"		// temp to dump samples
@@ -51,15 +51,20 @@ extern __IO TransceiverState 	ts;
 
 unsigned long ui_blink = 0;
 
-unsigned char icc_out_buffer[300];
+unsigned char icc_out_buffer[RPMSG_BUFFER_SIZE - 32];
+unsigned char icc_in_buffer [RPMSG_BUFFER_SIZE - 32];
 
 static int rpmsg_recv_callback(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src, void *priv)
 {
-	// Copy in data
 	received_data = *((unsigned int *) data);
+	if(len < sizeof(icc_in_buffer))
+	{
+		uchar *payload = (uchar *)(data + 4);
+		memcpy(icc_in_buffer, payload, (len - 4));
+	}
 
 	// Ack receive
-	message_received=1;
+	message_received = 1;
 
 	return 0;
 }
@@ -89,10 +94,10 @@ void icc_proc_post(void)
 	//icc_out_buffer[0x03] = as.pub_v;					// seq cnt
 
 	// DSP Version
-	icc_out_buffer[0x04] = MCHF_D_VER_MAJOR;
-	icc_out_buffer[0x05] = MCHF_D_VER_MINOR;
-	icc_out_buffer[0x06] = MCHF_D_VER_RELEASE;
-	icc_out_buffer[0x07] = MCHF_D_VER_BUILD;
+	//icc_out_buffer[0x04] = MCHF_D_VER_MAJOR;
+	//icc_out_buffer[0x05] = MCHF_D_VER_MINOR;
+	//icc_out_buffer[0x06] = MCHF_D_VER_RELEASE;
+	//icc_out_buffer[0x07] = MCHF_D_VER_BUILD;
 
 	// Frequency
 	icc_out_buffer[0x08] = tune_loc >> 24;
@@ -146,6 +151,15 @@ void icc_proc_post(void)
 #endif
 }
 
+void icc_proc_fw_version(void)
+{
+	// DSP Version
+	icc_out_buffer[0x00] = MCHF_D_VER_MAJOR;
+	icc_out_buffer[0x01] = MCHF_D_VER_MINOR;
+	icc_out_buffer[0x02] = MCHF_D_VER_RELEASE;
+	icc_out_buffer[0x03] = MCHF_D_VER_BUILD;
+}
+
 //*----------------------------------------------------------------------------
 //* Function Name       : icc_proc_hw_init
 //* Object              :
@@ -186,7 +200,7 @@ void icc_proc_hw_init(void)
 	ts.dmod_mode 		= DEMOD_LSB;
 	ts.audio_gain 		= 6;
 	ts.filter_id 		= 3;
-	df.nco_freq			= 0;
+	df.nco_freq			= -6000;
 }
 
 //*----------------------------------------------------------------------------
@@ -201,15 +215,33 @@ static uchar icc_proc_cmd_handler(uchar cmd)
 {
 	switch(cmd)
 	{
+		// Waterfall/spectrum FFT data to M7 core
 		case ICC_BROADCAST:
 			icc_proc_post();
 			break;
+
+		// Start SAI driver
 		case ICC_START_I2S_PROC:
 			audio_driver_init();
 			break;
+
+		// Blinking LED
 		case ICC_TOGGLE_LED:
 			BSP_LED_Toggle(LED_BLUE);
 			break;
+
+		// Return FW version
+		case ICC_GET_FW_VERSION:
+			icc_proc_fw_version();
+			break;
+
+		// Update local transceiver state
+		case ICC_SET_TRX_STATE:
+		{
+			printf("msg 4, payload %d\r\n",icc_in_buffer[6]);
+			break;
+		}
+
 		default:
 			printf("unknown msg %d\r\n",cmd);
 			return 0;
@@ -243,10 +275,10 @@ static void icc_proc_worker(void)
 	message = icc_proc_cmd_handler((uchar)received_data);
 
 	// Response to M7 core
-	status = OPENAMP_send(&rp_endpoint, icc_out_buffer, sizeof(icc_out_buffer));
+	status = OPENAMP_send(&rp_endpoint, icc_out_buffer, 300);
 	if (status < 0)
 	{
-		printf("err send msg: %d\r\n", status);
+		printf("err send msg: %d (cmd: %d)\r\n", status, message);
 	}
 }
 

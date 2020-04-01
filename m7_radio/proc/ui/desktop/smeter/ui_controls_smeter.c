@@ -18,6 +18,7 @@
 #include "mchf_types.h"
 #include "mchf_pro_board.h"
 #include "version.h"
+#include "mchf_icc_def.h"
 
 #ifdef CONTEXT_DRIVER_UI
 
@@ -33,6 +34,9 @@ extern GUI_CONST_STORAGE GUI_BITMAP bmscale;
 extern struct 		UI_SW	ui_sw;
 // Public radio state
 extern struct	TRANSCEIVER_STATE_UI	tsu;
+
+// ICC fast comm
+extern TaskHandle_t hIccTask;
 
 #if 0
 // -------------------------
@@ -250,6 +254,15 @@ static void ui_controls_draw_needle(void * p)
 		// Debug print DSP firmware version
 		if(tsu.dsp_alive)
 		{
+			#if 0
+			if((tsu.dsp_rev1 == 0) && (tsu.dsp_rev2 == 0) && (tsu.dsp_rev3 == 0) && (tsu.dsp_rev4 == 0))
+			{
+				printf("trying to get DSP revision...\r\n");
+
+				// Post msg to ICC task
+				xTaskNotify(hIccTask, ICC_GET_FW_VERSION, eSetValueWithOverwrite);
+			}
+			#endif
 			//GUI_SetColor(GUI_BLUE);
 			//GUI_SetFont(&GUI_Font8x16_1);
 			sprintf(buf,"DSP:%d.%d.%d.%d",tsu.dsp_rev1,tsu.dsp_rev2,tsu.dsp_rev3,tsu.dsp_rev4);

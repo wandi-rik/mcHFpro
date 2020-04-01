@@ -426,6 +426,7 @@ typedef struct ButtonMap
 
 #define POWER_BUTTON_HOLD_TIME		1000000
 
+#if 0
 #define TRX_MODE_RX					0
 #define TRX_MODE_TX					1
 
@@ -435,6 +436,7 @@ typedef struct ButtonMap
 #define DEMOD_AM					3
 #define DEMOD_DIGI					4
 #define DEMOD_MAX_MODE				4
+#endif
 
 #define RTC_OSC_FREQ				32768
 
@@ -443,6 +445,7 @@ typedef struct ButtonMap
 #define	TCXO_STOP					2		// Stop reading of temperature sensor
 #define	TCXO_TEMP_STATE_MAX			2		// Maximum setting for TCXO setting state
 
+#if 1
 // Transverter oscillator adds shift
 #define		TRANSVT_FREQ_A	 		42000000
 
@@ -502,7 +505,8 @@ typedef struct ButtonMap
 #define	BAND_FREQ_GEN				10000*KHZ_MULT		// 10000 kHz
 #define	BAND_SIZE_GEN				1*KHZ_MULT			// Dummy variable
 //
-//
+#endif
+
 //	Frequency limits for filters, in Hz, for bandpass filter selection - MODIFY AT YOUR OWN RISK!
 //
 #define	BAND_FILTER_UPPER_80		4250000				// Upper limit for 80 meter filter
@@ -1070,6 +1074,9 @@ typedef struct FilterCoeffs
 	ulong	tx_i_block_size;
 } FilterCoeffs;
 
+// Shared between projects !
+#include "mchf_icc_def.h"
+#if 0
 // Transceiver state public structure
 typedef struct TransceiverState
 {
@@ -1366,7 +1373,7 @@ typedef struct TransceiverState
 	bool	mem_disp;					// when TRUE, memory display is enabled
 
 } TransceiverState;
-//
+#endif
 
 #define	POWERDOWN_DELAY_COUNT	30	// Delay in main service loop for the "last second" before power-down - to allow EEPROM write to complete
 
