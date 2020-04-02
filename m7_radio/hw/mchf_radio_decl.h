@@ -101,6 +101,7 @@ enum {
 #define	BAND_FREQ_GEN				10000*KHZ_MULT		// 10000 kHz
 #define	BAND_SIZE_GEN				1*KHZ_MULT			// Dummy variable
 
+#if 0
 enum	{
 	AUDIO_300HZ = 0,
 	AUDIO_500HZ,
@@ -109,6 +110,7 @@ enum	{
 	AUDIO_3P6KHZ,
 	AUDIO_WIDE
 };
+#endif
 
 // Virtual eeprom locations
 #define	EEP_BASE_ADDR				0x000

@@ -97,6 +97,117 @@
 #define	BAND_FREQ_GEN				10000*KHZ_MULT		// 10000 kHz
 #define	BAND_SIZE_GEN				1*KHZ_MULT			// Dummy variable
 
+//
+// Audio filter select enumeration
+//
+enum	{
+	AUDIO_300HZ = 0,
+	AUDIO_500HZ,
+	AUDIO_1P8KHZ,
+	AUDIO_2P3KHZ,
+	AUDIO_3P6KHZ,
+	AUDIO_WIDE
+};
+//
+//
+#define	AUDIO_DEFAULT_FILTER		AUDIO_2P3KHZ
+
+
+// use below to define the lowest-used filter number
+//
+#define AUDIO_MIN_FILTER			0
+//
+// use below to define the highest-used filter number-1
+//
+#define AUDIO_MAX_FILTER			6
+//
+//
+#define MIN_FILTER_SELECT_VAL		1		// Minimum value for selection of sub-filter
+//
+#define	MAX_300HZ_FILTER			9		// Highest number selection of 500 Hz filter
+#define	FILTER_300HZ_DEFAULT		6		// Center frequency of 750 Hz
+//
+#define	MAX_500HZ_FILTER			5
+#define	FILTER_500HZ_DEFAULT		3		// Center frequency of 750 Hz
+//
+#define	MAX_1K8_FILTER				5
+#define	FILTER_1K8_DEFAULT			3		// Center frequency of 1425 Hz
+//
+#define	MAX_2K3_FILTER				4
+#define	FILTER_2K3_DEFAULT			2		// Center frequency of 1412 Hz
+//
+#define	FILTER_3K6_DEFAULT			1		// 1 = Enabled
+#define	MAX_3K6_FILTER				1		// only on/off
+//
+enum	{
+	WIDE_FILTER_10K_AM = 0,
+	WIDE_FILTER_7K5_AM,
+	WIDE_FILTER_6K_AM,
+	WIDE_FILTER_5K_AM,
+	WIDE_FILTER_10K,
+	WIDE_FILTER_7K5,
+	WIDE_FILTER_6K,
+	WIDE_FILTER_5K,
+	WIDE_FILTER_MAX
+};
+//
+//
+#define	FILTER_WIDE_DEFAULT			WIDE_FILTER_10K		// 10k selected by default
+//
+//
+// Define visual widths of audio filters for on-screen indicator in Hz
+//
+#define	FILTER_300HZ_WIDTH			300
+#define	FILTER_500HZ_WIDTH			500
+#define	FILTER_1800HZ_WIDTH			1800
+#define FILTER_2300HZ_WIDTH			2300
+#define FILTER_3600HZ_WIDTH			3600
+#define	FILTER_5000HZ_WIDTH			5000
+#define	FILTER_6000HZ_WIDTH			6000
+#define FILTER_7500HZ_WIDTH			7500
+#define	FILTER_10000HZ_WIDTH		10000
+//
+#define	FILT300_1	500
+#define	FILT300_2	550
+#define	FILT300_3	600
+#define	FILT300_4	650
+#define	FILT300_5	700
+#define	FILT300_6	750
+#define	FILT300_7	800
+#define	FILT300_8	850
+#define	FILT300_9	900
+//
+#define	FILT500_1	550
+#define	FILT500_2	650
+#define	FILT500_3	750
+#define	FILT500_4	850
+#define	FILT500_5	950
+//
+#define	FILT1800_1	1125
+#define	FILT1800_2	1275
+#define	FILT1800_3	1427
+#define	FILT1800_4	1575
+#define	FILT1800_5	1725
+//
+#define	FILT2300_1	1262
+#define	FILT2300_2	1412
+#define	FILT2300_3	1562
+#define	FILT2300_4	1712
+//
+#define	FILT3600	1800
+//
+#define	FILT5000	2500
+//
+#define	FILT6000	3000
+//
+#define	FILT7500	3750
+//
+#define	FILT10000	5000
+//
+#define	FILT_DISPLAY_WIDTH	256		// width, in pixels, of the spectral display on the screen - this value used to calculate Hz/pixel for indicating width of filter
+//
+
+
 // Transceiver state public structure
 typedef struct TransceiverState
 {

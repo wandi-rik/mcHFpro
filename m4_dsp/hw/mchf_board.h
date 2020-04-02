@@ -532,6 +532,7 @@ typedef struct ButtonMap
 #define ENC_THREE_MODE_CW_SPEED		1
 #define ENC_THREE_MAX_MODE			2
 
+#if 0
 //
 // Audio filter select enumeration
 //
@@ -546,7 +547,7 @@ enum	{
 //
 //
 #define	AUDIO_DEFAULT_FILTER		AUDIO_2P3KHZ
-//
+
 // use below to define the lowest-used filter number
 //
 #define AUDIO_MIN_FILTER			0
@@ -640,6 +641,9 @@ enum	{
 //
 #define	FILT_DISPLAY_WIDTH	256		// width, in pixels, of the spectral display on the screen - this value used to calculate Hz/pixel for indicating width of filter
 //
+
+#endif
+
 //
 #define CW_MODE_IAM_B				0
 #define CW_MODE_IAM_A				1

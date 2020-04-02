@@ -536,7 +536,7 @@ void TransceiverStateInit(void)
 	ts.agc_mode			= 1;//AGC_DEFAULT;				// AGC setting
 	ts.agc_custom_decay	= 12;//AGC_CUSTOM_DEFAULT;		// Default setting for AGC custom setting - higher = slower
 
-#if 0
+
 
 	ts.filter_id		= AUDIO_DEFAULT_FILTER;		// startup audio filter
 	ts.filter_300Hz_select	= FILTER_300HZ_DEFAULT;	// Select 750 Hz center filter as default
@@ -545,14 +545,17 @@ void TransceiverStateInit(void)
 	ts.filter_2k3_select	= FILTER_2K3_DEFAULT;	// Select 1412 Hz center filter as default
 	ts.filter_3k6_select	= FILTER_3K6_DEFAULT;	// This is enabled by default
 	ts.filter_wide_select	= FILTER_WIDE_DEFAULT;	// This is enabled by default
+
+
 	//
-	ts.st_gain			= DEFAULT_SIDETONE_GAIN;	// Sidetone gain
-	ts.keyer_mode		= CW_MODE_IAM_B;			// CW keyer mode
-	ts.keyer_speed		= DEFAULT_KEYER_SPEED;		// CW keyer speed
-	ts.sidetone_freq	= CW_SIDETONE_FREQ_DEFAULT;	// CW sidetone and TX offset frequency
+	ts.st_gain			= 5;//DEFAULT_SIDETONE_GAIN;	// Sidetone gain
+	ts.keyer_mode		= 0;//CW_MODE_IAM_B;			// CW keyer mode
+	ts.keyer_speed		= 15;//DEFAULT_KEYER_SPEED;		// CW keyer speed
+	ts.sidetone_freq	= 750;//CW_SIDETONE_FREQ_DEFAULT;	// CW sidetone and TX offset frequency
 	ts.paddle_reverse	= 0;						// Paddle defaults to NOT reversed
-	ts.cw_rx_delay		= CW_RX_DELAY_DEFAULT;		// Delay of TX->RX turnaround
-	ts.unmute_delay_count		= SSB_RX_DELAY;		// Used to time TX->RX delay turnaround
+	ts.cw_rx_delay		= 8;//CW_RX_DELAY_DEFAULT;		// Delay of TX->RX turnaround
+	ts.unmute_delay_count		= 450;//SSB_RX_DELAY;		// Used to time TX->RX delay turnaround
+
 	//
 	ts.nb_setting		= 0;						// Noise Blanker setting
 	//
@@ -578,6 +581,7 @@ void TransceiverStateInit(void)
 	ts.audio_unmute		= 0;						// delayed un-mute not needed
 	ts.buffer_clear		= 0;						// used on return from TX to purge the audio buffers
 
+#if 0
 	ts.tx_audio_source	= TX_AUDIO_MIC;				// default source is microphone
 	ts.tx_mic_gain		= MIC_GAIN_DEFAULT;			// default microphone gain
 	ts.tx_mic_gain_mult	= ts.tx_mic_gain;			// actual operating value for microphone gain
