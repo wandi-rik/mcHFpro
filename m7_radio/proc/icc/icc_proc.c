@@ -733,7 +733,7 @@ void icc_proc_delayed_dsp_init(void)
 		// Upload transceiver state structure local copy
 		case 1:
 		{
-			uchar  *out_ptr = (uchar *)(ts.samp_rate);
+			uchar  *out_ptr = (uchar *)(&ts.samp_rate);	// struct base ptr from address of it's first element!
 			ushort out_size = sizeof(ts);
 
 			printf("to send:%d\r\n", out_size);

@@ -46,6 +46,8 @@ HSEM_TypeDef * HSEM_DEBUG= HSEM;
 // ------------------------------------------------
 // Frequency public
 extern __IO DialFrequency 		df;
+
+// ------------------------------------------------
 // Transceiver state public structure
 extern __IO TransceiverState 	ts;
 
@@ -53,6 +55,28 @@ unsigned long ui_blink = 0;
 
 unsigned char icc_out_buffer[RPMSG_BUFFER_SIZE - 32];
 unsigned char icc_in_buffer [RPMSG_BUFFER_SIZE - 32];
+
+void print_hex_array(uchar *pArray, ushort aSize)
+{
+	ulong i = 0,j = 0, c = 0;
+	char *buf;
+
+	buf = (char *)malloc(aSize * 10);
+	memset(buf, 0, (aSize * 10));
+
+	for (i = 0; i < aSize; i++)
+	{
+		j += sprintf( buf+j ,"%02x ", *pArray );
+		pArray++;
+		if (c++==15)
+		{
+			j += sprintf(buf+j ,"\r\n");
+			c = 0;
+		}
+	}
+	printf(buf);
+	free(buf);
+}
 
 static int rpmsg_recv_callback(struct rpmsg_endpoint *ept, void *data, size_t len, uint32_t src, void *priv)
 {
@@ -238,7 +262,9 @@ static uchar icc_proc_cmd_handler(uchar cmd)
 		// Update local transceiver state
 		case ICC_SET_TRX_STATE:
 		{
-			printf("msg 4, payload %d\r\n",icc_in_buffer[6]);
+			//printf("msg 4, payload %d\r\n",icc_in_buffer[6]);
+
+			print_hex_array(icc_in_buffer, 16);
 			break;
 		}
 

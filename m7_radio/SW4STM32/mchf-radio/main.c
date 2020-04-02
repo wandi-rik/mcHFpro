@@ -521,24 +521,23 @@ void TransceiverStateInit(void)
 	//ts.enc_two_mode 	= ENC_TWO_MODE_RF_GAIN;
 	//ts.enc_thr_mode		= ENC_THREE_MODE_RIT;
 
-	// ToDo: finish moving to common file...
-
-#if 0
-
 	ts.band		  		= BAND_MODE_20;				// band from eeprom
 	ts.band_change		= 0;						// used in muting audio during band change
 	ts.filter_band		= 0;						// used to indicate the bpf filter selection for power detector coefficient selection
 	ts.dmod_mode 		= DEMOD_USB;				// demodulator mode
-	ts.audio_gain		= DEFAULT_AUDIO_GAIN;		// Set initial volume
-	ts.audio_gain		= MAX_VOLUME_DEFAULT;		// Set max volume default
+	ts.audio_gain		= 0;//DEFAULT_AUDIO_GAIN;		// Set initial volume
+	ts.audio_gain		= 0;//MAX_VOLUME_DEFAULT;		// Set max volume default
 	ts.audio_gain_active = 1;						// this variable is used in the active RX audio processing function
 
-	ts.rf_gain			= DEFAULT_RF_GAIN;			//
-	ts.max_rf_gain		= MAX_RF_GAIN_DEFAULT;		// setting for maximum gain (e.g. minimum S-meter reading)
-	ts.rf_codec_gain	= DEFAULT_RF_CODEC_GAIN_VAL;	// Set default RF gain (0 = lowest, 8 = highest, 9 = "Auto")
+	ts.rf_gain			= 50;//DEFAULT_RF_GAIN;			//
+	ts.max_rf_gain		= 3;//MAX_RF_GAIN_DEFAULT;		// setting for maximum gain (e.g. minimum S-meter reading)
+	ts.rf_codec_gain	= 9;//DEFAULT_RF_CODEC_GAIN_VAL;	// Set default RF gain (0 = lowest, 8 = highest, 9 = "Auto")
 	ts.rit_value		= 0;						// RIT value
-	ts.agc_mode			= AGC_DEFAULT;				// AGC setting
-	ts.agc_custom_decay	= AGC_CUSTOM_DEFAULT;		// Default setting for AGC custom setting - higher = slower
+	ts.agc_mode			= 1;//AGC_DEFAULT;				// AGC setting
+	ts.agc_custom_decay	= 12;//AGC_CUSTOM_DEFAULT;		// Default setting for AGC custom setting - higher = slower
+
+#if 0
+
 	ts.filter_id		= AUDIO_DEFAULT_FILTER;		// startup audio filter
 	ts.filter_300Hz_select	= FILTER_300HZ_DEFAULT;	// Select 750 Hz center filter as default
 	ts.filter_500Hz_select	= FILTER_500HZ_DEFAULT;	// Select 750 Hz center filter as default
