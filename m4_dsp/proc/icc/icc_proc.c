@@ -253,11 +253,30 @@ static uchar icc_proc_cmd_handler(uchar cmd)
 		// Start all local processes
 		case ICC_START_I2S_PROC:
 		{
-			// Background DSP processor init
-			ui_driver_init();
+			// Init the RX Hilbert transform/filter prior to initializing the audio!
+			UiCalcRxPhaseAdj();
+
+			// Init TX Hilbert transform/filter
+			UiCalcTxPhaseAdj();
+
+			// Get filter value so we can init audio with it
+			UiDriverLoadFilterValue();
+
+			// Init values
+			ts.api_band 		= 0;
+			df.tune_upd 		= 0;
+			ts.api_iamb_type 	= 0;
+
+			ts.dmod_mode 		= DEMOD_LSB;
+			ts.audio_gain 		= 6;
+			ts.filter_id 		= 3;
+			df.nco_freq			= -6000;
 
 			// Start SAI driver
 			audio_driver_init();
+
+			// Background DSP processor init
+			ui_driver_init();
 
 			break;
 		}
@@ -285,26 +304,6 @@ static uchar icc_proc_cmd_handler(uchar cmd)
 			printf("chksum %d\r\n", x);
 
 			memcpy((uchar *)(&ts.samp_rate), icc_in_buffer, sizeof(struct TransceiverState));
-
-			// Init the RX Hilbert transform/filter prior to initializing the audio!
-			UiCalcRxPhaseAdj();
-
-			// Init TX Hilbert transform/filter
-			UiCalcTxPhaseAdj();
-
-			// Get filter value so we can init audio with it
-			UiDriverLoadFilterValue();
-
-			// Init values
-			ts.api_band 		= 0;
-			df.tune_upd 		= 0;
-			ts.api_iamb_type 	= 0;
-
-			ts.dmod_mode 		= DEMOD_LSB;
-			ts.audio_gain 		= 6;
-			ts.filter_id 		= 3;
-			df.nco_freq			= -6000;
-
 			break;
 		}
 

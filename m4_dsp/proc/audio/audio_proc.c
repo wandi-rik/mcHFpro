@@ -203,6 +203,9 @@ void audio_driver_init(void)
 	if(audio_init_done)
 		return;
 
+	// Init Soft DDS
+	softdds_setfreq(0.0,ts.samp_rate,0);
+
 	// CW module init
 	cw_gen_init();
 

@@ -647,7 +647,11 @@ uchar icc_proc_init_hw(void)
 
 	// The rpmsg service is initiate by the remote processor, on A7 new_service_cb
 	// callback is received on service creation. Wait for the callback
-	OPENAMP_Wait_EndPointready(&rp_endpoint);
+	if(OPENAMP_Wait_EndPointready(&rp_endpoint) != 0)
+	{
+		// Yeah, it is a critical error ;(
+		NVIC_SystemReset();
+	}
 
 	// Callback activated ?
 	if(service_created == 0)
@@ -752,6 +756,22 @@ void icc_proc_delayed_dsp_init(void)
 		case 2:
 		{
 			icc_proc_cmd_xchange(ICC_START_I2S_PROC, NULL, 0);
+			break;
+		}
+
+		case 3:
+		{
+#if 0
+			// Init values
+			ts.api_band 		= 0;
+			df.tune_upd 		= 0;
+			ts.api_iamb_type 	= 0;
+
+			ts.dmod_mode 		= DEMOD_LSB;
+			ts.audio_gain 		= 6;
+			ts.filter_id 		= 3;
+			df.nco_freq			= -6000;
+#endif
 			break;
 		}
 

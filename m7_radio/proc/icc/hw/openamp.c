@@ -165,10 +165,20 @@ void OPENAMP_check_for_message(void)
   MAILBOX_Poll(rvdev.vdev);
 }
 
-void OPENAMP_Wait_EndPointready(struct rpmsg_endpoint *rp_ept)
+int OPENAMP_Wait_EndPointready(struct rpmsg_endpoint *rp_ept)
 {
+	int i = 0xFFFFFF;
+
   while(!is_rpmsg_ept_ready(rp_ept))
-  MAILBOX_Poll(rvdev.vdev);
+  {
+	  MAILBOX_Poll(rvdev.vdev);
+
+	  i--;
+	  if(i == 0)
+		  return 1;
+  }
+
+  return 0;
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

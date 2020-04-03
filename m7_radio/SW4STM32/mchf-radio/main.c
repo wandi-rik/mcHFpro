@@ -703,7 +703,7 @@ void TransceiverStateInit(void)
 //!	ts.waterfall_offset = WATERFALL_OFFSET_DEFAULT;		// Offset for waterfall display (brightness)
 //!	ts.waterfall_contrast = WATERFALL_CONTRAST_DEFAULT;	// contrast setting for waterfall display
 	ts.spectrum_scope_scheduler = 0;		// timer for scheduling the next update of the spectrum scope update
-//!	ts.spectrum_scope_nosig_adjust = SPECTRUM_SCOPE_NOSIG_ADJUST_DEFAULT;	// Adjustment for no signal adjustment conditions for spectrum scope
+	ts.spectrum_scope_nosig_adjust = 20;	//SPECTRUM_SCOPE_NOSIG_ADJUST_DEFAULT;	// Adjustment for no signal adjustment conditions for spectrum scope
 //!	ts.waterfall_nosig_adjust = WATERFALL_NOSIG_ADJUST_DEFAULT;		// Adjustment for no signal adjustment conditions for waterfall
 	ts.waterfall_size	= 0;//WATERFALL_SIZE_DEFAULT;		// adjustment for waterfall size
 	ts.fft_window_type = FFT_WINDOW_DEFAULT;			// FFT Windowing type
