@@ -658,8 +658,8 @@ uchar icc_proc_init_hw(void)
 
 	//printf("send first message...\r\n");
 
-	// Start I2S process
-	if(icc_proc_cmd_xchange(ICC_START_I2S_PROC, NULL, 0))
+	// Start I2S process - dummy call to set comms
+	if(icc_proc_cmd_xchange(ICC_START_ICC_INIT, NULL, 0))
 	{
 		printf("error first cmd!\r\n");
 		return 3;
@@ -738,7 +738,20 @@ void icc_proc_delayed_dsp_init(void)
 
 			printf("to send:%d\r\n", out_size);
 
+			ulong i, x = 0;
+
+			for(i = 0; i < 432; i++)
+				x += *(out_ptr + i);
+
+			printf("chksum %d\r\n", x);
+
 			icc_proc_cmd_xchange(ICC_SET_TRX_STATE, out_ptr, out_size);
+			break;
+		}
+
+		case 2:
+		{
+			icc_proc_cmd_xchange(ICC_START_I2S_PROC, NULL, 0);
 			break;
 		}
 

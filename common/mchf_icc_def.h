@@ -19,12 +19,15 @@
 #define __MCHF_ICC_DEF_H
 
 // -------------------------------------------------------------------
-
+//
+// ICC protocol definitions
+//
 #define ICC_BROADCAST					0
-#define ICC_START_I2S_PROC				1
-#define ICC_TOGGLE_LED					2
-#define ICC_GET_FW_VERSION				3
-#define ICC_SET_TRX_STATE				4
+#define ICC_START_ICC_INIT				1
+#define ICC_START_I2S_PROC				2
+#define ICC_TOGGLE_LED					3
+#define ICC_GET_FW_VERSION				4
+#define ICC_SET_TRX_STATE				5
 
 // -------------------------------------------------------------------
 
@@ -206,6 +209,61 @@ enum	{
 //
 #define	FILT_DISPLAY_WIDTH	256		// width, in pixels, of the spectral display on the screen - this value used to calculate Hz/pixel for indicating width of filter
 //
+
+// PA power level setting enumeration
+enum {
+	PA_LEVEL_FULL = 0,
+	PA_LEVEL_5W,
+	PA_LEVEL_2W,
+	PA_LEVEL_1W,
+	PA_LEVEL_0_5W,
+	PA_LEVEL_MAX_ENTRY
+};
+//
+#define	PA_LEVEL_DEFAULT	PA_LEVEL_2W		// Default power level
+
+// Settings for dB/division for spectrum display
+//
+enum	{
+	DB_DIV_DEFAULT = 0,
+	DB_DIV_5,
+	DB_DIV_7,
+	DB_DIV_10,
+	DB_DIV_15,
+	DB_DIV_20,
+	S_1_DIV,
+	S_2_DIV,
+	S_3_DIV
+};
+//
+#define	DB_DIV_ADJUST_MIN	DB_DIV_DEFAULT
+#define	DB_DIV_ADJUST_MAX	S_3_DIV
+#define	DB_DIV_ADJUST_DEFAULT	DB_DIV_10
+//
+// scaling factors for the various dB/division settings
+//
+#define	DB_SCALING_5	63.2456		// 5dB/division scaling
+#define	DB_SCALING_7	42.1637		// 7.5dB/division scaling
+#define	DB_SCALING_10	31.6228		// 10dB/division scaling
+#define	DB_SCALING_15	21.0819		// 15dB/division scaling
+#define	DB_SCALING_20	15.8114		// 20dB/division scaling
+#define	DB_SCALING_S1	52.7046		// 1 S unit (6 dB)/division scaling
+#define DB_SCALING_S2	26.3523		// 2 S unit (12 dB)/division scaling
+#define	DB_SCALING_S3	17.5682		// 3 S unit (18 dB)/division scaling
+
+enum	{
+	FFT_WINDOW_RECTANGULAR=0,
+	FFT_WINDOW_COSINE,
+	FFT_WINDOW_BARTLETT,
+	FFT_WINDOW_WELCH,
+	FFT_WINDOW_HANN,
+	FFT_WINDOW_HAMMING,
+	FFT_WINDOW_BLACKMAN,
+	FFT_WINDOW_NUTTALL,
+	FFT_WINDOW_MAX
+};
+//
+#define	FFT_WINDOW_DEFAULT	FFT_WINDOW_BLACKMAN
 
 
 // Transceiver state public structure

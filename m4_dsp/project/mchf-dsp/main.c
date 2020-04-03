@@ -20,22 +20,12 @@
 
 #include "icc_proc.h"
 
-//#include <stdio.h>
-
 // Audio Driver
 #include "audio_proc.h"
-//#include "cw_gen.h"
 #include "stm32h747i_discovery_audio.h"
 
 // UI Driver
 #include "ui_driver.h"
-//#include "ui_rotary.h"
-//#include "ui_lcd_hy28.h"
-
-// Keyboard Driver
-//#include "keyb_driver.h"
-
-//#include "api_dsp.h"
 
 // Misc
 #include "softdds.h"
@@ -45,8 +35,7 @@
 // Transceiver state public structure
 __IO TransceiverState ts;
 
-//extern void printf_init(unsigned char is_shared);
-
+#if 0
 //*----------------------------------------------------------------------------
 //* Function Name       : TransceiverStateInit
 //* Object              :
@@ -252,6 +241,7 @@ void TransceiverStateInit(void)
 	ts.vfo_mem_flag = 0;					// when TRUE, memory mode is enabled
 	ts.mem_disp = 0;						// when TRUE, memory display is enabled
 }
+#endif
 
 //*----------------------------------------------------------------------------
 //* Function Name       : CriticalError
@@ -400,12 +390,13 @@ void HSEM2_IRQHandler(void)
 //*----------------------------------------------------------------------------
 void misc_init(void)
 {
-	// Set default transceiver state
-	TransceiverStateInit();
+	// Set default transceiver state - moved to M7 core
+	//--TransceiverStateInit();
 
 	// Init Soft DDS
 	softdds_setfreq(0.0,ts.samp_rate,0);
 
+	#if 0 //- moved to ICC process
 	// Init the RX Hilbert transform/filter prior to initializing the audio!
 	UiCalcRxPhaseAdj();
 
@@ -414,6 +405,7 @@ void misc_init(void)
 
 	// Get filter value so we can init audio with it
 	UiDriverLoadFilterValue();
+	#endif
 }
 
 //*----------------------------------------------------------------------------
@@ -436,7 +428,7 @@ int main(void)
     HAL_HSEM_ActivateNotification(__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_0));
 
 	// Domain D2 goes to STOP mode (Cortex-M4 in deep-sleep) waiting for Cortex-M7 to
-	// perform system initialization (system clock config, external memory configuration.. )
+	// perform system initialisation (system clock config, external memory configuration.. )
     HAL_PWREx_ClearPendingEvent();
     HAL_PWREx_EnterSTOPMode(PWR_MAINREGULATOR_ON, PWR_STOPENTRY_WFE, PWR_D2_DOMAIN);
 
@@ -465,9 +457,6 @@ int main(void)
 
 	// ICC driver init
 	icc_proc_hw_init();
-
-	// Background DSP processor init
-	ui_driver_init();
 
 main_loop:
 	icc_proc_task(NULL);

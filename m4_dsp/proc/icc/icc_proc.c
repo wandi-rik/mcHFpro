@@ -216,6 +216,7 @@ void icc_proc_hw_init(void)
 		return;
 	}
 
+#if 0
 	// Init values
 	ts.api_band 		= 0;
 	df.tune_upd 		= 0;
@@ -225,6 +226,7 @@ void icc_proc_hw_init(void)
 	ts.audio_gain 		= 6;
 	ts.filter_id 		= 3;
 	df.nco_freq			= -6000;
+#endif
 }
 
 //*----------------------------------------------------------------------------
@@ -244,10 +246,21 @@ static uchar icc_proc_cmd_handler(uchar cmd)
 			icc_proc_post();
 			break;
 
-		// Start SAI driver
-		case ICC_START_I2S_PROC:
-			audio_driver_init();
+		// Nothing, just init
+		case ICC_START_ICC_INIT:
 			break;
+
+		// Start all local processes
+		case ICC_START_I2S_PROC:
+		{
+			// Background DSP processor init
+			ui_driver_init();
+
+			// Start SAI driver
+			audio_driver_init();
+
+			break;
+		}
 
 		// Blinking LED
 		case ICC_TOGGLE_LED:
@@ -262,9 +275,36 @@ static uchar icc_proc_cmd_handler(uchar cmd)
 		// Update local transceiver state
 		case ICC_SET_TRX_STATE:
 		{
-			//printf("msg 4, payload %d\r\n",icc_in_buffer[6]);
+			//print_hex_array(icc_in_buffer, 16);
 
-			print_hex_array(icc_in_buffer, 16);
+			ulong i, x = 0;
+
+			for(i = 0; i < 432; i++)
+				x += icc_in_buffer[i];
+
+			printf("chksum %d\r\n", x);
+
+			memcpy((uchar *)(&ts.samp_rate), icc_in_buffer, sizeof(struct TransceiverState));
+
+			// Init the RX Hilbert transform/filter prior to initializing the audio!
+			UiCalcRxPhaseAdj();
+
+			// Init TX Hilbert transform/filter
+			UiCalcTxPhaseAdj();
+
+			// Get filter value so we can init audio with it
+			UiDriverLoadFilterValue();
+
+			// Init values
+			ts.api_band 		= 0;
+			df.tune_upd 		= 0;
+			ts.api_iamb_type 	= 0;
+
+			ts.dmod_mode 		= DEMOD_LSB;
+			ts.audio_gain 		= 6;
+			ts.filter_id 		= 3;
+			df.nco_freq			= -6000;
+
 			break;
 		}
 

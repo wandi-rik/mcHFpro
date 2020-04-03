@@ -147,6 +147,8 @@ typedef struct KeypadState
 #define SPECTRUM_SCOPE_SPI_HOLDOFF_TIME_TUNE	25	// time, in 100's of second to inhibit spectrum scope update after adjusting tuning while in SPI mode
 //
 #define	NUMBER_WATERFALL_COLOURS			64		// number of colors in the waterfall table
+
+#if 0
 //
 // Settings for dB/division for spectrum display
 //
@@ -176,6 +178,9 @@ enum	{
 #define	DB_SCALING_S1	52.7046		// 1 S unit (6 dB)/division scaling
 #define DB_SCALING_S2	26.3523		// 2 S unit (12 dB)/division scaling
 #define	DB_SCALING_S3	17.5682		// 3 S unit (18 dB)/division scaling
+
+#endif
+
 //
 // Enumeration to select which waterfall palette to use
 //
@@ -230,6 +235,8 @@ enum	{
 	WATERFALL_MAX
 };
 //
+
+#if 0
 enum	{
 	FFT_WINDOW_RECTANGULAR=0,
 	FFT_WINDOW_COSINE,
@@ -243,6 +250,9 @@ enum	{
 };
 //
 #define	FFT_WINDOW_DEFAULT	FFT_WINDOW_BLACKMAN
+
+#endif
+
 //
 #define	WATERFALL_SIZE_DEFAULT	WATERFALL_NORMAL
 #define	WFALL_MEDIUM_ADDITIONAL	12					// additional vertical height in pixels of "medium" waterfall

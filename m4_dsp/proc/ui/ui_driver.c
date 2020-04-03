@@ -1002,6 +1002,9 @@ static void UiDriverReDrawSpectrumDisplay(void)
 //*----------------------------------------------------------------------------
 void ui_driver_thread(void)
 {
+	if(drv_init == 0)
+		return;
+
 #if 0
 	if(ts.misc_flags1 & 128)	// is waterfall mode enabled?
 	{

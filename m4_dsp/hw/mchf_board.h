@@ -650,6 +650,7 @@ enum	{
 #define CW_MODE_STRAIGHT			2
 #define CW_MAX_MODE					3
 
+#if 0
 // PA power level setting enumeration
 enum {
 	PA_LEVEL_FULL = 0,
@@ -661,6 +662,7 @@ enum {
 };
 //
 #define	PA_LEVEL_DEFAULT	PA_LEVEL_2W		// Default power level
+#endif
 
 #define	US_DELAY					15  // 15 gives 1 uS delay in loop without optimization(O0)
 

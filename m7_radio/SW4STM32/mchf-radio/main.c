@@ -581,19 +581,18 @@ void TransceiverStateInit(void)
 	ts.audio_unmute		= 0;						// delayed un-mute not needed
 	ts.buffer_clear		= 0;						// used on return from TX to purge the audio buffers
 
-#if 0
-	ts.tx_audio_source	= TX_AUDIO_MIC;				// default source is microphone
-	ts.tx_mic_gain		= MIC_GAIN_DEFAULT;			// default microphone gain
+	ts.tx_audio_source	= 0;//TX_AUDIO_MIC;				// default source is microphone
+	ts.tx_mic_gain		= 15;//MIC_GAIN_DEFAULT;			// default microphone gain
 	ts.tx_mic_gain_mult	= ts.tx_mic_gain;			// actual operating value for microphone gain
 	ts.mic_boost		= 0;
-	ts.tx_line_gain		= LINE_GAIN_DEFAULT;		// default line gain
+	ts.tx_line_gain		= 12;//LINE_GAIN_DEFAULT;		// default line gain
 
 	ts.tune				= 0;						// reset tuning flag
 
 	ts.tx_power_factor	= 0.50;						// TX power factor
 
-	ts.pa_bias			= DEFAULT_PA_BIAS;			// Use lowest possible voltage as default
-	ts.pa_cw_bias		= DEFAULT_PA_BIAS;			// Use lowest possible voltage as default (nonzero sets separate bias for CW mode)
+	ts.pa_bias			= 0;//DEFAULT_PA_BIAS;			// Use lowest possible voltage as default
+	ts.pa_cw_bias		= 0;//DEFAULT_PA_BIAS;			// Use lowest possible voltage as default (nonzero sets separate bias for CW mode)
 	ts.freq_cal			= 0;							// Initial setting for frequency calibration
 	ts.power_level		= PA_LEVEL_DEFAULT;			// See mchf_board.h for setting
 	//
@@ -603,18 +602,18 @@ void TransceiverStateInit(void)
 	//
 	ts.powering_down	= 0;						// TRUE if powering down
 	//
-	ts.scope_speed		= SPECTRUM_SCOPE_SPEED_DEFAULT;	// default rate of spectrum scope update
+	ts.scope_speed		= 5;//SPECTRUM_SCOPE_SPEED_DEFAULT;	// default rate of spectrum scope update
 
-	ts.waterfall_speed	= WATERFALL_SPEED_DEFAULT_SPI;		// default speed of update of the waterfall for parallel displays
+	ts.waterfall_speed	= 15;//WATERFALL_SPEED_DEFAULT_SPI;		// default speed of update of the waterfall for parallel displays
 	//
-	ts.scope_filter		= SPECTRUM_SCOPE_FILTER_DEFAULT;	// default filter strength for spectrum scope
-	ts.scope_trace_colour	= SPEC_COLOUR_TRACE_DEFAULT;	// default colour for the spectrum scope trace
-	ts.scope_grid_colour	= SPEC_COLOUR_GRID_DEFAULT;		// default colour for the spectrum scope grid
+	ts.scope_filter		= 4;//SPECTRUM_SCOPE_FILTER_DEFAULT;	// default filter strength for spectrum scope
+//!	ts.scope_trace_colour	= SPEC_COLOUR_TRACE_DEFAULT;	// default colour for the spectrum scope trace
+//!	ts.scope_grid_colour	= SPEC_COLOUR_GRID_DEFAULT;		// default colour for the spectrum scope grid
 //!	ts.scope_grid_colour_active = Grid;
-	ts.scope_centre_grid_colour = SPEC_COLOUR_GRID_DEFAULT;		// color of center line of scope grid
+//!	ts.scope_centre_grid_colour = SPEC_COLOUR_GRID_DEFAULT;		// color of center line of scope grid
 //!	ts.scope_centre_grid_colour_active = Grid;
-	ts.scope_scale_colour	= SPEC_COLOUR_SCALE_DEFAULT;	// default colour for the spectrum scope frequency scale at the bottom
-	ts.scope_agc_rate	= SPECTRUM_SCOPE_AGC_DEFAULT;		// load default spectrum scope AGC rate
+//!	ts.scope_scale_colour	= SPEC_COLOUR_SCALE_DEFAULT;	// default colour for the spectrum scope frequency scale at the bottom
+	ts.scope_agc_rate	= 25;//SPECTRUM_SCOPE_AGC_DEFAULT;		// load default spectrum scope AGC rate
 	ts.spectrum_db_scale = DB_DIV_10;					// default to 10dB/division
 	//
 	ts.menu_item		= 0;						// start out with a reasonable menu item
@@ -643,12 +642,12 @@ void TransceiverStateInit(void)
 	ts.filter_ssb_narrow_disable	= 0;			// TRUE if narrow (CW) filters are to be disabled in SSB mdoe
 	ts.am_mode_disable				= 0;			// TRUE if AM mode is to be disabled
 	//
-	ts.tx_meter_mode	= METER_SWR;
+	ts.tx_meter_mode	= 0;//METER_SWR;
 	//
-	ts.alc_decay		= ALC_DECAY_DEFAULT;		// ALC Decay (release) default value
-	ts.alc_decay_var	= ALC_DECAY_DEFAULT;		// ALC Decay (release) default value
-	ts.alc_tx_postfilt_gain		= ALC_POSTFILT_GAIN_DEFAULT;	// Post-filter added gain default (used for speech processor/ALC)
-	ts.alc_tx_postfilt_gain_var		= ALC_POSTFILT_GAIN_DEFAULT;	// Post-filter added gain default (used for speech processor/ALC)
+	ts.alc_decay		= 10;//ALC_DECAY_DEFAULT;		// ALC Decay (release) default value
+	ts.alc_decay_var	= 10;//ALC_DECAY_DEFAULT;		// ALC Decay (release) default value
+	ts.alc_tx_postfilt_gain		= 1;//ALC_POSTFILT_GAIN_DEFAULT;	// Post-filter added gain default (used for speech processor/ALC)
+	ts.alc_tx_postfilt_gain_var		= 1;//ALC_POSTFILT_GAIN_DEFAULT;	// Post-filter added gain default (used for speech processor/ALC)
 	ts.tx_comp_level	= 0;		// 0=Release Time/Pre-ALC gain manually adjusted, >=1:  Value calculated by this parameter
 	//
 	ts.freq_step_config		= 0;			// disabled both marker line under frequency and swapping of STEP buttons
@@ -657,11 +656,11 @@ void TransceiverStateInit(void)
 	//
 	ts.dsp_active		= 0;				// TRUE if DSP noise reduction is to be enabled
 	ts.dsp_active_toggle	= 0xff;			// used to hold the button G2 "toggle" setting.
-	ts.dsp_nr_delaybuf_len = DSP_NR_BUFLEN_DEFAULT;
+	ts.dsp_nr_delaybuf_len = 192;//DSP_NR_BUFLEN_DEFAULT;
 	ts.dsp_nr_strength	= 0;				// "Strength" of DSP noise reduction (0 = weak)
-	ts.dsp_nr_numtaps 	= DSP_NR_NUMTAPS_DEFAULT;		// default for number of FFT taps for noise reduction
-	ts.dsp_notch_numtaps = DSP_NOTCH_NUMTAPS_DEFAULT;	// default for number of FFT taps for notch filter
-	ts.dsp_notch_delaybuf_len =	DSP_NOTCH_DELAYBUF_DEFAULT;
+	ts.dsp_nr_numtaps 	= 96;//DSP_NR_NUMTAPS_DEFAULT;		// default for number of FFT taps for noise reduction
+	ts.dsp_notch_numtaps = 96;//DSP_NOTCH_NUMTAPS_DEFAULT;	// default for number of FFT taps for notch filter
+	ts.dsp_notch_delaybuf_len =	104;//DSP_NOTCH_DELAYBUF_DEFAULT;
 	ts.dsp_inhibit		= 1;				// TRUE if DSP is to be inhibited - power up with DSP disabled
 	ts.dsp_inhibit_mute = 0;				// holder for "dsp_inhibit" during muting operations to allow restoration of previous state
 	ts.dsp_timed_mute	= 0;				// TRUE if DSP is to be muted for a timed amount
@@ -697,25 +696,24 @@ void TransceiverStateInit(void)
 											// LSB+6 (0x40) = 0:  VFO A,  1 = VFO B
 											// LSB+7 (0x80) = 0:  Normal mode, 1 = SPLIT mode
 											// Other bits are currently reserved
-	ts.voltmeter_calibrate	= POWER_VOLTMETER_CALIBRATE_DEFAULT;	// Voltmeter calibration constant
+	ts.voltmeter_calibrate	= 100;//POWER_VOLTMETER_CALIBRATE_DEFAULT;	// Voltmeter calibration constant
 	ts.thread_timer = 0;					// used to time thread
-	ts.waterfall_color_scheme = WATERFALL_COLOR_DEFAULT;	// color scheme for waterfall display
-	ts.waterfall_vert_step_size = WATERFALL_STEP_SIZE_DEFAULT;		// step size in waterfall display
-	ts.waterfall_offset = WATERFALL_OFFSET_DEFAULT;		// Offset for waterfall display (brightness)
-	ts.waterfall_contrast = WATERFALL_CONTRAST_DEFAULT;	// contrast setting for waterfall display
+//!	ts.waterfall_color_scheme = WATERFALL_COLOR_DEFAULT;	// color scheme for waterfall display
+	ts.waterfall_vert_step_size = 2;//WATERFALL_STEP_SIZE_DEFAULT;		// step size in waterfall display
+//!	ts.waterfall_offset = WATERFALL_OFFSET_DEFAULT;		// Offset for waterfall display (brightness)
+//!	ts.waterfall_contrast = WATERFALL_CONTRAST_DEFAULT;	// contrast setting for waterfall display
 	ts.spectrum_scope_scheduler = 0;		// timer for scheduling the next update of the spectrum scope update
-	ts.spectrum_scope_nosig_adjust = SPECTRUM_SCOPE_NOSIG_ADJUST_DEFAULT;	// Adjustment for no signal adjustment conditions for spectrum scope
-	ts.waterfall_nosig_adjust = WATERFALL_NOSIG_ADJUST_DEFAULT;		// Adjustment for no signal adjustment conditions for waterfall
-	ts.waterfall_size	= WATERFALL_SIZE_DEFAULT;		// adjustment for waterfall size
+//!	ts.spectrum_scope_nosig_adjust = SPECTRUM_SCOPE_NOSIG_ADJUST_DEFAULT;	// Adjustment for no signal adjustment conditions for spectrum scope
+//!	ts.waterfall_nosig_adjust = WATERFALL_NOSIG_ADJUST_DEFAULT;		// Adjustment for no signal adjustment conditions for waterfall
+	ts.waterfall_size	= 0;//WATERFALL_SIZE_DEFAULT;		// adjustment for waterfall size
 	ts.fft_window_type = FFT_WINDOW_DEFAULT;			// FFT Windowing type
 	ts.dvmode = 0;							// disable "DV" mode RX/TX functions by default
 	ts.tx_audio_muting_timing = 0;			// timing value used for muting TX audio when keying PTT to suppress "click" or "thump"
 	ts.tx_audio_muting_timer = 0;			// timer used for muting TX audio when keying PTT to suppress "click" or "thump"
 	ts.tx_audio_muting_flag = 0;			// when TRUE, audio is to be muted after PTT/keyup
-	ts.filter_disp_colour = FILTER_DISP_COLOUR_DEFAULT;	//
+//!	ts.filter_disp_colour = FILTER_DISP_COLOUR_DEFAULT;	//
 	ts.vfo_mem_flag = 0;					// when TRUE, memory mode is enabled
 	ts.mem_disp = 0;						// when TRUE, memory display is enabled
-#endif
 }
 
 QueueHandle_t 	hEspMessage;
@@ -794,6 +792,7 @@ int main(void)
 
     k_CalendarBkupInit();
 
+    // Set radio public values
     TransceiverStateInit();
 
     /* Add Cortex-M7 user application code here */
