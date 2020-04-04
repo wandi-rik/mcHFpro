@@ -35,10 +35,10 @@
 //
 // -----------------------------
 // FFT buffer (128, 512 or 2048)
-#define FFT_IQ_BUFF_LEN			512
+//#define FFT_IQ_BUFF_LEN			512
 
 #ifdef DSP_MODE
-#define FFT_IQ_BUFF_LEN1		512
+#define FFT_IQ_BUFF_LEN1		2048		//512
 #endif
 
 #ifndef DSP_MODE
@@ -195,7 +195,7 @@ typedef struct SpectrumDisplay
 	float	wfall_contrast;	// used to adjust the contrast of the waterfall display
 
 //!	ushort	waterfall_colours[NUMBER_WATERFALL_COLOURS];	// palette of colors for waterfall data
-	float32_t	wfall_temp[FFT_IQ_BUFF_LEN/2];					// temporary holder for rescaling screen
+//!	float32_t	wfall_temp[FFT_IQ_BUFF_LEN/2];					// temporary holder for rescaling screen
 //!	ushort	waterfall[SPECTRUM_HEIGHT + WFALL_MEDIUM_ADDITIONAL +16][FFT_IQ_BUFF_LEN/2];	// circular buffer used for storing waterfall data - remember to increase this if the waterfall is made larger!
 
 	uchar	wfall_line;										// pointer to current line of waterfall data

@@ -147,7 +147,14 @@ static void ui_controls_spectrum_fft_process_big(void)
 	ulong i,j;
 	uchar curr_val,prev_val,next_val,aver;
 
-#if 1
+	// 1024 FFT points, 796 pixels width, so 114 left and 114 right not visible
+	for(i = 0; i < 796; i++)
+	{
+		ui_sw.fft_value[i] = 0 + ui_sw.fft_dsp[i + 114];
+	}
+
+
+#if 0
 	// Copy to fft buffer
 	// but cut left and right 28 points then expand four times
 	for(i = 28, j = 0; i < 227; i++)
@@ -161,13 +168,13 @@ static void ui_controls_spectrum_fft_process_big(void)
 	}
 #endif
 
-#if 1
+#if 0
 	// only small chunk left
 	for(i = 0; i < 256; i++)
 		ui_sw.fft_value[i] = ui_sw.fft_dsp[i];
 #endif
 
-#if 1
+#if 0
 	if(api_conv_type == 0)
 	{
 		// Copy to fft buffer

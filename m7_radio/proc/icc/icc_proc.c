@@ -411,7 +411,6 @@ static volatile int 			service_created = 0;
 //static volatile unsigned int 	received_data;
 static struct rpmsg_endpoint 	rp_endpoint;
 
-
 uchar 							dsp_remote_init_done = 0;
 uchar 							dsp_delayed_init_state = 0;
 
@@ -458,16 +457,16 @@ static void api_ui_process_broadcast(void)
 	// Test only ------------------
 	static uchar skip_bc = 0;
 	skip_bc++;
-	if(skip_bc < 10) return;
+	if(skip_bc < 2) return;
 	skip_bc = 0;
 	// ----------------------------
 
 	// Data valid ?
-	if((aRxBuffer[0] != 0x12) || (aRxBuffer[1] != 0x34) || (aRxBuffer[298] != 0x55) || (aRxBuffer[299] != 0xAA))
-	{
-		printf("sig: %02x %02x\r\n",aRxBuffer[0],aRxBuffer[1]);
-		goto exit_anyway;
-	}
+//	if((aRxBuffer[0] != 0x12) || (aRxBuffer[1] != 0x34) || (aRxBuffer[298] != 0x55) || (aRxBuffer[299] != 0xAA))
+//	{
+//		printf("sig: %02x %02x\r\n",aRxBuffer[0],aRxBuffer[1]);
+//		goto exit_anyway;
+//	}
 
 	// Check seq no
 	//if(tsu.dsp_seq_number_old == aRxBuffer[3])
@@ -488,11 +487,11 @@ static void api_ui_process_broadcast(void)
 	//tsu.dsp_rev4 = aRxBuffer[7];
 
 	// Load DSP frequency
-	temp  = aRxBuffer[0x08] << 24;
-	temp |= aRxBuffer[0x09] << 16;
-	temp |= aRxBuffer[0x0A] <<  8;
-	temp |= aRxBuffer[0x0B] <<  0;
-	tsu.dsp_freq = temp;	//temp/4;
+//	temp  = aRxBuffer[0x08] << 24;
+//	temp |= aRxBuffer[0x09] << 16;
+//	temp |= aRxBuffer[0x0A] <<  8;
+//	temp |= aRxBuffer[0x0B] <<  0;
+//	tsu.dsp_freq = temp;	//temp/4;
 	//printf("dsp freq = %d\r\n",tsu.dsp_freq);
 
 	// Has local freq being invalidated by band change ?
@@ -504,21 +503,21 @@ static void api_ui_process_broadcast(void)
 	//	tsu.vfo_b = tsu.dsp_freq;
 
 	// Get demod mode
-	tsu.dsp_demod  = aRxBuffer[0x0C];
+//	tsu.dsp_demod  = aRxBuffer[0x0C];
 
 	// Has local demodulator mode being invalidated by band change ?
 	//if(tsu.demod_mode == 0xFF)
 	//	tsu.demod_mode = tsu.dsp_demod;
 
 	// Get band
-	tsu.dsp_band   = aRxBuffer[0x0D];
+//	tsu.dsp_band   = aRxBuffer[0x0D];
 	//printf("dsp band = %d\r\n",tsu.dsp_band);
 
 	// Volume level in DSP
-	tsu.dsp_volume = aRxBuffer[0x0E];
+//	tsu.dsp_volume = aRxBuffer[0x0E];
 
 	// Filter selection in DSP
-	tsu.dsp_filter = aRxBuffer[0x0F];
+//	tsu.dsp_filter = aRxBuffer[0x0F];
 	//printf("tsu.dsp_filter = %d\r\n",tsu.dsp_filter);
 
 	// Has local filter being invalidated by band change ?
@@ -526,18 +525,18 @@ static void api_ui_process_broadcast(void)
 	//	tsu.curr_filter = tsu.dsp_filter;
 
 	// Tuning step in DSP, but as ptr id, not actual value
-	tsu.dsp_step_idx = aRxBuffer[0x10];
+//	tsu.dsp_step_idx = aRxBuffer[0x10];
 
 	// NCO freq in DSP
-	tsu.dsp_nco_freq  = aRxBuffer[0x11] <<  8;
-	tsu.dsp_nco_freq |= aRxBuffer[0x12] <<  0;
+//	tsu.dsp_nco_freq  = aRxBuffer[0x11] <<  8;
+//	tsu.dsp_nco_freq |= aRxBuffer[0x12] <<  0;
 	//printf("dsp_nco_freq %d\r\n",tsu.dsp_nco_freq);
 
-	tsu.pcb_rev = aRxBuffer[0x13];
+//	tsu.pcb_rev = aRxBuffer[0x13];
 
 	// Copy FFT
-	for(i = 0; i < 256; i++)
-		ui_sw.fft_dsp[i] = aRxBuffer[i + 0x28];
+	for(i = 0; i < 1024; i++)
+		ui_sw.fft_dsp[i] = aRxBuffer[i];
 
 	//printf("got fft\r\n");
 

@@ -16,6 +16,7 @@
 ************************************************************************************/
 
 #include "mchf_pro_board.h"
+#include "main.h"
 
 #ifdef CONTEXT_DRIVER_UI
 
@@ -86,187 +87,6 @@ GUI_PID_STATE 					TS_State;
 // Public radio state
 //extern struct	TRANSCEIVER_STATE_UI	tsu;
 
-#if 0
-//*----------------------------------------------------------------------------
-//* Function Name       : ui_driver_change_mode
-//* Object              : change screen mode
-//* Input Parameters    :
-//* Output Parameters   :
-//* Functions called    :
-//*----------------------------------------------------------------------------
-static void ui_driver_change_mode(void)
-{
-	uchar state;
-
-	// Take a snapshot of the state
-	state = ui_s.req_state;
-
-	// Do we need update ?
-	if(ui_s.cur_state == state)
-		return;
-
-	switch(state)
-	{
-		// Switch to menu mode
-		case MODE_MENU:
-		{
-			printf("Entering Menu mode...\r\n");
-
-			// Destroy desktop controls
-			ui_controls_smeter_quit();
-			ui_controls_spectrum_quit();
-
-			// Clear screen
-			GUI_SetBkColor(GUI_BLACK);
-			GUI_Clear();
-
-			// Set General Graphical properties
-			ui_set_gui_profile();
-
-			// Show the main menu
-			ui_init_menu();
-
-			// Initial paint
-			GUI_Exec();
-
-			break;
-		}
-
-		// Switch to side encoder options mode
-		case MODE_SIDE_ENC_MENU:
-		{
-			printf("Entering Side encoder options mode...\r\n");
-
-			// Destroy desktop controls
-			ui_controls_smeter_quit();
-			ui_controls_spectrum_quit();
-
-			// Clear screen
-			GUI_SetBkColor(GUI_BLACK);
-			GUI_Clear();
-
-			// Show popup
-			ui_side_enc_menu_create();
-
-			// Initial paint
-			GUI_Exec();
-
-			break;
-		}
-
-		// Switch to FT8 mode
-		case MODE_DESKTOP_FT8:
-		{
-			printf("Entering FT8 mode...\r\n");
-
-			// Destroy desktop controls
-			ui_controls_smeter_quit();
-			ui_controls_spectrum_quit();
-
-			// Clear screen
-			GUI_SetBkColor(GUI_BLACK);
-			GUI_Clear();
-
-			// Show popup
-			ui_desktop_ft8_create();
-
-			// Initial paint
-			GUI_Exec();
-
-			break;
-		}
-
-		case MODE_QUICK_LOG:
-		{
-			printf("Entering Quick Log Entry mode...\r\n");
-
-			// Destroy desktop controls
-			ui_controls_smeter_quit();
-			ui_controls_spectrum_quit();
-
-			// Clear screen
-			GUI_SetBkColor(GUI_BLACK);
-			GUI_Clear();
-
-			// Show popup
-			ui_quick_log_create();
-
-			// Initial paint
-			GUI_Exec();
-
-			break;
-		}
-
-		// Switch to desktop mode
-		case MODE_DESKTOP:
-		{
-			printf("Entering Desktop mode...\r\n");
-
-			// Destroy any Window Manager items
-			ui_destroy_menu();
-			ui_side_enc_menu_destroy();
-			ui_desktop_ft8_destroy();
-			ui_quick_log_destroy();
-
-			// Clear screen
-			GUI_SetBkColor(GUI_BLACK);
-			GUI_Clear();
-
-			// Init controls
-			ui_driver_init_desktop();
-
-			break;
-		}
-
-		default:
-			break;
-	}
-
-	// Update flag
-	ui_s.cur_state = state;
-
-	// Release lock
-	ui_s.lock_requests = 0;
-}
-#endif
-
-//*----------------------------------------------------------------------------
-//* Function Name       :
-//* Object              :
-//* Input Parameters    :
-//* Output Parameters   :
-//* Functions called    :
-//*----------------------------------------------------------------------------
-static void ui_driver_init_desktop(void)
-{
-	ui_controls_clock_init();
-
-	#ifdef SPECTRUM_WATERFALL
-	ui_controls_spectrum_init();
-	#endif
-
-	ui_controls_smeter_init();
-
-	#ifdef VFO_BOTH
-	ui_controls_frequency_init();
-	#endif
-
-	ui_controls_volume_init();
-	ui_controls_band_init();
-	ui_controls_filter_init();
-	ui_controls_vfo_step_init();
-	ui_controls_rx_tx_init();
-	ui_controls_demod_init();
-	ui_controls_cpu_stat_init();
-	ui_controls_dsp_stat_init();
-	ui_controls_sd_icon_init();
-	ui_controls_agc_init();
-
-//	if(*(uchar *)(EEP_BASE + EEP_KEYER_ON))
-//		ui_controls_keyer_init();
-}
-
-
 //*----------------------------------------------------------------------------
 //* Function Name       :
 //* Object              :
@@ -312,6 +132,247 @@ void ui_callback_two(void)
 	//ui_controls_band_refresh();
 #endif
 }
+
+//*----------------------------------------------------------------------------
+//* Function Name       : _cbBk
+//* Object              : main windows callback, needed for v5.44 2D lib refresh
+//* Input Parameters    :
+//* Output Parameters   :
+//* Functions called    :
+//*----------------------------------------------------------------------------
+static void _cbBk(WM_MESSAGE * pMsg)
+{
+	switch (pMsg->MsgId)
+	{
+		case WM_INIT_DIALOG:
+			break;
+
+		case WM_PAINT:
+		{
+			// To prevent lag on frequency update, always call here
+			#ifdef VFO_BOTH
+			ui_controls_frequency_refresh(0);
+			#endif
+
+			//if(*(uchar *)(EEP_BASE + EEP_KEYER_ON))
+			//	ui_controls_keyer_refresh();
+
+			#ifdef SPECTRUM_WATERFALL
+			ui_controls_spectrum_refresh(&ui_callback_two);
+			#endif
+
+			ui_controls_smeter_refresh  (&ui_callback_one);
+
+			ui_controls_dsp_stat_refresh();
+			ui_controls_cpu_stat_refresh();
+			ui_controls_volume_refresh();
+			ui_controls_demod_refresh();
+			ui_controls_band_refresh();
+			ui_controls_filter_refresh();
+			ui_controls_vfo_step_refresh();
+			ui_controls_clock_refresh();
+			ui_controls_sd_icon_refresh();
+			ui_controls_agc_refresh();
+
+			break;
+		}
+
+		default:
+			break;
+	}
+}
+
+
+//*----------------------------------------------------------------------------
+//* Function Name       :
+//* Object              :
+//* Input Parameters    :
+//* Output Parameters   :
+//* Functions called    :
+//*----------------------------------------------------------------------------
+static void ui_driver_init_desktop(void)
+{
+	WM_SetCallback(WM_HBKWIN, _cbBk);
+
+	GUI_SetBkColor(GUI_BLACK);
+	GUI_Clear();
+
+	ui_controls_clock_init();
+
+	#ifdef SPECTRUM_WATERFALL
+	ui_controls_spectrum_init();
+	#endif
+
+	ui_controls_smeter_init();
+
+	#ifdef VFO_BOTH
+	ui_controls_frequency_init();
+	#endif
+
+	ui_controls_volume_init();
+	ui_controls_band_init();
+	ui_controls_filter_init();
+	ui_controls_vfo_step_init();
+	ui_controls_rx_tx_init();
+	ui_controls_demod_init();
+	ui_controls_cpu_stat_init();
+	ui_controls_dsp_stat_init();
+	ui_controls_sd_icon_init();
+	ui_controls_agc_init();
+
+//	if(*(uchar *)(EEP_BASE + EEP_KEYER_ON))
+//		ui_controls_keyer_init();
+}
+
+#if 1
+//*----------------------------------------------------------------------------
+//* Function Name       : ui_driver_change_mode
+//* Object              : change screen mode
+//* Input Parameters    :
+//* Output Parameters   :
+//* Functions called    :
+//*----------------------------------------------------------------------------
+static void ui_driver_change_mode(void)
+{
+	uchar state;
+
+	// Take a snapshot of the state
+	state = ui_s.req_state;
+
+	// Do we need update ?
+	if(ui_s.cur_state == state)
+		return;
+
+	switch(state)
+	{
+		// Switch to menu mode
+		case MODE_MENU:
+		{
+			printf("Entering Menu mode...\r\n");
+
+			// Destroy desktop controls
+			ui_controls_smeter_quit();
+			ui_controls_spectrum_quit();
+
+			WM_SetCallback		(WM_HBKWIN, 0);
+			WM_InvalidateWindow	(WM_HBKWIN);
+
+			// Clear screen
+			GUI_SetBkColor(GUI_BLACK);
+			GUI_Clear();
+
+			// Set General Graphical properties
+			ui_set_gui_profile();
+
+			// Show the main menu
+			ui_init_menu();
+
+			// Initial paint
+			GUI_Exec();
+
+			break;
+		}
+
+#if 0
+		// Switch to side encoder options mode
+		case MODE_SIDE_ENC_MENU:
+		{
+			printf("Entering Side encoder options mode...\r\n");
+
+			// Destroy desktop controls
+			ui_controls_smeter_quit();
+			ui_controls_spectrum_quit();
+
+			// Clear screen
+			GUI_SetBkColor(GUI_BLACK);
+			GUI_Clear();
+
+			// Show popup
+			ui_side_enc_menu_create();
+
+			// Initial paint
+			GUI_Exec();
+
+			break;
+		}
+#endif
+#if 0
+		// Switch to FT8 mode
+		case MODE_DESKTOP_FT8:
+		{
+			printf("Entering FT8 mode...\r\n");
+
+			// Destroy desktop controls
+			ui_controls_smeter_quit();
+			ui_controls_spectrum_quit();
+
+			// Clear screen
+			GUI_SetBkColor(GUI_BLACK);
+			GUI_Clear();
+
+			// Show popup
+			ui_desktop_ft8_create();
+
+			// Initial paint
+			GUI_Exec();
+
+			break;
+		}
+#endif
+#if 0
+		case MODE_QUICK_LOG:
+		{
+			printf("Entering Quick Log Entry mode...\r\n");
+
+			// Destroy desktop controls
+			ui_controls_smeter_quit();
+			ui_controls_spectrum_quit();
+
+			// Clear screen
+			GUI_SetBkColor(GUI_BLACK);
+			GUI_Clear();
+
+			// Show popup
+			ui_quick_log_create();
+
+			// Initial paint
+			GUI_Exec();
+
+			break;
+		}
+#endif
+		// Switch to desktop mode
+		case MODE_DESKTOP:
+		{
+			printf("Entering Desktop mode...\r\n");
+
+			// Destroy any Window Manager items
+			ui_destroy_menu();
+//!			ui_side_enc_menu_destroy();
+//!			ui_desktop_ft8_destroy();
+//!			ui_quick_log_destroy();
+
+			// Clear screen
+			GUI_SetBkColor(GUI_BLACK);
+			GUI_Clear();
+
+			// Init controls
+			ui_driver_init_desktop();
+
+			break;
+		}
+
+		default:
+			break;
+	}
+
+	// Update flag
+	ui_s.cur_state = state;
+
+	// Release lock
+	ui_s.lock_requests = 0;
+}
+#endif
 
 #if 0
 //*----------------------------------------------------------------------------
@@ -447,55 +508,6 @@ static void ui_driver_touch_router(void)
 #endif
 
 //*----------------------------------------------------------------------------
-//* Function Name       : _cbBk
-//* Object              : main windows callback, needed for v5.44 2D lib refresh
-//* Input Parameters    :
-//* Output Parameters   :
-//* Functions called    :
-//*----------------------------------------------------------------------------
-static void _cbBk(WM_MESSAGE * pMsg)
-{
-	switch (pMsg->MsgId)
-	{
-		case WM_INIT_DIALOG:
-			break;
-
-		case WM_PAINT:
-		{
-			// To prevent lag on frequency update, always call here
-			#ifdef VFO_BOTH
-			ui_controls_frequency_refresh(0);
-			#endif
-
-			//if(*(uchar *)(EEP_BASE + EEP_KEYER_ON))
-			//	ui_controls_keyer_refresh();
-
-			#ifdef SPECTRUM_WATERFALL
-			ui_controls_spectrum_refresh(&ui_callback_two);
-			#endif
-
-			ui_controls_smeter_refresh  (&ui_callback_one);
-
-			ui_controls_dsp_stat_refresh();
-			ui_controls_cpu_stat_refresh();
-			ui_controls_volume_refresh();
-			ui_controls_demod_refresh();
-			ui_controls_band_refresh();
-			ui_controls_filter_refresh();
-			ui_controls_vfo_step_refresh();
-			ui_controls_clock_refresh();
-			ui_controls_sd_icon_refresh();
-			ui_controls_agc_refresh();
-
-			break;
-		}
-
-		default:
-			break;
-	}
-}
-
-//*----------------------------------------------------------------------------
 //* Function Name       : ui_driver_emwin_init
 //* Object              :
 //* Input Parameters    :
@@ -569,10 +581,12 @@ void ui_proc_task(void const *arg)
 	// Prepare Desktop screen
 	if(ui_s.cur_state == MODE_DESKTOP)
 	{
+		#if 0
 		WM_SetCallback(WM_HBKWIN, _cbBk);
 
 		GUI_SetBkColor(GUI_BLACK);
 		GUI_Clear();
+		#endif
 
 		// Init controls - needs to be here!
 		ui_driver_init_desktop();
@@ -596,7 +610,7 @@ ui_proc_loop:
 	//ui_driver_touch_router();
 
 	// Process mode change requests
-	//ui_driver_change_mode();
+	ui_driver_change_mode();
 
 	// Refresh screen
 	switch(ui_s.cur_state)

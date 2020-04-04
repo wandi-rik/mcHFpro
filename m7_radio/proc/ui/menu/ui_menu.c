@@ -359,8 +359,8 @@ void ui_init_menu(void)
 
 void ui_destroy_menu(void)
 {
-	WM_DeleteWindow(hIcon);
-	WM_DeleteWindow(hItem);
+	WM_DeleteWindow		(hIcon);
+	WM_DeleteWindow		(hItem);
 	WM_SetCallback		(WM_HBKWIN, 0);
 	WM_InvalidateWindow	(WM_HBKWIN);
 }

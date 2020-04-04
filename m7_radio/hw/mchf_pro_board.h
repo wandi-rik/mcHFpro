@@ -411,7 +411,7 @@ struct UI_SW {
 	// screen pixel data
 	uchar 	fft_value[1024];
 	// FFT array from DSP
-	uchar 	fft_dsp[256];
+	uchar 	fft_dsp[1024];
 	//
 	uchar 	ctrl_type;
 	//

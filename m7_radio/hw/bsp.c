@@ -263,6 +263,7 @@ uint8_t BSP_Config(void)
 
   /* Init Wakeup/Select push-button in EXTI Mode */
   BSP_PB_Init(BUTTON_WAKEUP, BUTTON_MODE_EXTI);
+
 #if defined(USE_JOYSTICK)
   BSP_JOY_Init(JOY_MODE_EXTI);
 #endif /* USE_JOYSTICK */

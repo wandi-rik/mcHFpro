@@ -749,11 +749,11 @@ void UiCWSidebandMode(void)
 
 #define SPECTRUM_HEIGHT1 110
 
-uchar ou_buffer[256];
+uchar ou_buffer[1024];
 
 void ui_driver_get_buffer(uchar *buffer)
 {
-	memcpy(buffer, ou_buffer, 256);
+	memcpy(buffer, ou_buffer, 1024);
 	//printf("- copy -\r\n");
 }
 
@@ -765,12 +765,12 @@ void api_dsp_post(q15_t *fft)
 	if(fft != NULL)
 	{
 		// Left part of screen
-		for(k = 0; k < 128;k++)
-			ou_buffer[k +   0] = (uchar)*(fft + k + 128);
+		for(k = 0; k < 512;k++)
+			ou_buffer[k +   0] = (uchar)*(fft + k + 512);
 
 		// Right part of screen
-		for(k = 0; k < 128;k++)
-			ou_buffer[k + 128] = (uchar)*(fft + k + 0);
+		for(k = 0; k < 512;k++)
+			ou_buffer[k + 512] = (uchar)*(fft + k + 0);
 
 		//printf("- load -\r\n");
 	}
@@ -791,62 +791,14 @@ static void UiDriverReDrawSpectrumDisplay(void)
 	float32_t	sd_FFT_Windat[FFT_IQ_BUFF_LEN1];
 	// ----------------------------------------------------------------------------------------------
 
-#if 0
-	uchar 	val;
-	float 	rfg_calc;
-	//float gcalc;
-	static bool 		clip_indicate = 0;
-	static	float		auto_rfg = 8;
-	static	uint16_t 	rfg_timer= 0;	// counter used for timing RFG control decay
-
-	sm.skip++;
-	if(sm.skip == 0xFFFF)	//(S_MET_UPD_SKIP * 10000))
-	{
-
-		sm.skip = 0;
-
-		//printf("gain: %d\r\n",ts.rf_codec_gain);
-
-	// ************************
-	// Update S-Meter and control the input gain of the codec to maximize A/D and receiver dynamic range
-	// ************************
-	//
-	// Calculate attenuation of "RF Codec Gain" setting so that S-meter reading can be compensated.
-	// for input RF attenuation setting
-	//
-	if(ts.rf_codec_gain == 9)		// Is RF gain in "AUTO" mode?
-		rfg_calc = auto_rfg;
-	else	{				// not in "AUTO" mode
-		rfg_calc = (float)ts.rf_codec_gain;		// get copy of RF gain setting
-		auto_rfg = rfg_calc;		// keep "auto" variable updated with manual setting when in manual mode
-		rfg_timer = 0;
-	}
-	//
-	rfg_calc += 1;	// offset to prevent zero
-	rfg_calc *= 2;	// double the range of adjustment
-	rfg_calc += 13;	// offset, as bottom of range of A/D gain control is not useful (e.g. ADC saturates before RX hardware)
-	if(rfg_calc >31)	// limit calc to hardware range
-		rfg_calc = 31;
-//!	Codec_Line_Gain_Adj((uchar)rfg_calc);	// set the RX gain on the codec
-	//
-	// Now calculate the RF gain setting
-	//
-	gcalc = (float)rfg_calc;
-	gcalc *= 1.5;	// codec has 1.5 dB/step
-	gcalc -= 34.5;	// offset codec setting by 34.5db (full gain = 12dB)
-	gcalc = pow10(gcalc/10);	// convert to power ratio
-	ads.codec_gain_calc = sqrt(gcalc);		// convert to voltage ratio - we now have current A/D (codec) gain setting
-	}
-#endif
-
 	// Only in RX mode and NOT while powering down or in menu mode or if displaying memory information
 //!	if((ts.txrx_mode != TRX_MODE_RX) || (ts.powering_down) || (ts.menu_mode) || (ts.mem_disp))
 //!		return;
 
-	if((ts.spectrum_scope_scheduler) || (!ts.scope_speed))	// is it time to update the scan, or is this scope to be disabled?
-		return;
-	else
-		ts.spectrum_scope_scheduler = (ts.scope_speed-1)*2;
+//!	if((ts.spectrum_scope_scheduler) || (!ts.scope_speed))	// is it time to update the scan, or is this scope to be disabled?
+//!		return;
+//!	else
+//!		ts.spectrum_scope_scheduler = (ts.scope_speed-1)*2;
 
 	// Nothing to do here otherwise, or if scope is to be held off while other parts of the display are to be updated or the LCD is being blanked
 //!	if((!sd.enabled) || (ts.hold_off_spectrum_scope > ts.sysclock) || (ts.lcd_blanking_flag))

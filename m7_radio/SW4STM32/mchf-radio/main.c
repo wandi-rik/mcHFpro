@@ -94,6 +94,8 @@ static void TouchScreenTask(void const *argument);
 
 //extern void SUBDEMO_StartAutoDemo(const uint8_t demo_id);
 
+extern struct	UI_DRIVER_STATE			ui_s;
+
 TaskHandle_t hIccTask;
 
 struct TransceiverState 	ts;
@@ -138,6 +140,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     {
       /* Turn LED RED off */
       //BSP_LED_Off(LED_RED);
+
+    	printf("wakeup click\r\n");
+
+    	if(ui_s.req_state == MODE_DESKTOP)
+    		ui_s.req_state = MODE_MENU;
+    	else
+    		ui_s.req_state = MODE_DESKTOP;
 #if 0
       if(SplashScreen_IsRunning())
       {
@@ -529,7 +538,7 @@ void TransceiverStateInit(void)
 	ts.audio_gain		= 0;//MAX_VOLUME_DEFAULT;		// Set max volume default
 	ts.audio_gain_active = 1;						// this variable is used in the active RX audio processing function
 
-	ts.rf_gain			= 50;//DEFAULT_RF_GAIN;			//
+	ts.rf_gain			= 25;//DEFAULT_RF_GAIN;			//
 	ts.max_rf_gain		= 3;//MAX_RF_GAIN_DEFAULT;		// setting for maximum gain (e.g. minimum S-meter reading)
 	ts.rf_codec_gain	= 9;//DEFAULT_RF_CODEC_GAIN_VAL;	// Set default RF gain (0 = lowest, 8 = highest, 9 = "Auto")
 	ts.rit_value		= 0;						// RIT value

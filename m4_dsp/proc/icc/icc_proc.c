@@ -107,13 +107,13 @@ void icc_proc_post(void)
 	//tune_loc = ts.tune_freq;
 
 	// Clear buffer
-	for(k = 0; k < 300;k++)
+	for(k = 0; k < sizeof(icc_out_buffer);k++)
 		icc_out_buffer[k] = 0;
 
 	// ----------------------
 	// Header
-	icc_out_buffer[0x00] = 0x12; 						// signature
-	icc_out_buffer[0x01] = 0x34;						// signature
+//	icc_out_buffer[0x00] = 0x12; 						// signature
+//	icc_out_buffer[0x01] = 0x34;						// signature
 	//icc_out_buffer[0x02] = as.led_s;					// blinker
 	//icc_out_buffer[0x03] = as.pub_v;					// seq cnt
 
@@ -124,10 +124,10 @@ void icc_proc_post(void)
 	//icc_out_buffer[0x07] = MCHF_D_VER_BUILD;
 
 	// Frequency
-	icc_out_buffer[0x08] = tune_loc >> 24;
-	icc_out_buffer[0x09] = tune_loc >> 16;
-	icc_out_buffer[0x0A] = tune_loc >>  8;
-	icc_out_buffer[0x0B] = tune_loc >>  0;
+//	icc_out_buffer[0x08] = tune_loc >> 24;
+//	icc_out_buffer[0x09] = tune_loc >> 16;
+//	icc_out_buffer[0x0A] = tune_loc >>  8;
+//	icc_out_buffer[0x0B] = tune_loc >>  0;
 
 	//icc_out_buffer[0x0C] = ts.dmod_mode;
 	//icc_out_buffer[0x0D] = ts.band;
@@ -162,11 +162,11 @@ void icc_proc_post(void)
 	#endif
 
 	//audio_sai_get_buffer(icc_out_buffer + 0x28);
-	ui_driver_get_buffer(icc_out_buffer + 0x28);
+	ui_driver_get_buffer(icc_out_buffer + 0);
 
 	// Footer
-	icc_out_buffer[298] = 0x55;
-	icc_out_buffer[299] = 0xAA;
+	//icc_out_buffer[298] = 0x55;
+	//icc_out_buffer[299] = 0xAA;
 
 	// Broadcast current state
 	//api_dsp_to_cpu_msg(300);
@@ -342,7 +342,7 @@ static void icc_proc_worker(void)
 	message = icc_proc_cmd_handler((uchar)received_data);
 
 	// Response to M7 core
-	status = OPENAMP_send(&rp_endpoint, icc_out_buffer, 300);
+	status = OPENAMP_send(&rp_endpoint, icc_out_buffer, 1024);
 	if (status < 0)
 	{
 		printf("err send msg: %d (cmd: %d)\r\n", status, message);

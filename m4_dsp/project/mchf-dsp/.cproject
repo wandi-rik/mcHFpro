@@ -73,7 +73,7 @@
 									<listOptionValue builtIn="false" value="NO_ATOMIC_64_SUPPORT"/>
 									<listOptionValue builtIn="false" value="METAL_MAX_DEVICE_REGIONS=2"/>
 									<listOptionValue builtIn="false" value="METAL_INTERNAL"/>
-									<listOptionValue builtIn="false" value="RPMSG_BUFFER_SIZE=512"/>
+									<listOptionValue builtIn="false" value="RPMSG_BUFFER_SIZE=1100"/>
 									<listOptionValue builtIn="false" value="__FPU_PRESENT"/>
 									<listOptionValue builtIn="false" value="ARM_MATH_CM4"/>
 								</option>

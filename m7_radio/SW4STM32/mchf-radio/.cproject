@@ -86,7 +86,7 @@
 									<listOptionValue builtIn="false" value="NO_ATOMIC_64_SUPPORT"/>
 									<listOptionValue builtIn="false" value="METAL_MAX_DEVICE_REGIONS=2"/>
 									<listOptionValue builtIn="false" value="METAL_INTERNAL"/>
-									<listOptionValue builtIn="false" value="RPMSG_BUFFER_SIZE=512"/>
+									<listOptionValue builtIn="false" value="RPMSG_BUFFER_SIZE=1100"/>
 									<listOptionValue builtIn="false" value="USE_HAL_SAI_REGISTER_CALLBACKS=1"/>
 								</option>
 								<option id="fr.ac6.managedbuild.gnu.c.compiler.option.misc.other.265343323" superClass="fr.ac6.managedbuild.gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-fmessage-length=0" valueType="string"/>
