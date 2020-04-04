@@ -236,7 +236,7 @@ static void ui_controls_draw_needle(void * p)
 		GUI_DispStringAt(buf,S_METER_X + 312,S_METER_Y + 5);
 		#endif
 
-		#if 1
+		#if 0
 		// --------------------------------------------------------------------------------------------------
 		//GUI_SetAlpha(168);
 		// PEAK/AVER indicator

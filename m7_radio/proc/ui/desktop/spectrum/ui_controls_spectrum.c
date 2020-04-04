@@ -817,7 +817,7 @@ static void ui_controls_update_smooth_control(uchar init)
 {
 	uchar pub_smooth;
 
-	pub_smooth = *(uchar *)(EEP_BASE + EEP_SW_SMOOTH);
+	pub_smooth = 1;//*(uchar *)(EEP_BASE + EEP_SW_SMOOTH);
 
 	if(!init)
 	{

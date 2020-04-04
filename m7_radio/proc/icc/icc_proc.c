@@ -740,6 +740,7 @@ void icc_proc_delayed_dsp_init(void)
 			uchar  *out_ptr = (uchar *)(&ts.samp_rate);	// struct base ptr from address of it's first element!
 			ushort out_size = sizeof(ts);
 
+			#if 0
 			printf("to send:%d\r\n", out_size);
 
 			ulong i, x = 0;
@@ -748,6 +749,7 @@ void icc_proc_delayed_dsp_init(void)
 				x += *(out_ptr + i);
 
 			printf("chksum %d\r\n", x);
+			#endif
 
 			icc_proc_cmd_xchange(ICC_SET_TRX_STATE, out_ptr, out_size);
 			break;
@@ -756,22 +758,6 @@ void icc_proc_delayed_dsp_init(void)
 		case 2:
 		{
 			icc_proc_cmd_xchange(ICC_START_I2S_PROC, NULL, 0);
-			break;
-		}
-
-		case 3:
-		{
-#if 0
-			// Init values
-			ts.api_band 		= 0;
-			df.tune_upd 		= 0;
-			ts.api_iamb_type 	= 0;
-
-			ts.dmod_mode 		= DEMOD_LSB;
-			ts.audio_gain 		= 6;
-			ts.filter_id 		= 3;
-			df.nco_freq			= -6000;
-#endif
 			break;
 		}
 

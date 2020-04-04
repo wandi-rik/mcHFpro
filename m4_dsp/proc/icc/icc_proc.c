@@ -296,12 +296,14 @@ static uchar icc_proc_cmd_handler(uchar cmd)
 		{
 			//print_hex_array(icc_in_buffer, 16);
 
+			#if 0
 			ulong i, x = 0;
 
 			for(i = 0; i < 432; i++)
 				x += icc_in_buffer[i];
 
 			printf("chksum %d\r\n", x);
+			#endif
 
 			memcpy((uchar *)(&ts.samp_rate), icc_in_buffer, sizeof(struct TransceiverState));
 			break;

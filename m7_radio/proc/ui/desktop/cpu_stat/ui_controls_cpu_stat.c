@@ -16,7 +16,8 @@
 ************************************************************************************/
 
 #include "mchf_pro_board.h"
-#include "main.h"
+#include "version.h"
+//#include "main.h"
 
 #ifdef CONTEXT_DRIVER_UI
 
@@ -118,14 +119,13 @@ static void ui_controls_cpu_stat_show_cpu_load(void)
 //*----------------------------------------------------------------------------
 void ui_controls_cpu_stat_init(void)
 {
-	// Moved to s-meter
-	// --
-	//char   	buff[100];
+	char   	buff[100];
+
 	// Debug print CPU firmware version
-	//GUI_SetColor(GUI_GRAY);
-	//GUI_SetFont(&GUI_Font8x16_1);
-	//sprintf(buff,"CPU v: %d.%d.%d.%d",MCHFX_VER_MAJOR,MCHFX_VER_MINOR,MCHFX_VER_RELEASE,MCHFX_VER_BUILD);
-	//GUI_DispStringAt(buff,360,40);
+	GUI_SetColor(GUI_WHITE);
+	GUI_SetFont(&GUI_Font8x16_1);
+	sprintf(buff,"CPU v: %d.%d.%d.%d",MCHF_R_VER_MAJOR, MCHF_R_VER_MINOR, MCHF_R_VER_RELEASE, MCHF_R_VER_BUILD);
+	GUI_DispStringAt(buff,360,55);
 
 	// This ok as init ?
 	ui_controls_cpu_stat_show_cpu_load();

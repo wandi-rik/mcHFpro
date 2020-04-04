@@ -42,7 +42,7 @@ uchar skip_dsp_check = 0;
 //*----------------------------------------------------------------------------
 static void ui_controls_dsp_stat_print(void)
 {
-	//char   	buff[100];
+	char   	buff[100];
 
 	skip_dsp_check++;
 	if(skip_dsp_check < 4)
@@ -84,8 +84,13 @@ static void ui_controls_dsp_stat_print(void)
 		GUI_SetColor(GUI_BLACK);
 
 	GUI_FillRoundedRect(	DSP_POS_X + 7,	DSP_POS_Y + 4,	DSP_POS_X + 26,	DSP_POS_Y + 10,		2);
-}
 
+	// Debug print DSP firmware version
+	GUI_SetColor(GUI_WHITE);
+	GUI_SetFont(&GUI_Font8x16_1);
+	sprintf(buff,"DSP v: %d.%d.%d.%d",tsu.dsp_rev1,tsu.dsp_rev2,tsu.dsp_rev3,tsu.dsp_rev4);
+	GUI_DispStringAt(buff,520,55);
+}
 
 //*----------------------------------------------------------------------------
 //* Function Name       :
@@ -97,17 +102,6 @@ static void ui_controls_dsp_stat_print(void)
 //*----------------------------------------------------------------------------
 void ui_controls_dsp_stat_init(void)
 {
-	// Moved to s-meter control
-	//char   	buff[100];
-	//if(tsu.dsp_alive)
-	//{
-		// Debug print DSP firmware version
-	//	GUI_SetColor(GUI_GRAY);
-	//	GUI_SetFont(&GUI_Font8x16_1);
-	//	sprintf(buff,"DSP v: %d.%d.%d.%d",tsu.dsp_rev1,tsu.dsp_rev2,tsu.dsp_rev3,tsu.dsp_rev4);
-	//	GUI_DispStringAt(buff,520,40);
-	//}
-
 	dsp_control_init_done = 0;
 	ui_controls_dsp_stat_print();
 }

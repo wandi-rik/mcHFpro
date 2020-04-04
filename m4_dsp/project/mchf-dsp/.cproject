@@ -93,6 +93,7 @@
 								<option id="fr.ac6.managedbuild.tool.gnu.cross.c.linker.script.1326121048" name="Linker Script (-T)" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.linker.script" useByScannerDiscovery="false" value="../stm32h747xx_dsp.ld" valueType="string"/>
 								<option id="gnu.c.link.option.libs.1544854282" name="Libraries (-l)" superClass="gnu.c.link.option.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" value="arm_cortexM4lf_math"/>
+									<listOptionValue builtIn="false" value="m"/>
 								</option>
 								<option id="gnu.c.link.option.paths.1393756933" name="Library search path (-L)" superClass="gnu.c.link.option.paths" useByScannerDiscovery="false" valueType="libPaths">
 									<listOptionValue builtIn="false" value="../../../../STM32CubeH7/Drivers/CMSIS/Lib/ARM"/>
