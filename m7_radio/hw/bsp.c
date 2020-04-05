@@ -216,6 +216,24 @@ static inline uint32_t GetBank(uint32_t Addr)
   return bank;
 }
 
+// test only
+static void pa8_on(void)
+{
+	 GPIO_InitTypeDef  gpio_init_structure;
+
+	  __HAL_RCC_GPIOA_CLK_ENABLE();
+
+	  /* Configure the GPIO on PG3 */
+	  gpio_init_structure.Pin   = GPIO_PIN_8;
+	  gpio_init_structure.Mode  = GPIO_MODE_OUTPUT_PP;
+	  gpio_init_structure.Pull  = GPIO_PULLUP;
+	  gpio_init_structure.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+
+	  HAL_GPIO_Init(GPIOA, &gpio_init_structure);
+
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
+}
+
 static void LCD_LL_Reset(void)
 {
   GPIO_InitTypeDef  gpio_init_structure;
@@ -354,6 +372,12 @@ uint8_t BSP_Config(void)
 
   // ToDo: check!
   //Copy_EXT_RAM_data();
+
+  // Test
+  //pa8_on();
+
+  // Oscillator clock - 25 Mhz
+  //HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_HSE, RCC_MCODIV_1);
 
   BSP_LED_On(LED_GREEN);
   return 1;
