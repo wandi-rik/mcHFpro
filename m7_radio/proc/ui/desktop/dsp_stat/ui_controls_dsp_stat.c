@@ -89,7 +89,7 @@ static void ui_controls_dsp_stat_print(void)
 	GUI_SetColor(GUI_WHITE);
 	GUI_SetFont(&GUI_Font8x16_1);
 	sprintf(buff,"DSP v: %d.%d.%d.%d",tsu.dsp_rev1,tsu.dsp_rev2,tsu.dsp_rev3,tsu.dsp_rev4);
-	GUI_DispStringAt(buff,520,55);
+	GUI_DispStringAt(buff,360,72);
 }
 
 //*----------------------------------------------------------------------------

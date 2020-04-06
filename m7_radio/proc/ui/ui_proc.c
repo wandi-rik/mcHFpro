@@ -165,13 +165,13 @@ static void _cbBk(WM_MESSAGE * pMsg)
 
 			ui_controls_dsp_stat_refresh();
 			ui_controls_cpu_stat_refresh();
-			ui_controls_volume_refresh();
+			//--ui_controls_volume_refresh();
 			ui_controls_demod_refresh();
 			ui_controls_band_refresh();
 			ui_controls_filter_refresh();
 			ui_controls_vfo_step_refresh();
 			ui_controls_clock_refresh();
-			ui_controls_sd_icon_refresh();
+			//ui_controls_sd_icon_refresh();
 			ui_controls_agc_refresh();
 
 			break;
@@ -217,11 +217,13 @@ static void ui_driver_init_desktop(void)
 	ui_controls_demod_init();
 	ui_controls_cpu_stat_init();
 	ui_controls_dsp_stat_init();
-	ui_controls_sd_icon_init();
+	//ui_controls_sd_icon_init();
 	ui_controls_agc_init();
 
 //	if(*(uchar *)(EEP_BASE + EEP_KEYER_ON))
 //		ui_controls_keyer_init();
+
+	GUI_Exec();
 }
 
 #if 1
@@ -251,6 +253,7 @@ static void ui_driver_change_mode(void)
 			printf("Entering Menu mode...\r\n");
 
 			// Destroy desktop controls
+			ui_controls_volume_quit();
 			ui_controls_smeter_quit();
 			ui_controls_spectrum_quit();
 
@@ -581,13 +584,6 @@ void ui_proc_task(void const *arg)
 	// Prepare Desktop screen
 	if(ui_s.cur_state == MODE_DESKTOP)
 	{
-		#if 0
-		WM_SetCallback(WM_HBKWIN, _cbBk);
-
-		GUI_SetBkColor(GUI_BLACK);
-		GUI_Clear();
-		#endif
-
 		// Init controls - needs to be here!
 		ui_driver_init_desktop();
 	}

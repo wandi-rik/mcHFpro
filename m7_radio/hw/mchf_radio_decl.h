@@ -24,6 +24,7 @@
 //
 // -----------------------------------------------------------------------------------
 //
+#if 1
 #define 	T_STEP_1HZ						1
 #define 	T_STEP_10HZ						10
 #define 	T_STEP_100HZ					100
@@ -44,6 +45,7 @@ enum {
 	T_STEP_10MHZ_IDX,
 	T_STEP_MAX_STEPS
 };
+#endif
 //
 // -----------------------------------------------------------------------------------
 //
@@ -57,6 +59,7 @@ enum {
 // -----------------------------------------------------------------------------------
 // Total bands supported
 //
+#if 0
 #define	MIN_BANDS					0		// lowest band number
 #define	MAX_BANDS					9		// Highest band number:  9 = General coverage (RX only) band
 //
@@ -100,7 +103,7 @@ enum {
 #define	BAND_MODE_GEN				9					// General Coverage
 #define	BAND_FREQ_GEN				10000*KHZ_MULT		// 10000 kHz
 #define	BAND_SIZE_GEN				1*KHZ_MULT			// Dummy variable
-
+#endif
 #if 0
 enum	{
 	AUDIO_300HZ = 0,

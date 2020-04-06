@@ -135,36 +135,8 @@ How To use this driver:
 #include "stm32h747i_discovery_audio.h"
 #include "stm32h747i_discovery_bus.h"
 
-/** @addtogroup BSP
-  * @{
-  */
-
-/** @addtogroup STM32H747I_DISCO
-  * @{
-  */
-
-/** @defgroup STM32H747I_DISCO_AUDIO AUDIO
-  * @brief This file includes the low layer driver for wm8994 Audio Codec
-  *        available on STM32H747I-DISCO discovery board(MB1381).
-  * @{
-  */
-
-/** @defgroup STM32H747I_DISCO_AUDIO_Private_Variables Private Variables
-  * @{
-  */
 static AUDIO_Drv_t                     *Audio_Drv = NULL;
 
-/* PDM filters params */
-//static PDM_Filter_Handler_t  PDM_FilterHandler[2];
-//static PDM_Filter_Config_t   PDM_FilterConfig[2];
-
-/**
-  * @}
-  */
-
-/** @defgroup STM32H747I_DISCO_AUDIO_Exported_Variables Exported Variables
-  * @{
-  */
 void                           *Audio_CompObj = NULL;
 /* Play handle */
 SAI_HandleTypeDef               haudio_out_sai;
@@ -177,13 +149,6 @@ AUDIO_OUT_Ctx_t                 Audio_Out_Ctx[AUDIO_OUT_INSTANCES_NBR] = {0};
 /* Recording context */
 AUDIO_IN_Ctx_t                  Audio_In_Ctx[AUDIO_IN_INSTANCES_NBR] = {0};
 
-/**
-  * @}
-  */
-
-/** @defgroup STM32H747I_DISCO_AUDIO_Private_Function_Prototypes Private Function Prototypes
-  * @{
-  */
 /* SAI Msp config */
 static void SAI_MspInit(SAI_HandleTypeDef *hsai);
 static void SAI_MspDeInit(SAI_HandleTypeDef *hsai);
@@ -207,7 +172,9 @@ static int32_t WM8994_Probe(void);
 int32_t BSP_AUDIO_INOUT_Init(uint32_t Instance, BSP_AUDIO_Init_t* AudioInitOut, BSP_AUDIO_Init_t* AudioInitIn)
 {
 	MX_SAI_Config_t 	mx_config;
+	#if (USE_AUDIO_CODEC_WM8994 == 1)
 	WM8994_Init_t 		codec_init;
+	#endif
 
 	// Fill Audio_Out_Ctx structure
 	//Audio_Out_Ctx[Instance].Device         = AudioInitOut->Device;
@@ -224,8 +191,11 @@ int32_t BSP_AUDIO_INOUT_Init(uint32_t Instance, BSP_AUDIO_Init_t* AudioInitOut, 
 	Audio_In_Ctx[Instance].Volume          = AudioInitIn->Volume;
 	Audio_In_Ctx[Instance].State           = AUDIO_IN_STATE_RESET;
 
+	#if (USE_AUDIO_CODEC_WM8994 == 1)
+	// Claim I2C for M7 (without semaphore synchronisation!!!!)
 	if(WM8994_Probe() != BSP_ERROR_NONE)
 		return BSP_ERROR_COMPONENT_FAILURE;
+	#endif
 
 	// PLL clock
 	if(MX_SAI1_ClockConfig(NULL, AUDIO_FREQUENCY_48K) != HAL_OK)
@@ -263,6 +233,7 @@ int32_t BSP_AUDIO_INOUT_Init(uint32_t Instance, BSP_AUDIO_Init_t* AudioInitOut, 
 	if(MX_SAI1_Block_A_Init(&haudio_out_sai, &mx_config) != HAL_OK)
 		return BSP_ERROR_PERIPH_FAILURE;
 
+	#if (USE_AUDIO_CODEC_WM8994 == 1)
 	codec_init.Frequency    	= AUDIO_FREQUENCY_48K;	//AudioInitIn->SampleRate;
 	codec_init.InputDevice 		= WM8994_IN_LINE1;
 	codec_init.OutputDevice 	= AUDIO_OUT_DEVICE_HEADPHONE;
@@ -272,8 +243,13 @@ int32_t BSP_AUDIO_INOUT_Init(uint32_t Instance, BSP_AUDIO_Init_t* AudioInitOut, 
 	// Initialise the codec internal registers
 	if(Audio_Drv->Init(Audio_CompObj, &codec_init) != 0)
 		return BSP_ERROR_COMPONENT_FAILURE;
+	#endif
 
 	Audio_Out_Ctx[Instance].State = AUDIO_OUT_STATE_STOP;
+
+	// Release I2C for M7 (without semaphore synchronisation!!!!)
+	//BSP_I2C4_DeInit();
+
 	return BSP_ERROR_NONE;
 }
 
@@ -281,6 +257,7 @@ int32_t BSP_AUDIO_INOUT_Init(uint32_t Instance, BSP_AUDIO_Init_t* AudioInitOut, 
   * @{
   */
 
+#if 0
 /**
   * @brief  Configures the audio peripherals.
   * @param  Instance  : AUDIO_OUT Instance. It can only be 0 (SAI)
@@ -409,6 +386,7 @@ int32_t BSP_AUDIO_OUT_Init(uint32_t Instance, BSP_AUDIO_Init_t* AudioInit)
 
   return ret;
 }
+#endif
 
 /**
   * @brief  De-initializes the audio out peripheral.
@@ -666,6 +644,7 @@ int32_t BSP_AUDIO_OUT_RegisterMspCallbacks (uint32_t Instance, BSP_AUDIO_OUT_Cb_
 }
 #endif /*(USE_HAL_SAI_REGISTER_CALLBACKS == 1U)*/
 
+#if 0
 /**
   * @brief  Starts playing audio stream from a data buffer for a determined size.
   * @param  Instance : AUDIO OUT Instance. It can only be 0 (SAI)
@@ -709,7 +688,9 @@ int32_t BSP_AUDIO_OUT_Play(uint32_t Instance, uint8_t* pData, uint32_t NbrOfByte
   /* Return BSP status */
   return ret;
 }
+#endif
 
+#if 0
 /**
   * @brief  This function Pauses the audio file stream. In case
   *         of using DMA, the DMA Pause feature is used.
@@ -753,7 +734,9 @@ int32_t BSP_AUDIO_OUT_Pause(uint32_t Instance)
   /* Return BSP status */
   return ret;
 }
+#endif
 
+#if 0
 /**
   * @brief   Resumes the audio file stream.
   * @param  Instance : AUDIO OUT Instance. It can only be 0 (SAI)
@@ -795,7 +778,9 @@ int32_t BSP_AUDIO_OUT_Resume(uint32_t Instance)
   /* Return BSP status */
   return ret;
 }
+#endif
 
+#if 0
 /**
   * @brief  Stops audio playing and Power down the Audio Codec.
   * @param  Instance : AUDIO OUT Instance. It can only be 0 (SAI)
@@ -838,7 +823,9 @@ int32_t BSP_AUDIO_OUT_Stop(uint32_t Instance)
   /* Return BSP status */
   return ret;
 }
+#endif
 
+#if 0
 /**
   * @brief  Controls the current audio volume level.
   * @param  Instance : AUDIO OUT Instance. It can only be 0 (SAI)
@@ -877,7 +864,9 @@ int32_t BSP_AUDIO_OUT_SetVolume(uint32_t Instance, uint32_t Volume)
   /* Return BSP status */
   return ret;
 }
+#endif
 
+#if 0
 /**
   * @brief  Get the current audio volume level.
   * @param  Instance : AUDIO OUT Instance. It can only be 0 (SAI)
@@ -899,7 +888,9 @@ int32_t BSP_AUDIO_OUT_GetVolume(uint32_t Instance, uint32_t *Volume)
   /* Return BSP status */
   return ret;
 }
+#endif
 
+#if 0
 /**
   * @brief  Enables the MUTE
   * @param  Instance : AUDIO OUT Instance. It can only be 0 (SAI)
@@ -929,7 +920,9 @@ int32_t BSP_AUDIO_OUT_Mute(uint32_t Instance)
   /* Return BSP status */
   return ret;
 }
+#endif
 
+#if 0
 /**
   * @brief  Disables the MUTE mode
   * @param  Instance : AUDIO OUT Instance. It can only be 0 (SAI)
@@ -959,7 +952,9 @@ int32_t BSP_AUDIO_OUT_UnMute(uint32_t Instance)
   /* Return BSP status */
   return ret;
 }
+#endif
 
+#if 0
 /**
   * @brief  Check whether the MUTE mode is enabled or not
   * @param  Instance : AUDIO OUT Instance. It can only be 0 (SAI)
@@ -981,7 +976,9 @@ int32_t BSP_AUDIO_OUT_IsMute(uint32_t Instance, uint32_t *IsMute)
   /* Return BSP status */
   return ret;
 }
+#endif
 
+#if 0
 /**
   * @brief  Switch dynamically (while audio file is played) the output target
   *         (speaker or headphone).
@@ -1012,7 +1009,9 @@ int32_t BSP_AUDIO_OUT_SetDevice(uint32_t Instance, uint32_t Device)
   /* Return BSP status */
   return ret;
 }
+#endif
 
+#if 0
 /**
   * @brief  Get the Output Device
   * @param  Instance : AUDIO OUT Instance. It can only be 0 (SAI)
@@ -1035,6 +1034,7 @@ int32_t BSP_AUDIO_OUT_GetDevice(uint32_t Instance, uint32_t *Device)
   /* Return BSP status */
   return ret;
 }
+#endif
 
 /**
   * @brief  Updates the audio frequency.

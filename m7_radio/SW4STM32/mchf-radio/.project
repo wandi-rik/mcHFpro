@@ -727,6 +727,11 @@
 			<locationURI>PARENT-2-PROJECT_LOC/proc/icc/hw/rsc_table.h</locationURI>
 		</link>
 		<link>
+			<name>proc/ui/desktop/ui_controls_layout.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/ui/desktop/ui_controls_layout.h</locationURI>
+		</link>
+		<link>
 			<name>proc/ui/lcd_driver/GUIConf.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/proc/ui/lcd_driver/GUIConf.c</locationURI>

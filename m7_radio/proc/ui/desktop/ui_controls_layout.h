@@ -17,6 +17,13 @@
 #ifndef UI_CONTROLS_LAYOUT_H
 #define UI_CONTROLS_LAYOUT_H
 
+#include "GUI.h"
+
+#define ID_WINDOW_VOLUME          	(GUI_ID_USER + 0x00)
+#define ID_BUTTON_VOLUMET          	(GUI_ID_USER + 0x01)
+#define ID_BUTTON_VOLUMEM          	(GUI_ID_USER + 0x02)
+#define ID_BUTTON_VOLUMEP          	(GUI_ID_USER + 0x03)
+
 // ----------------------------------------------------------------------------
 // Analogue S-meter
 //
@@ -273,8 +280,8 @@
 //
 // ----------------------------------------------------------------------------
 // Clock control
-#define CLOCK_X						620
-#define CLOCK_Y						36
+#define CLOCK_X						540
+#define CLOCK_Y						56
 //
 // ----------------------------------------------------------------------------
 // SD Card control

@@ -19,6 +19,7 @@
 #include "main.h"
 
 #include "hw\openamp.h"
+#include "stm32h747i_discovery_audio.h"
 
 #include "icc_proc.h"
 //#include "mchf_icc_def.h"

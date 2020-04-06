@@ -21,7 +21,6 @@
 
 #include "gui.h"
 #include "dialog.h"
-//#include "ST_GUI_Addons.h"
 
 #include "ui_controls_volume.h"
 #include "desktop\ui_controls_layout.h"
@@ -35,11 +34,146 @@ extern GUI_CONST_STORAGE GUI_BITMAP bmtechrubio_mute;
 // Public radio state
 extern struct	TRANSCEIVER_STATE_UI	tsu;
 
+static const GUI_WIDGET_CREATE_INFO VolumeDialog[] =
+{
+	// -----------------------------------------------------------------------------------------------------------------------------
+	//							name		id					x		y		xsize				ysize				?		?		?
+	// -----------------------------------------------------------------------------------------------------------------------------
+	// Self
+	{ WINDOW_CreateIndirect,	"", 		ID_WINDOW_VOLUME,	0,		0,		(SPEAKER_SIZE_X+100),	SPEAKER_SIZE_Y, 	0, 		0x64, 	0 },
+	// Mute Button
+	{ BUTTON_CreateIndirect, 	"",			ID_BUTTON_VOLUMET, 	101,	1, 		(SPEAKER_SIZE_X-1), 	(SPEAKER_SIZE_Y-1), 0, 		0x0, 	0 },
+	{ BUTTON_CreateIndirect, 	"-",		ID_BUTTON_VOLUMEM, 	1,		1, 		50,		 				(SPEAKER_SIZE_Y-2), 0, 		0x0, 	0 },
+	{ BUTTON_CreateIndirect, 	"+",		ID_BUTTON_VOLUMEP, 	51,		1,		50, 					(SPEAKER_SIZE_Y-2), 0, 		0x0, 	0 },
+};
+
+WM_HWIN 	hVolumeDialog;
+
 // control flags
 uchar loc_volume 		= 0;
 uchar mute_flag	 		= 0;
 uchar mute_saved_vol 	= 0;
 uchar mute_debounce 	= 0;
+
+static void VDCHandler(WM_MESSAGE * pMsg, int Id, int NCode)
+{
+	WM_HWIN hItem;
+
+	switch(Id)
+	{
+		// -------------------------------------------------------------
+		// Button
+		case ID_BUTTON_VOLUMET:
+		{
+			switch(NCode)
+			{
+				case WM_NOTIFICATION_CLICKED:
+				{
+					printf("volume mute\r\n");
+
+					hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_VOLUMET);
+
+					if(mute_flag)
+						BUTTON_SetBitmap(hItem, 0, &bmtechrubio_mute);
+					else
+						BUTTON_SetBitmap(hItem, 0, &bmtechrubio);
+
+					mute_flag = !mute_flag;
+					break;
+				}
+				case WM_NOTIFICATION_RELEASED:
+					//printf("release\r\n");
+					break;
+			}
+			break;
+		}
+
+		case ID_BUTTON_VOLUMEP:
+		{
+			switch(NCode)
+			{
+				case WM_NOTIFICATION_CLICKED:
+				{
+					printf("volume up\r\n");
+					break;
+				}
+				default:
+					break;
+			}
+			break;
+		}
+
+		case ID_BUTTON_VOLUMEM:
+		{
+			switch(NCode)
+			{
+				case WM_NOTIFICATION_CLICKED:
+				{
+					printf("volume down\r\n");
+					break;
+				}
+				default:
+					break;
+			}
+			break;
+		}
+
+		// -------------------------------------------------------------
+		default:
+			break;
+	}
+}
+
+static void VDHandler(WM_MESSAGE *pMsg)
+{
+	WM_HWIN 			hItem;
+	int 				Id, NCode;
+
+	switch (pMsg->MsgId)
+	{
+		case WM_INIT_DIALOG:
+		{
+			hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_VOLUMET);
+			BUTTON_SetBitmap(hItem, 0, &bmtechrubio);
+			break;
+		}
+
+		case WM_PAINT:
+			break;
+
+		case WM_DELETE:
+			break;
+
+		case WM_NOTIFY_PARENT:
+		{
+			Id    = WM_GetId(pMsg->hWinSrc);    // Id of widget
+			NCode = pMsg->Data.v;               // Notification code
+
+			VDCHandler(pMsg,Id,NCode);
+			break;
+		}
+
+		// Process key messages not supported by ICON_VIEW control
+		case WM_KEY:
+		{
+			switch (((WM_KEY_INFO*)(pMsg->Data.p))->Key)
+			{
+		        // Return from menu
+		        case GUI_KEY_HOME:
+		        {
+		        	//printf("GUI_KEY_HOME\r\n");
+		        	//GUI_EndDialog(pMsg->hWin, 0);
+		        	break;
+		        }
+			}
+			break;
+		}
+
+		default:
+			WM_DefaultProc(pMsg);
+			break;
+	}
+}
 
 //*----------------------------------------------------------------------------
 //* Function Name       :
@@ -51,6 +185,10 @@ uchar mute_debounce 	= 0;
 //*----------------------------------------------------------------------------
 void ui_controls_volume_init(void)
 {
+	hVolumeDialog = GUI_CreateDialogBox(VolumeDialog, GUI_COUNTOF(VolumeDialog), VDHandler, WM_HBKWIN, (SPEAKER_X - 100), SPEAKER_Y);
+
+#if 0
+
 	char  		buff[20];
 	GUI_RECT 	Rect;
 
@@ -100,6 +238,7 @@ void ui_controls_volume_init(void)
 	GUI_DispStringInRect(buff, &Rect, GUI_TA_HCENTER | GUI_TA_VCENTER);
 
 	GUI_SetClipRect(NULL);
+#endif
 }
 
 //*----------------------------------------------------------------------------
@@ -112,7 +251,7 @@ void ui_controls_volume_init(void)
 //*----------------------------------------------------------------------------
 void ui_controls_volume_quit(void)
 {
-
+	GUI_EndDialog(hVolumeDialog, 0);
 }
 
 //*----------------------------------------------------------------------------
@@ -125,6 +264,7 @@ void ui_controls_volume_quit(void)
 //*----------------------------------------------------------------------------
 void ui_controls_volume_touch(void)
 {
+#if 0
 	//printf("volume touch\r\n");
 
 	if(mute_debounce)
@@ -170,6 +310,7 @@ void ui_controls_volume_touch(void)
 	mute_debounce = 3;
 
 	tsu.audio_mute_flag = mute_flag;
+#endif
 }
 
 //*----------------------------------------------------------------------------
@@ -182,6 +323,7 @@ void ui_controls_volume_touch(void)
 //*----------------------------------------------------------------------------
 void ui_controls_volume_refresh(void)
 {
+#if 0
 	uchar volume = tsu.band[tsu.curr_band].volume;
 	char  buff[20];
 
@@ -210,6 +352,7 @@ void ui_controls_volume_refresh(void)
 	GUI_DispStringAt(buff,(SPEAKER_X + 2),(SPEAKER_Y + 38));
 
 	loc_volume = volume;
+#endif
 }
 
 #endif
