@@ -25,25 +25,8 @@
 
 #include "esp32_proc.h"
 #include "audio_proc.h"
+#include "touch_proc.h"
 #include "version.h"
-
-/** @addtogroup CORE
-  * @{
-  */
-
-/** @defgroup KERNEL_BSP
-  * @brief Kernel BSP routines
-  * @{
-  */
-
-/* External variables --------------------------------------------------------*/
-//static UART_HandleTypeDef UART_Handle;
-
-/* Private typedef -----------------------------------------------------------*/
-/* Private defines -----------------------------------------------------------*/
-//#define DEMO_DESCRITION                 "Out Of the Box Demonstration V1.0.0"
-//#define STML_DESCRITION                 "ST Menu Launcher V1.0.0"
-//#define BOARD_NAME                      "STM32H747I-DISCO_MB1248"
 
 #define HSEM_ID_0                       (0U) /* HW semaphore 0*/
 
@@ -65,15 +48,6 @@
 #endif /* EXT_FLASH_PAGE_SIZE */
 
 #define FLASH_BURST_WIDTH               256 /* in bits */
-
-/* Private macros ------------------------------------------------------------*/
-#ifdef __GNUC__
-  /* With GCC, small printf (option LD Linker->Libraries->Small printf
-     set to 'Yes') calls __io_putchar() */
-  #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
-#else
-  #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
-#endif /* __GNUC__ */
 
 // #define __RAM_CODE_SECTION __attribute__ ((section ("flasher_code_section"))) __RAM_FUNC
 #define __RAM_CODE_SECTION __attribute__ ((section ("flasher_code_section")))
@@ -127,36 +101,6 @@ static void Copy_EXT_RAM_data(void)
 	size_t size = (size_t)((uint32_t)__sfe("EXT_ROM") - (uint32_t)__sfb("EXT_ROM"));
 	my_data_copy(__sfb("EXT_RAM"), __sfb("EXT_ROM"), size);
 #endif
-}
-#endif
-
-#if 0
-static void BSP_ConfigSerial( void )
-{
-  UART_Handle.Instance            = USARTx;
-  UART_Handle.Init.BaudRate       = 115200;
-  UART_Handle.Init.WordLength     = UART_WORDLENGTH_8B;
-  UART_Handle.Init.StopBits       = UART_STOPBITS_1;
-  UART_Handle.Init.Parity         = UART_PARITY_NONE;
-  UART_Handle.Init.Mode           = UART_MODE_TX_RX;
-  UART_Handle.Init.HwFlowCtl      = UART_HWCONTROL_NONE;
-  UART_Handle.Init.OverSampling   = UART_OVERSAMPLING_16;
-
-  HAL_UART_Init( &UART_Handle );
-}
-
-/**
-  * @brief  Retargets the C library printf function to the USART.
-  * @param  None
-  * @retval None
-  */
-PUTCHAR_PROTOTYPE
-{
-  /* Place your implementation of fputc here */
-  /* e.g. write a character to the EVAL_COM1 and Loop until the end of transmission */
-  HAL_UART_Transmit(&UART_Handle, (uint8_t *)&ch, 1, 0xFFFF);
-
-  return ch;
 }
 #endif
 
@@ -314,6 +258,7 @@ uint8_t BSP_Config(void)
     return 0;
   }
 
+#if 0
   /* Initialize the NOR QuadSPI flash */
   BSP_QSPI_Init_t init ;
   init.InterfaceMode=MT25TL01G_QPI_MODE;
@@ -332,9 +277,15 @@ uint8_t BSP_Config(void)
       return 0;
     }
   }
+#endif
+
+
+  LCD_LL_Reset(); /* LCD controller need to be initialized */
 
   /* Initialize the Touch screen */
-  LCD_LL_Reset(); /* LCD controller need to be initialized */
+  touch_proc_hw_init();
+
+#if 0
   TS_Init_t hTS;
   hTS.Width = 800;
   hTS.Height = 480;
@@ -360,6 +311,7 @@ uint8_t BSP_Config(void)
     printf("Failed to initialize TS (IT) !! (Error %d)\n", RetVal);
     return 0;
   }
+#endif
 
   /* Enable Back up SRAM */
   /* Enable write access to Backup domain */
@@ -383,6 +335,7 @@ uint8_t BSP_Config(void)
   return 1;
 }
 
+#if 0
 /**
   * @brief  Provide the GUI with current state of the touch screen
   * @param  None
@@ -433,6 +386,7 @@ uint8_t BSP_TouchUpdate(void)
 //#endif
   return 0;
 }
+#endif
 
 #if 0
 /**

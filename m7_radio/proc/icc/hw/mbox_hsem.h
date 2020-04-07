@@ -28,8 +28,8 @@
 /* Includes ------------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
-#define HSEM_ID_0           0 /* CM7 to CM4 Notification */
-#define HSEM_ID_1           1 /* CM4 to CM7 Notification */
+//#define HSEM_ID_0           0 /* CM7 to CM4 Notification */
+//#define HSEM_ID_1           1 /* CM4 to CM7 Notification */
 
 /* Exported functions ------------------------------------------------------- */
 int MAILBOX_Notify(void *priv, uint32_t id);

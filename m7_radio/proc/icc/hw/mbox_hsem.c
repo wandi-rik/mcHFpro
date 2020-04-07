@@ -23,6 +23,8 @@
 #include "openamp_conf.h"
 #include "mbox_hsem.h"
 
+#include "mchf_icc_def.h"
+
 /* Within 'USER CODE' section, code will be kept by default at each generation */
 /* USER CODE BEGIN 0 */
 

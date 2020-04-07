@@ -25,11 +25,11 @@
 #include "ui_controls_volume.h"
 #include "desktop\ui_controls_layout.h"
 
-#include "stm32h7xx_hal_gpio.h"
-
 // Speaker icon in C file as binary resource
 extern GUI_CONST_STORAGE GUI_BITMAP bmtechrubio;
 extern GUI_CONST_STORAGE GUI_BITMAP bmtechrubio_mute;
+
+extern TaskHandle_t hTouchTask;
 
 // Public radio state
 extern struct	TRANSCEIVER_STATE_UI	tsu;
@@ -69,14 +69,20 @@ static void VDCHandler(WM_MESSAGE * pMsg, int Id, int NCode)
 			{
 				case WM_NOTIFICATION_CLICKED:
 				{
-					printf("volume mute\r\n");
+					//printf("volume mute\r\n");
 
 					hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_VOLUMET);
 
 					if(mute_flag)
+					{
+						xTaskNotify(hTouchTask, 0x01, eSetValueWithOverwrite);
 						BUTTON_SetBitmap(hItem, 0, &bmtechrubio_mute);
+					}
 					else
+					{
+						xTaskNotify(hTouchTask, 0x02, eSetValueWithOverwrite);
 						BUTTON_SetBitmap(hItem, 0, &bmtechrubio);
+					}
 
 					mute_flag = !mute_flag;
 					break;
@@ -94,7 +100,12 @@ static void VDCHandler(WM_MESSAGE * pMsg, int Id, int NCode)
 			{
 				case WM_NOTIFICATION_CLICKED:
 				{
-					printf("volume up\r\n");
+					//printf("volume up\r\n");
+
+					if(tsu.band[tsu.curr_band].volume < 90)
+						tsu.band[tsu.curr_band].volume += 10;
+
+					xTaskNotify(hTouchTask, 0x03, eSetValueWithOverwrite);
 					break;
 				}
 				default:
@@ -109,7 +120,12 @@ static void VDCHandler(WM_MESSAGE * pMsg, int Id, int NCode)
 			{
 				case WM_NOTIFICATION_CLICKED:
 				{
-					printf("volume down\r\n");
+					//printf("volume down\r\n");
+
+					if(tsu.band[tsu.curr_band].volume > 10)
+						tsu.band[tsu.curr_band].volume -= 10;
+
+					xTaskNotify(hTouchTask, 0x03, eSetValueWithOverwrite);
 					break;
 				}
 				default:

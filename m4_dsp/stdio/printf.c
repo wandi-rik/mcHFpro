@@ -15,8 +15,8 @@
 **          third party drivers specifies otherwise. Thank you!                    **
 ************************************************************************************/
 
-// Common
-//#include "main.h"
+#include "mchf_board.h"
+#include "mchf_icc_def.h"
 
 #include "stm32h7xx_hal.h"
 #include "stm32h747i_discovery.h"
@@ -24,10 +24,10 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-/** Maximum string size allowed (in bytes). */
+// Maximum string size allowed (in bytes)
 #define MAX_STRING_SIZE         300
 
-/** Required for proper compilation. */
+// Required for proper compilation
 struct _reent r = {0, (FILE *) 0, (FILE *) 1, (FILE *) 0};
 //struct _reent *_impure_ptr = &r;	// some conflict with lwIP!!!
 
@@ -56,7 +56,7 @@ static int claim_debug_port(void)
 		return 0;
 
 	// Wait to be free
-	while(HAL_HSEM_IsSemTaken(27) == 1)
+	while(HAL_HSEM_IsSemTaken(HSEM_ID_27) == 1)
 	{
 		// Not possible to claim it
 		if(timeout == 0)
@@ -67,8 +67,7 @@ static int claim_debug_port(void)
 	}
 
 	// Take it
-	//HAL_HSEM_FastTake(27);
-	HAL_HSEM_Take(27,0);
+	HAL_HSEM_Take(HSEM_ID_27, 0);
 
 	HAL_UART_Init(&DEBUG_UART_Handle);
 
@@ -93,17 +92,10 @@ static void release_debug_port(void)
 	if(share_port == 0)
 		return;
 
-	// Check init status
-	//if(mngr_status != RESMGR_OK)
-	//	return;
-
 	// Release HW
 	HAL_UART_DeInit(&DEBUG_UART_Handle);
 
-	// Release lock
-	//ResMgr_Release(RESMGR_ID_USART1, RESMGR_FLAGS_CPU1);
-
-	HAL_HSEM_Release(27, 0);
+	HAL_HSEM_Release(HSEM_ID_27, 0);
 }
 
 /**

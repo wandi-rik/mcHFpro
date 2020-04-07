@@ -15,16 +15,18 @@
 **          third party drivers specifies otherwise. Thank you!                    **
 ************************************************************************************/
 
-// Common
+#include "mchf_pro_board.h"
 #include "main.h"
+
+#include "mchf_icc_def.h"
 
 #include <stdio.h>
 #include <stdarg.h>
 
-/** Maximum string size allowed (in bytes). */
+// Maximum string size allowed (in bytes)
 #define MAX_STRING_SIZE         300
 
-/** Required for proper compilation. */
+// Required for proper compilation
 struct _reent r = {0, (FILE *) 0, (FILE *) 1, (FILE *) 0};
 //struct _reent *_impure_ptr = &r;	// some conflict with lwIP!!!
 
@@ -32,7 +34,7 @@ UART_HandleTypeDef 	DEBUG_UART_Handle;
 uchar				share_port  = 0;
 const char 			cpu_id_str[] = "[m7] ";
 
-SemaphoreHandle_t xSemaphore = NULL;
+SemaphoreHandle_t 	xSemaphore = NULL;
 
 //*----------------------------------------------------------------------------
 //* Function Name       : claim_debug_port
@@ -63,7 +65,7 @@ static int claim_debug_port(void)
 		return 2;
 
 	// Wait to be free
-	while(HAL_HSEM_IsSemTaken(27) == 1)
+	while(HAL_HSEM_IsSemTaken(HSEM_ID_27) == 1)
 	{
 		// Not possible to claim it
 		if(timeout == 0)
@@ -74,8 +76,7 @@ static int claim_debug_port(void)
 	}
 
 	// Take shared resource
-	//HAL_HSEM_FastTake(27);
-	HAL_HSEM_Take(27,0);
+	HAL_HSEM_Take(HSEM_ID_27,0);
 
 	HAL_UART_Init(&DEBUG_UART_Handle);
 
@@ -111,7 +112,7 @@ static void release_debug_port(void)
 	//ResMgr_Release(RESMGR_ID_USART1, RESMGR_FLAGS_CPU1);
 
 	// Release shared resource
-	HAL_HSEM_Release(27, 0);
+	HAL_HSEM_Release(HSEM_ID_27, 0);
 
 	// Release OS mutex
 	xSemaphoreGive(xSemaphore);

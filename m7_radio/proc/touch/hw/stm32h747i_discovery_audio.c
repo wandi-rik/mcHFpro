@@ -131,16 +131,40 @@ How To use this driver:
   *
   ******************************************************************************
   */
-
-#include "mchf_board.h"
-#include "mchf_icc_def.h"
-
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h747i_discovery_audio.h"
 #include "stm32h747i_discovery_bus.h"
 
+/** @addtogroup BSP
+  * @{
+  */
+
+/** @addtogroup STM32H747I_DISCO
+  * @{
+  */
+
+/** @defgroup STM32H747I_DISCO_AUDIO AUDIO
+  * @brief This file includes the low layer driver for wm8994 Audio Codec
+  *        available on STM32H747I-DISCO discovery board(MB1381).
+  * @{
+  */
+
+/** @defgroup STM32H747I_DISCO_AUDIO_Private_Variables Private Variables
+  * @{
+  */
 static AUDIO_Drv_t                     *Audio_Drv = NULL;
 
+/* PDM filters params */
+//static PDM_Filter_Handler_t  PDM_FilterHandler[2];
+//static PDM_Filter_Config_t   PDM_FilterConfig[2];
+
+/**
+  * @}
+  */
+
+/** @defgroup STM32H747I_DISCO_AUDIO_Exported_Variables Exported Variables
+  * @{
+  */
 void                           *Audio_CompObj = NULL;
 /* Play handle */
 SAI_HandleTypeDef               haudio_out_sai;
@@ -153,6 +177,13 @@ AUDIO_OUT_Ctx_t                 Audio_Out_Ctx[AUDIO_OUT_INSTANCES_NBR] = {0};
 /* Recording context */
 AUDIO_IN_Ctx_t                  Audio_In_Ctx[AUDIO_IN_INSTANCES_NBR] = {0};
 
+/**
+  * @}
+  */
+
+/** @defgroup STM32H747I_DISCO_AUDIO_Private_Function_Prototypes Private Function Prototypes
+  * @{
+  */
 /* SAI Msp config */
 static void SAI_MspInit(SAI_HandleTypeDef *hsai);
 static void SAI_MspDeInit(SAI_HandleTypeDef *hsai);
@@ -170,70 +201,60 @@ static void SAI_ErrorCallback(SAI_HandleTypeDef *hsai);
 static int32_t WM8994_Probe(void);
 #endif
 
-static int i2c_claim_port(void)
+int32_t BSP_AUDIO_INOUT_InitA(void)
 {
-	ulong timeout = 0xFFFFFF;
-
-	// Wait to be free
-	while(HAL_HSEM_IsSemTaken(HSEM_ID_22) == 1)
-	{
-		// Not possible to claim it
-		if(timeout == 0)
-			return 1;
-
-		__asm("nop");
-		timeout--;
-	}
-
-	// Take shared resource
-	HAL_HSEM_Take(HSEM_ID_22, 0);
-
-	return 0;
-}
-
-static void i2c_release_port(void)
-{
-	HAL_HSEM_Release(HSEM_ID_22, 0);
-}
-
-int32_t BSP_AUDIO_INOUT_Init(uint32_t Instance, BSP_AUDIO_Init_t* AudioInitOut, BSP_AUDIO_Init_t* AudioInitIn)
-{
-	MX_SAI_Config_t 	mx_config;
-	#if (USE_AUDIO_CODEC_WM8994 == 1)
 	WM8994_Init_t 		codec_init;
-	#endif
 
-	// Fill Audio_Out_Ctx structure
-	//Audio_Out_Ctx[Instance].Device         = AudioInitOut->Device;
-	//Audio_Out_Ctx[Instance].SampleRate     = AUDIO_FREQUENCY_48K;	//AudioInitOut->SampleRate;
-	//Audio_Out_Ctx[Instance].BitsPerSample  = AudioInitOut->BitsPerSample;
-	//Audio_Out_Ctx[Instance].ChannelsNbr    = AudioInitOut->ChannelsNbr;
-	Audio_Out_Ctx[Instance].Volume         = AudioInitOut->Volume;
-	Audio_Out_Ctx[Instance].State          = AUDIO_OUT_STATE_RESET;
+	if(WM8994_Probe() != BSP_ERROR_NONE)
+		return BSP_ERROR_COMPONENT_FAILURE;
 
-	//Audio_In_Ctx[Instance].Device          = AudioInitIn->Device;
-	//Audio_In_Ctx[Instance].ChannelsNbr     = AudioInitIn->ChannelsNbr;
-	//Audio_In_Ctx[Instance].SampleRate      = AUDIO_FREQUENCY_48K;	//AudioInitIn->SampleRate;
-	//Audio_In_Ctx[Instance].BitsPerSample   = AudioInitIn->BitsPerSample;
-	Audio_In_Ctx[Instance].Volume          = AudioInitIn->Volume;
-	Audio_In_Ctx[Instance].State           = AUDIO_IN_STATE_RESET;
+	#if 0
+	codec_init.Frequency    	= AUDIO_FREQUENCY_48K;	//AudioInitIn->SampleRate;
+	codec_init.InputDevice 		= WM8994_IN_LINE1;
+	codec_init.OutputDevice 	= AUDIO_OUT_DEVICE_HEADPHONE;
+	codec_init.Resolution		= 0;	//(AudioInitIn->BitsPerSample==AUDIO_RESOLUTION_32B)? 3:0;
+	codec_init.Volume       	= VOLUME_IN_CONVERT(40);
 
-	#if (USE_AUDIO_CODEC_WM8994 == 1)
-	if(i2c_claim_port() == 0)
-	{
-		if(WM8994_Probe() != BSP_ERROR_NONE)
-		{
-			i2c_release_port();
-			return BSP_ERROR_COMPONENT_FAILURE;
-		}
-		i2c_release_port();
-	}
-	else
+	// Initialise the codec internal registers
+	if(Audio_Drv->Init(Audio_CompObj, &codec_init) != 0)
 		return BSP_ERROR_COMPONENT_FAILURE;
 	#endif
 
-	// PLL clock
-	if(MX_SAI1_ClockConfig(NULL, AUDIO_FREQUENCY_48K) != HAL_OK)
+	return BSP_ERROR_NONE;
+}
+
+/**
+  * @}
+  */
+int32_t BSP_AUDIO_INOUT_Init(uint32_t Instance, BSP_AUDIO_Init_t* AudioInitOut, BSP_AUDIO_Init_t* AudioInitIn)
+{
+	MX_SAI_Config_t 	mx_config;
+	WM8994_Init_t 		codec_init;
+
+	// Fill Audio_Out_Ctx structure
+	Audio_Out_Ctx[Instance].Device         = AudioInitOut->Device;
+	Audio_Out_Ctx[Instance].Instance       = Instance;
+	Audio_Out_Ctx[Instance].SampleRate     = AudioInitOut->SampleRate;
+	Audio_Out_Ctx[Instance].BitsPerSample  = AudioInitOut->BitsPerSample;
+	Audio_Out_Ctx[Instance].ChannelsNbr    = AudioInitOut->ChannelsNbr;
+	Audio_Out_Ctx[Instance].Volume         = AudioInitOut->Volume;
+	Audio_Out_Ctx[Instance].State          = AUDIO_OUT_STATE_RESET;
+
+	Audio_In_Ctx[Instance].Device          = AudioInitIn->Device;
+	Audio_In_Ctx[Instance].ChannelsNbr     = AudioInitIn->ChannelsNbr;
+	Audio_In_Ctx[Instance].SampleRate      = AudioInitIn->SampleRate;
+	Audio_In_Ctx[Instance].BitsPerSample   = AudioInitIn->BitsPerSample;
+	Audio_In_Ctx[Instance].Volume          = AudioInitIn->Volume;
+	Audio_In_Ctx[Instance].State           = AUDIO_IN_STATE_RESET;
+
+	if(WM8994_Probe() != BSP_ERROR_NONE)
+		return BSP_ERROR_COMPONENT_FAILURE;
+
+	// PLL clock is set depending by the AudioFreq (44.1khz vs 48khz groups)
+	if(MX_SAI1_ClockConfig(&haudio_out_sai, AudioInitOut->SampleRate) != HAL_OK)
+		return BSP_ERROR_CLOCK_FAILURE;
+
+	if(MX_SAI1_ClockConfig(&haudio_in_sai, AudioInitIn->SampleRate) != HAL_OK)
 		return BSP_ERROR_CLOCK_FAILURE;
 
 	haudio_out_sai.Instance = AUDIO_OUT_SAIx;
@@ -242,14 +263,14 @@ int32_t BSP_AUDIO_INOUT_Init(uint32_t Instance, BSP_AUDIO_Init_t* AudioInitOut, 
 	haudio_in_sai.Instance = AUDIO_IN_SAIx;
 	SAI_MspInit(&haudio_in_sai);
 
-	mx_config.MonoStereoMode 	= SAI_STEREOMODE;	//(AudioInitIn->ChannelsNbr == 1U) ? SAI_MONOMODE : SAI_STEREOMODE;
-	mx_config.DataSize 			= SAI_DATASIZE_16;	//(AudioInitIn->BitsPerSample == AUDIO_RESOLUTION_32B)?SAI_DATASIZE_32: SAI_DATASIZE_16;
-	mx_config.FrameLength		= 64;	//(AudioInitIn->BitsPerSample == AUDIO_RESOLUTION_32B)?128: 64;
-	mx_config.ActiveFrameLength	= 32;	//(AudioInitIn->BitsPerSample == AUDIO_RESOLUTION_32B)?64: 32;
+	mx_config.MonoStereoMode 	= (AudioInitIn->ChannelsNbr == 1U) ? SAI_MONOMODE : SAI_STEREOMODE;
+	mx_config.DataSize 			= (AudioInitIn->BitsPerSample == AUDIO_RESOLUTION_32B)?SAI_DATASIZE_32: SAI_DATASIZE_16;
+	mx_config.FrameLength		= (AudioInitIn->BitsPerSample == AUDIO_RESOLUTION_32B)?128: 64;
+	mx_config.ActiveFrameLength	= (AudioInitIn->BitsPerSample == AUDIO_RESOLUTION_32B)?64: 32;
 	mx_config.OutputDrive       = SAI_OUTPUTDRIVE_DISABLE;
-	mx_config.SlotActive 		= CODEC_AUDIOFRAME_SLOT_02;	//(AudioInitIn->Device==AUDIO_IN_DEVICE_ANALOG_MIC)? CODEC_AUDIOFRAME_SLOT_02:CODEC_AUDIOFRAME_SLOT_13;
+	mx_config.SlotActive 		= (AudioInitIn->Device==AUDIO_IN_DEVICE_ANALOG_MIC)? CODEC_AUDIOFRAME_SLOT_02:CODEC_AUDIOFRAME_SLOT_13;
 
-	mx_config.AudioFrequency    = AUDIO_FREQUENCY_48K;	//Audio_In_Ctx[Instance].SampleRate;
+	mx_config.AudioFrequency    = Audio_In_Ctx[Instance].SampleRate;
 	mx_config.AudioMode         = SAI_MODESLAVE_RX;
 	mx_config.ClockStrobing     = SAI_CLOCKSTROBING_RISINGEDGE;
 	mx_config.Synchro           = SAI_SYNCHRONOUS;
@@ -263,37 +284,22 @@ int32_t BSP_AUDIO_INOUT_Init(uint32_t Instance, BSP_AUDIO_Init_t* AudioInitOut, 
 	mx_config.OutputDrive       = SAI_OUTPUTDRIVE_ENABLE;
 	mx_config.Synchro           = SAI_ASYNCHRONOUS;
 	mx_config.SynchroExt        = SAI_SYNCEXT_DISABLE;
-	mx_config.SlotActive        = CODEC_AUDIOFRAME_SLOT_02;	//CODEC_AUDIOFRAME_SLOT_0123;
+	mx_config.SlotActive        = CODEC_AUDIOFRAME_SLOT_0123;
 
 	if(MX_SAI1_Block_A_Init(&haudio_out_sai, &mx_config) != HAL_OK)
 		return BSP_ERROR_PERIPH_FAILURE;
 
-	#if (USE_AUDIO_CODEC_WM8994 == 1)
-	codec_init.Frequency    	= AUDIO_FREQUENCY_48K;	//AudioInitIn->SampleRate;
+	codec_init.Frequency    	= AudioInitIn->SampleRate;
 	codec_init.InputDevice 		= WM8994_IN_LINE1;
 	codec_init.OutputDevice 	= AUDIO_OUT_DEVICE_HEADPHONE;
-	codec_init.Resolution		= 0;	//(AudioInitIn->BitsPerSample==AUDIO_RESOLUTION_32B)? 3:0;
+	codec_init.Resolution		= (AudioInitIn->BitsPerSample==AUDIO_RESOLUTION_32B)? 3:0;
 	codec_init.Volume       	= VOLUME_IN_CONVERT(AudioInitIn->Volume);
 
-	if(i2c_claim_port() == 0)
-	{
-		// Initialise the codec internal registers
-		if(Audio_Drv->Init(Audio_CompObj, &codec_init) != 0)
-		{
-			i2c_release_port();
-			return BSP_ERROR_COMPONENT_FAILURE;
-		}
-		i2c_release_port();
-	}
-	else
+	// Initialise the codec internal registers
+	if(Audio_Drv->Init(Audio_CompObj, &codec_init) != 0)
 		return BSP_ERROR_COMPONENT_FAILURE;
-	#endif
 
 	Audio_Out_Ctx[Instance].State = AUDIO_OUT_STATE_STOP;
-
-	// Release I2C for M7 (without semaphore synchronisation!!!!)
-	//BSP_I2C4_DeInit();
-
 	return BSP_ERROR_NONE;
 }
 
@@ -301,7 +307,6 @@ int32_t BSP_AUDIO_INOUT_Init(uint32_t Instance, BSP_AUDIO_Init_t* AudioInitOut, 
   * @{
   */
 
-#if 0
 /**
   * @brief  Configures the audio peripherals.
   * @param  Instance  : AUDIO_OUT Instance. It can only be 0 (SAI)
@@ -430,7 +435,6 @@ int32_t BSP_AUDIO_OUT_Init(uint32_t Instance, BSP_AUDIO_Init_t* AudioInit)
 
   return ret;
 }
-#endif
 
 /**
   * @brief  De-initializes the audio out peripheral.
@@ -688,7 +692,6 @@ int32_t BSP_AUDIO_OUT_RegisterMspCallbacks (uint32_t Instance, BSP_AUDIO_OUT_Cb_
 }
 #endif /*(USE_HAL_SAI_REGISTER_CALLBACKS == 1U)*/
 
-#if 0
 /**
   * @brief  Starts playing audio stream from a data buffer for a determined size.
   * @param  Instance : AUDIO OUT Instance. It can only be 0 (SAI)
@@ -732,9 +735,7 @@ int32_t BSP_AUDIO_OUT_Play(uint32_t Instance, uint8_t* pData, uint32_t NbrOfByte
   /* Return BSP status */
   return ret;
 }
-#endif
 
-#if 0
 /**
   * @brief  This function Pauses the audio file stream. In case
   *         of using DMA, the DMA Pause feature is used.
@@ -778,9 +779,7 @@ int32_t BSP_AUDIO_OUT_Pause(uint32_t Instance)
   /* Return BSP status */
   return ret;
 }
-#endif
 
-#if 0
 /**
   * @brief   Resumes the audio file stream.
   * @param  Instance : AUDIO OUT Instance. It can only be 0 (SAI)
@@ -822,9 +821,7 @@ int32_t BSP_AUDIO_OUT_Resume(uint32_t Instance)
   /* Return BSP status */
   return ret;
 }
-#endif
 
-#if 0
 /**
   * @brief  Stops audio playing and Power down the Audio Codec.
   * @param  Instance : AUDIO OUT Instance. It can only be 0 (SAI)
@@ -867,9 +864,7 @@ int32_t BSP_AUDIO_OUT_Stop(uint32_t Instance)
   /* Return BSP status */
   return ret;
 }
-#endif
 
-#if 0
 /**
   * @brief  Controls the current audio volume level.
   * @param  Instance : AUDIO OUT Instance. It can only be 0 (SAI)
@@ -908,9 +903,7 @@ int32_t BSP_AUDIO_OUT_SetVolume(uint32_t Instance, uint32_t Volume)
   /* Return BSP status */
   return ret;
 }
-#endif
 
-#if 0
 /**
   * @brief  Get the current audio volume level.
   * @param  Instance : AUDIO OUT Instance. It can only be 0 (SAI)
@@ -932,9 +925,7 @@ int32_t BSP_AUDIO_OUT_GetVolume(uint32_t Instance, uint32_t *Volume)
   /* Return BSP status */
   return ret;
 }
-#endif
 
-#if 0
 /**
   * @brief  Enables the MUTE
   * @param  Instance : AUDIO OUT Instance. It can only be 0 (SAI)
@@ -964,9 +955,7 @@ int32_t BSP_AUDIO_OUT_Mute(uint32_t Instance)
   /* Return BSP status */
   return ret;
 }
-#endif
 
-#if 0
 /**
   * @brief  Disables the MUTE mode
   * @param  Instance : AUDIO OUT Instance. It can only be 0 (SAI)
@@ -996,9 +985,7 @@ int32_t BSP_AUDIO_OUT_UnMute(uint32_t Instance)
   /* Return BSP status */
   return ret;
 }
-#endif
 
-#if 0
 /**
   * @brief  Check whether the MUTE mode is enabled or not
   * @param  Instance : AUDIO OUT Instance. It can only be 0 (SAI)
@@ -1020,9 +1007,7 @@ int32_t BSP_AUDIO_OUT_IsMute(uint32_t Instance, uint32_t *IsMute)
   /* Return BSP status */
   return ret;
 }
-#endif
 
-#if 0
 /**
   * @brief  Switch dynamically (while audio file is played) the output target
   *         (speaker or headphone).
@@ -1053,9 +1038,7 @@ int32_t BSP_AUDIO_OUT_SetDevice(uint32_t Instance, uint32_t Device)
   /* Return BSP status */
   return ret;
 }
-#endif
 
-#if 0
 /**
   * @brief  Get the Output Device
   * @param  Instance : AUDIO OUT Instance. It can only be 0 (SAI)
@@ -1078,7 +1061,6 @@ int32_t BSP_AUDIO_OUT_GetDevice(uint32_t Instance, uint32_t *Device)
   /* Return BSP status */
   return ret;
 }
-#endif
 
 /**
   * @brief  Updates the audio frequency.
@@ -2738,7 +2720,6 @@ static void SAI_MspInit(SAI_HandleTypeDef *hsai)
     AUDIO_OUT_SAIx_SCK_ENABLE();
     AUDIO_OUT_SAIx_SD_ENABLE();
     AUDIO_OUT_SAIx_FS_ENABLE();
-
     /* CODEC_SAI pins configuration: FS, SCK, MCK and SD pins ------------------*/
     gpio_init_structure.Pin = AUDIO_OUT_SAIx_FS_PIN;
     gpio_init_structure.Mode = GPIO_MODE_AF_PP;
@@ -2775,7 +2756,6 @@ static void SAI_MspInit(SAI_HandleTypeDef *hsai)
   /* CODEC_SAI pins configuration: FS, SCK and SD pins */
   /* Enable FS, SCK and SD clocks */
  __HAL_RCC_GPIOE_CLK_ENABLE();
-
   /* Enable FS, SCK and SD pins */
   gpio_init_structure.Pin = GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6;
   gpio_init_structure.Mode = GPIO_MODE_AF_PP;
@@ -2786,25 +2766,25 @@ static void SAI_MspInit(SAI_HandleTypeDef *hsai)
 
   /* Enable MCLK clock */
    __HAL_RCC_GPIOG_CLK_ENABLE();
-
   /* Enable MCLK pin */
   gpio_init_structure.Pin = GPIO_PIN_7;
   HAL_GPIO_Init(GPIOG, &gpio_init_structure);
+
 
     /* Enable the DMA clock */
     AUDIO_OUT_SAIx_DMAx_CLK_ENABLE();
 
     /* Configure the hdma_saiTx handle parameters */
-    //if(Audio_Out_Ctx[0].BitsPerSample == AUDIO_RESOLUTION_16B)
-    //{
+    if(Audio_Out_Ctx[0].BitsPerSample == AUDIO_RESOLUTION_16B)
+    {
       hdma_sai_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
       hdma_sai_tx.Init.MemDataAlignment    = DMA_MDATAALIGN_HALFWORD;
-    //}
-    //else
-   // {
-   //   hdma_sai_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
-   //   hdma_sai_tx.Init.MemDataAlignment    = DMA_MDATAALIGN_WORD;
-   // }
+    }
+    else
+    {
+      hdma_sai_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+      hdma_sai_tx.Init.MemDataAlignment    = DMA_MDATAALIGN_WORD;
+    }
 
     hdma_sai_tx.Init.Request             = AUDIO_OUT_SAIx_DMAx_REQUEST;
     hdma_sai_tx.Init.PeriphInc           = DMA_PINC_DISABLE;
@@ -2894,7 +2874,6 @@ static void SAI_MspInit(SAI_HandleTypeDef *hsai)
     HAL_NVIC_SetPriority(AUDIO_IN_SAI_PDMx_DMAx_IRQ, BSP_AUDIO_IN_IT_PRIORITY, 0);
     HAL_NVIC_EnableIRQ(AUDIO_IN_SAI_PDMx_DMAx_IRQ);
   }
-
    /* Audio In Msp initialization */
   if(hsai->Instance == AUDIO_IN_SAIx)
   {
@@ -2903,7 +2882,6 @@ static void SAI_MspInit(SAI_HandleTypeDef *hsai)
 
     /* Enable SD GPIO clock */
     AUDIO_IN_SAIx_SD_ENABLE();
-
     /* CODEC_SAI pin configuration: SD pin */
     gpio_init_structure.Pin = AUDIO_IN_SAIx_SD_PIN;
     gpio_init_structure.Mode = GPIO_MODE_AF_PP;

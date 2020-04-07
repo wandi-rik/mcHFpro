@@ -267,7 +267,7 @@ static uchar icc_proc_cmd_handler(uchar cmd)
 			df.tune_upd 		= 0;
 			ts.api_iamb_type 	= 0;
 
-			ts.dmod_mode 		= DEMOD_LSB;
+			//ts.dmod_mode 		= DEMOD_LSB;
 			ts.audio_gain 		= 6;
 			ts.filter_id 		= 3;
 			df.nco_freq			= -6000;

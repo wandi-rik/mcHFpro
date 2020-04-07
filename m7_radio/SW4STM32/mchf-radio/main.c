@@ -32,6 +32,7 @@
 #include "ui_proc.h"
 #include "icc_proc.h"
 #include "audio_proc.h"
+#include "touch_proc.h"
 
 #if configAPPLICATION_ALLOCATED_HEAP == 1
 #if defined ( __ICCARM__ )
@@ -55,7 +56,7 @@ typedef struct pwr_db
 }PWDDBG_TypeDef;
 
 /* Private define ------------------------------------------------------------*/
-#define HSEM_ID_0                       (0U) /* HW semaphore 0*/
+//#define HSEM_ID_0                       (0U) /* HW semaphore 0*/
 #define AUTO_DEMO_TIMEOUT_0               20
 #define AUTO_DEMO_TIMEOUT_1                5
 
@@ -77,9 +78,12 @@ typedef struct pwr_db
 //static __IO uint32_t SoftwareReset = 0;
 //static uint32_t AutoDemoTimeOutMs = AUTO_DEMO_TIMEOUT_0;
 //static uint32_t AutoDemoId = 0;
-static uint8_t BSP_Initialized = 0;
-osSemaphoreId TSSemaphoreID;
-osMessageQId AutoDemoEvent = {0};
+
+uint8_t BSP_Initialized = 0;
+
+//osSemaphoreId TSSemaphoreID;
+//osMessageQId AutoDemoEvent = {0};
+
 uint32_t wakeup_pressed = 0; /* wakeup_pressed = 1 ==> User request calibration */
 
 CALIBRATION_Data1Typedef data1;
@@ -90,16 +94,18 @@ uint8_t ts_calibration_done = 0;
 static void SystemClock_Config(void);
 //static void MPU_Config(void);
 //static void CPU_CACHE_Enable(void);
-static void TouchScreenTask(void const *argument);
+//static void TouchScreenTask(void const *argument);
 
 //extern void SUBDEMO_StartAutoDemo(const uint8_t demo_id);
 
 extern struct	UI_DRIVER_STATE			ui_s;
 
 TaskHandle_t hIccTask;
+TaskHandle_t hTouchTask;
 
 struct TransceiverState 	ts;
 
+#if 0
 static void TouchScreenTask(void const *argument)
 {
   /* Create the TS semaphore */
@@ -123,6 +129,7 @@ static void TouchScreenTask(void const *argument)
     }
   }
 }
+#endif
 
 /**
   * @brief  EXTI line detection callbacks.
@@ -196,14 +203,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     break;
 #endif /* USE_JOYSTICK */
 
-    case TS_INT_PIN :
-    {
-      if(TSSemaphoreID)
-      {
-        osSemaphoreRelease(TSSemaphoreID);
-      }
-    }
-    break;
+    case TS_INT_PIN:
+    	touch_proc_irq();
+    	break;
 
     default:
       break;
@@ -533,7 +535,7 @@ void TransceiverStateInit(void)
 	ts.band		  		= BAND_MODE_20;				// band from eeprom
 	ts.band_change		= 0;						// used in muting audio during band change
 	ts.filter_band		= 0;						// used to indicate the bpf filter selection for power detector coefficient selection
-	ts.dmod_mode 		= DEMOD_USB;				// demodulator mode
+	ts.dmod_mode 		= DEMOD_LSB;				// demodulator mode
 	ts.audio_gain		= 0;//DEFAULT_AUDIO_GAIN;		// Set initial volume
 	ts.audio_gain		= 0;//MAX_VOLUME_DEFAULT;		// Set max volume default
 	ts.audio_gain_active = 1;						// this variable is used in the active RX audio processing function
@@ -739,7 +741,7 @@ static void start_tasks(void)
 {
 	// Create TS Thread
 	#if 1
-    if(xTaskCreate((TaskFunction_t)TouchScreenTask,"touch_proc", TS_TaskSTACK_SIZE, NULL, TS_TaskPRIORITY, NULL) != pdPASS)
+    if(xTaskCreate((TaskFunction_t)touch_proc_task,"touch_proc", TS_TaskSTACK_SIZE, NULL, TS_TaskPRIORITY, &hTouchTask) != pdPASS)
     	printf("unable to create touch task\r\n");
 	#endif
 

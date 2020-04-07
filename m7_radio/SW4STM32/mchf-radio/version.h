@@ -10,6 +10,6 @@
 #define	MCHF_R_VER_MAJOR			0
 #define	MCHF_R_VER_MINOR			0
 #define	MCHF_R_VER_RELEASE			0
-#define	MCHF_R_VER_BUILD			14
+#define	MCHF_R_VER_BUILD			15
 // -----------------------------------------------------------------------------
 #endif

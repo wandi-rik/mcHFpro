@@ -472,6 +472,16 @@
 			<locationURI>PARENT-2-PROJECT_LOC/proc/rotary/rotary_driver.h</locationURI>
 		</link>
 		<link>
+			<name>proc/touch/touch_proc.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/touch/touch_proc.c</locationURI>
+		</link>
+		<link>
+			<name>proc/touch/touch_proc.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/touch/touch_proc.h</locationURI>
+		</link>
+		<link>
 			<name>proc/ui/ui_proc.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/proc/ui/ui_proc.c</locationURI>
@@ -527,19 +537,9 @@
 			<locationURI>copy_PARENT1/STM32CubeH7/Drivers/BSP/STM32H747I-DISCO/stm32h747i_discovery.c</locationURI>
 		</link>
 		<link>
-			<name>Drivers/BSP/STM32H747I-DISCO/stm32h747i_discovery_audio.c</name>
-			<type>1</type>
-			<locationURI>PARENT-3-PROJECT_LOC/STM32CubeH7/Drivers/BSP/STM32H747I-DISCO/stm32h747i_discovery_audio.c</locationURI>
-		</link>
-		<link>
 			<name>Drivers/BSP/STM32H747I-DISCO/stm32h747i_discovery_bus.c</name>
 			<type>1</type>
 			<locationURI>copy_PARENT1/STM32CubeH7/Drivers/BSP/STM32H747I-DISCO/stm32h747i_discovery_bus.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/BSP/STM32H747I-DISCO/stm32h747i_discovery_qspi.c</name>
-			<type>1</type>
-			<locationURI>copy_PARENT1/STM32CubeH7/Drivers/BSP/STM32H747I-DISCO/stm32h747i_discovery_qspi.c</locationURI>
 		</link>
 		<link>
 			<name>Drivers/BSP/STM32H747I-DISCO/stm32h747i_discovery_sd.c</name>
@@ -550,11 +550,6 @@
 			<name>Drivers/BSP/STM32H747I-DISCO/stm32h747i_discovery_sdram.c</name>
 			<type>1</type>
 			<locationURI>copy_PARENT1/STM32CubeH7/Drivers/BSP/STM32H747I-DISCO/stm32h747i_discovery_sdram.c</locationURI>
-		</link>
-		<link>
-			<name>Drivers/BSP/STM32H747I-DISCO/stm32h747i_discovery_ts.c</name>
-			<type>1</type>
-			<locationURI>copy_PARENT1/STM32CubeH7/Drivers/BSP/STM32H747I-DISCO/stm32h747i_discovery_ts.c</locationURI>
 		</link>
 		<link>
 			<name>Middlewares/FatFs/Core/diskio.c</name>
@@ -725,6 +720,26 @@
 			<name>proc/icc/hw/rsc_table.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/proc/icc/hw/rsc_table.h</locationURI>
+		</link>
+		<link>
+			<name>proc/touch/hw/stm32h747i_discovery_audio.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/touch/hw/stm32h747i_discovery_audio.c</locationURI>
+		</link>
+		<link>
+			<name>proc/touch/hw/stm32h747i_discovery_audio.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/touch/hw/stm32h747i_discovery_audio.h</locationURI>
+		</link>
+		<link>
+			<name>proc/touch/hw/stm32h747i_discovery_ts.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/touch/hw/stm32h747i_discovery_ts.c</locationURI>
+		</link>
+		<link>
+			<name>proc/touch/hw/stm32h747i_discovery_ts.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/touch/hw/stm32h747i_discovery_ts.h</locationURI>
 		</link>
 		<link>
 			<name>proc/ui/desktop/ui_controls_layout.h</name>

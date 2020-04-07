@@ -19,6 +19,19 @@
 #define __MCHF_ICC_DEF_H
 
 // -------------------------------------------------------------------
+// Hardware semaphores for core to core comms
+//
+// OpenAMP
+#define HSEM_ID_0           0 			// CM7 to CM4 Notification
+#define HSEM_ID_1           1 			// CM4 to CM7 Notification
+//
+// I2C4 shared for audio, touch and frequency control
+#define HSEM_ID_22			22
+//
+// UART1, debug print
+#define HSEM_ID_27			27
+//
+// -------------------------------------------------------------------
 //
 // ICC protocol definitions
 //
@@ -28,7 +41,7 @@
 #define ICC_TOGGLE_LED					3
 #define ICC_GET_FW_VERSION				4
 #define ICC_SET_TRX_STATE				5
-
+//
 // -------------------------------------------------------------------
 
 #define TRX_MODE_RX					0
