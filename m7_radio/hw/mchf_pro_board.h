@@ -16,69 +16,9 @@
 ************************************************************************************/
 #ifndef __MCHF_PRO_BOARD_H
 #define __MCHF_PRO_BOARD_H
-//
-// -----------------------------------------------------------------------------
-// Version and device id
-//
-//#define	DEVICE_STRING				"mcHF Pro"
-//#define	AUTHOR_STRING				"Krassi Atanassov/M0NKA 2012-2019"
-//
-//#define	MCHFX_VER_MAJOR				0
-//#define	MCHFX_VER_MINOR				0
-//#define	MCHFX_VER_RELEASE			0
-//#define	MCHFX_VER_BUILD				86
-//
-// -----------------------------------------------------------------------------
-//
-// Optimisations - Only O0 crashes the code
-//
-// - test, disable while making the API driver SPI DMA work!
-//#define H7_DISABLE_DATA_CACHE
-//
-//
-//
-//#include "stm32h7xx_hal.h"
-//
-// We are still prototyping, so this...
-//#include "disco\stm32h747i_discovery.h"
-//#include "disco\stm32h747i_discovery_sdram.h"
 
 #define USE_DSP_CORE
 
-#ifdef STM32H753xx
-// Only STM32H753IIT6 is supported
-#include "stm32h753xx.h"
-// -- Generic --
-#define 							H7_HAL_RCC_MODULE_ENABLED
-#define 							H7_HAL_GPIO_MODULE_ENABLED
-#define 							H7_HAL_PWR_MODULE_ENABLED
-#define 							H7_HAL_CORTEX_MODULE_ENABLED
-#define 							H7_HAL_FLASH_MODULE_ENABLED
-#define 							H7_HAL_DMA_MODULE_ENABLED
-// -- UI driver (LCD) --
-#define 							H7_HAL_MDMA_MODULE_ENABLED
-#define 							H7_HAL_DMA2D_MODULE_ENABLED
-#define 							H7_HAL_LTDC_MODULE_ENABLED
-#define 							H7_HAL_SDRAM_MODULE_ENABLED
-#define 							H7_HAL_RTC_MODULE_ENABLED
-// -- Digitizer driver --
-#define 							H7_HAL_I2C_MODULE_ENABLED
-// -- Signal driver --
-#define 							H7_HAL_RNG_MODULE_ENABLED
-// -- Keypad LED driver --
-#define 							H7_HAL_SPI_MODULE_ENABLED
-// LCD brightness
-#define 							H7_HAL_TIM_MODULE_ENABLED
-// SD card
-#define								H7_HAL_SD_MODULE_ENABLED
-// watchdog
-#define								H7_HAL_WWDG_MODULE_ENABLED
-// Network driver
-#define								F7_HAL_UART_MODULE_ENABLED
-//
-//
-#endif
-//
 #define EEP_BASE					0x38800000
 //
 #include "mchf_types.h"
@@ -164,39 +104,27 @@
 //
 // Nothing much here except quick initial stack setup, basic hw init, MMU On
 // clocks and start the OS
-//#define CONTEXT_RESET_VECTOR
+#define CONTEXT_RESET_VECTOR
 //
-// Don't place code here, don't make it beautiful, just setting of flags
-// and super quick copy of data
 #define CONTEXT_IRQ_SYS_TICK
+//
 #define CONTEXT_IRQ_LTDC
 //
-// You can go wild in those drivers, just make sure each task has enough stack
-// allocated on startup. Also careful of HW access, each task ideally should
-// use only own HW core modules. Also need to be super careful of generic
-// c lib stuff like printf, memcpy, '/', '%' etc that usually gets compiled
-// as shared resource into the CONTEXT_RESET_VECTOR space! Use as much
-// critical sections as needed, but on functions that needs fast execution
-// like ui_controls_frequency_refresh(), use custom low level implementation,
-// instead of execution blocking
-//
-// -- Following defines could be used to stop specific drivers
-//
 #define CONTEXT_DRIVER_UI
-//#define CONTEXT_DRIVER_API
+//
 //#define CONTEXT_DRIVER_KEYPAD
+//
 //#define CONTEXT_DRIVER_DIGITIZER
-//#define CONTEXT_ROTARY
+//
+// Encoders
+#define CONTEXT_ROTARY
+//
 //#define CONTEXT_SD
-//#define CONTEXT_DRIVER_DSP
-//--#define CONTEXT_NET
-// Do we ?
-//#define CONTEXT_AUDIO
 //
-// Interprocessor communication STM32 <-> ESP32
-//#define ESP32_UART_TASK
+// Inter-processor communication: STM32 <-> ESP32
+#define CONTEXT_IPC_PROC
 //
-// Intercore communication task
+// Core to core communication: M7 <-> M4
 #define CONTEXT_ICC
 //
 // -----------------------------------------------------------------------------
@@ -281,6 +209,22 @@ struct DSPMessage {
 	char 	cData[DSP_MAX_PAYLOAD];
 
 } DSPMessage;
+
+#define	TASK_PROC_IDLE				0
+#define	TASK_PROC_WORK				1
+#define	TASK_PROC_DONE				2
+
+struct ESPMessage {
+
+	uchar 	ucMessageID;
+	uchar	ucProcStatus;
+	uchar	ucDataReady;
+	uchar	ucExecResult;
+
+	uchar 	ucData[128];
+
+} ESPMessage;
+
 // -----------------------------------------------------------------------------
 // Hardware regs, read before MMU init
 struct CM7_CORE_DETAILS {

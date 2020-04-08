@@ -19,8 +19,9 @@
 
 #ifdef CONTEXT_ROTARY
 
-#include "rotary_driver.h"
-#include "api_driver.h"
+#include "rotary_proc.h"
+
+//#include "api_driver.h"
 #include "desktop\smeter\ui_controls_smeter.h"
 
 #include "gui.h"
@@ -33,8 +34,8 @@
 #include "stm32h7xx_hal_tim.h"
 #include "stm32h7xx_hal_tim_ex.h"
 //
-TIM_HandleTypeDef htim3;
-TIM_HandleTypeDef htim4;
+TIM_HandleTypeDef htim1;
+//TIM_HandleTypeDef htim4;
 
 #define TIM_PERIOD	0xF
 
@@ -58,6 +59,7 @@ extern ulong s_met_pos;
 
 static void rotary_init_side_encoder_switch_pin(void)
 {
+#if 0
 	GPIO_InitTypeDef  	GPIO_InitStruct;
 
 	GPIO_InitStruct.Pin 		= GPIO_PIN_13;
@@ -65,10 +67,12 @@ static void rotary_init_side_encoder_switch_pin(void)
 	GPIO_InitStruct.Pull 		= GPIO_PULLUP;
 	GPIO_InitStruct.Speed 		= GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+#endif
 }
 
 static void rotary_check_side_encoder_switch(void)
 {
+#if 0
 	// Encoder button clicked ?
 	if(!HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_13))
 	{
@@ -87,10 +91,12 @@ static void rotary_check_side_encoder_switch(void)
 		if(ui_s.req_state == MODE_SIDE_ENC_MENU)
 			ui_s.req_state = MODE_DESKTOP;
 	}
+#endif
 }
 
 static void rotary_update_audio_publics(int pot_diff)
 {
+#if 0
 	// Update public volume
 	if(pot_diff < 0)
 	{
@@ -108,10 +114,12 @@ static void rotary_update_audio_publics(int pot_diff)
 	// Set request flag - now in volume control, so 'Mute' works better!
 	//tsu.update_audio_dsp_req = 1;
 	//
+#endif
 }
 
 static void rotary_update_side_enc_menu_publics(int pot_diff)
 {
+#if 0
 	if(pot_diff > 0)
 	{
 		GUI_StoreKeyMsg(GUI_KEY_RIGHT,1);
@@ -122,10 +130,12 @@ static void rotary_update_side_enc_menu_publics(int pot_diff)
 		GUI_StoreKeyMsg(GUI_KEY_LEFT,1);
 		GUI_StoreKeyMsg(GUI_KEY_LEFT,0);
 	}
+#endif
 }
 
 static void rotary_check_side_enc(void)
 {
+#if 0
 	ushort 	cnt;
 	int		pot_diff = 0;
 
@@ -152,12 +162,13 @@ static void rotary_check_side_enc(void)
 
 	// Flag preventing calling too often
 	audio_old = cnt;
+#endif
 }
 
 static void rotary_update_freq_publics(int pot_diff)
 {
 	// Block s-meter refresh
-	sm.rotary_timer 	= 0;
+	sm.rotary_timer = 0;
 	sm.rotary_block	= 1;
 
 	// Update public volume
@@ -264,14 +275,14 @@ static void rotary_check_front_enc(void)
 	if(tsu.band[tsu.curr_band].step == 0xFFFFFFFF)
 		return;
 
-	cnt = __HAL_TIM_GET_COUNTER(&htim4);
+	cnt = __HAL_TIM_GET_COUNTER(&htim1);
 	if(freq_old == cnt)
 		return;
 
 	//printf("---------------------------------\r\n");
 	//printf("cnt = %d\r\n",cnt);
 
-	if(__HAL_TIM_IS_TIM_COUNTING_DOWN(&htim4))
+	if(__HAL_TIM_IS_TIM_COUNTING_DOWN(&htim1))
 		pot_diff = -1;
 	else
 		pot_diff = +1;
@@ -291,6 +302,7 @@ static void rotary_check_front_enc(void)
 
 uchar rotary_side_enc_init(void)
 {
+#if 0
 	TIM_Encoder_InitTypeDef 	tim_config;
 	TIM_MasterConfigTypeDef 	tim_master;
 	GPIO_InitTypeDef 			GPIO_InitStruct;
@@ -337,7 +349,7 @@ uchar rotary_side_enc_init(void)
 
 	if(HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_1 | TIM_CHANNEL_2) != HAL_OK)
 		return 3;
-
+#endif
 	return 0;
 }
 
@@ -347,26 +359,26 @@ uchar rotary_front_enc_init(void)
 	TIM_MasterConfigTypeDef 	tim_master;
 	GPIO_InitTypeDef 			GPIO_InitStruct;
 
-	__HAL_RCC_TIM4_CLK_ENABLE();
+	__HAL_RCC_TIM1_CLK_ENABLE();
 
-	// PD12, TIM4, I channel
-	GPIO_InitStruct.Pin 				= GPIO_PIN_12;
+	// PK1, TIM1, CH1 (I channel)
+	GPIO_InitStruct.Pin 				= GPIO_PIN_1;
 	GPIO_InitStruct.Mode 				= GPIO_MODE_AF_PP;
 	GPIO_InitStruct.Pull	 			= GPIO_PULLUP;
 	GPIO_InitStruct.Speed 				= GPIO_SPEED_FREQ_LOW;
-	GPIO_InitStruct.Alternate 			= GPIO_AF2_TIM4;
-	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+	GPIO_InitStruct.Alternate 			= GPIO_AF1_TIM1;
+	HAL_GPIO_Init(GPIOK, &GPIO_InitStruct);
 
-	// PD13, TIM4, Q channel
-	GPIO_InitStruct.Pin 				= GPIO_PIN_13;
-	GPIO_InitStruct.Alternate 			= GPIO_AF2_TIM4;
-	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+	// PJ11, TIM1, CH2 (Q channel)
+	GPIO_InitStruct.Pin 				= GPIO_PIN_11;
+	GPIO_InitStruct.Alternate 			= GPIO_AF1_TIM1;
+	HAL_GPIO_Init(GPIOJ, &GPIO_InitStruct);
 
-	htim4.Instance 						= TIM4;
-	htim4.Init.Prescaler 				= 0;
-	htim4.Init.CounterMode 				= TIM_COUNTERMODE_UP;
-	htim4.Init.Period 					= TIM_PERIOD;
-	htim4.Init.ClockDivision 			= TIM_CLOCKDIVISION_DIV4;
+	htim1.Instance 						= TIM1;
+	htim1.Init.Prescaler 				= 0;
+	htim1.Init.CounterMode 				= TIM_COUNTERMODE_UP;
+	htim1.Init.Period 					= TIM_PERIOD;
+	htim1.Init.ClockDivision 			= TIM_CLOCKDIVISION_DIV4;
 	//htim3.Init.AutoReloadPreload 		= TIM_AUTORELOAD_PRELOAD_DISABLE;
 	tim_config.EncoderMode 				= TIM_ENCODERMODE_TI12;
 	tim_config.IC1Polarity 				= TIM_ICPOLARITY_FALLING;
@@ -378,16 +390,16 @@ uchar rotary_front_enc_init(void)
 	tim_config.IC2Prescaler 			= TIM_ICPSC_DIV1;
 	tim_config.IC2Filter 				= 0;
 
-	if (HAL_TIM_Encoder_Init(&htim4, &tim_config) != HAL_OK)
+	if (HAL_TIM_Encoder_Init(&htim1, &tim_config) != HAL_OK)
 		return 1;
 
 	tim_master.MasterOutputTrigger 		= TIM_TRGO_RESET;
 	tim_master.MasterSlaveMode 			= TIM_MASTERSLAVEMODE_DISABLE;
 
-	if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &tim_master) != HAL_OK)
+	if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &tim_master) != HAL_OK)
 		return 2;
 
-	if(HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_1 | TIM_CHANNEL_2) != HAL_OK)
+	if(HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_1 | TIM_CHANNEL_2) != HAL_OK)
 		return 3;
 
 	return 0;
@@ -430,25 +442,18 @@ static void rotary_worker(void)
 //* Notes    			:
 //* Context    			: CONTEXT_ROTARY
 //*----------------------------------------------------------------------------
-void rotary_driver(void const * argument)
+void rotary_proc(void const *arg)
 {
 	// Delay start, so UI can paint properly
-	OsDelayMs(1000);
-
+	vTaskDelay(1000);
 	printf("rotary driver start\r\n");
 
-	// ----------------------------------
-	// Moved to main()
-	//--rotary_hw_init();
-	// ----------------------------------
+	if(rotary_front_enc_init() != 0)
+		printf("err init freq encoder!\r\n");
 
 rotary_driver_loop:
-
 	rotary_worker();
-	
-	// Driver sleep period
-	OsDelayMs(50);
-		
+	vTaskDelay(5);
 	goto rotary_driver_loop;
 }
 

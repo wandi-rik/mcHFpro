@@ -65,6 +65,7 @@ K_ModuleItem_Typedef  info =
 #define ID_TEXT_UI_FLS_SZ          	(GUI_ID_USER + 0x0B)
 
 #define ID_TEXT_LO_PCB_V           	(GUI_ID_USER + 0x0C)
+#define ID_LISTBOX1           		(GUI_ID_USER + 0x0D)
 
 static const GUI_WIDGET_CREATE_INFO _aDialog[] = 
 {
@@ -87,7 +88,8 @@ static const GUI_WIDGET_CREATE_INFO _aDialog[] =
 	{ TEXT_CreateIndirect, 		"Cpu.ID",	 				ID_TEXT_UI_CPU_ID,	10,		130,	360,	20,		0,		0x0,	0 },
 	{ TEXT_CreateIndirect, 		"Flash.Size", 				ID_TEXT_UI_FLS_SZ,	10,		146,	360,	20,		0,		0x0,	0 },
 	// Logic board entries
-	{ TEXT_CreateIndirect, 		"Logic.PCB", 				ID_TEXT_LO_PCB_V,	420,	 50,	360,	20,		0,		0x0,	0 },
+//	{ TEXT_CreateIndirect, 		"Logic.PCB", 				ID_TEXT_LO_PCB_V,	420,	 50,	360,	20,		0,		0x0,	0 },
+	{ LISTBOX_CreateIndirect, 	"Listbox",					ID_LISTBOX1, 		405, 	 10, 	380, 	350, 	0, 		0x0, 	0 },
 };
 
 #define	TEXT_1					"Device ID:"
@@ -276,10 +278,232 @@ static void _cbControl(WM_MESSAGE * pMsg, int Id, int NCode)
 	}
 }
 
+// Driver messaging
+extern 	osMessageQId 					hEspMessage;
+struct 	ESPMessage						esp_msg;
+ulong 	state_id = 0;
+int		last_item = 0;	// reset how ?
+
+ulong   splash_wait = 0;
+
+static void state_machine(WM_MESSAGE * pMsg)
+{
+	WM_HWIN 	hItem, hList;
+	char 		buf[200];
+
+	// Caller finished ?
+	if(esp_msg.ucProcStatus == TASK_PROC_DONE)
+	{
+		state_id++;									// next state
+		esp_msg.ucProcStatus = TASK_PROC_IDLE;		// reset
+	}
+	else if(esp_msg.ucProcStatus == TASK_PROC_WORK)
+		return;
+
+	// State machine
+	switch(state_id)
+	{
+#if 0
+		// Project details
+		case 20:
+		{
+			memset(buf, 0, sizeof(buf));
+			sprintf(buf,"%s v %d.%d.%d.%d - %s", DEVICE_STRING,
+											MCHF_L_VER_MAJOR,
+											MCHF_L_VER_MINOR,
+											MCHF_L_VER_RELEASE,
+											MCHF_L_VER_BUILD,
+											AUTHOR_STRING);
+
+			hList = WM_GetDialogItem(pMsg->hWin, ID_LISTBOX1);
+			LISTBOX_AddString(hList, buf);
+			//LISTBOX_SetSel(hList, -1);
+			last_item++;
+
+			// Update progress bar
+			hItem = WM_GetDialogItem(pMsg->hWin, ID_PROGBAR_0);
+			PROGBAR_SetValue(hItem, 10);
+
+			state_id++;
+			break;
+		}
+#endif
+#if 0
+		// M7 CPU Speed
+		case 21:
+		{
+			memset(buf, 0, sizeof(buf));
+			sprintf(buf, "Detect speed settings: CPU: %d MHz, PCLK1: %d MHz, PCLK2: %d MHz",(int)(HAL_RCCEx_GetD1SysClockFreq()/1000000U),
+			                                                                   				(int)(HAL_RCC_GetPCLK1Freq()/1000000U),
+																							(int)(HAL_RCC_GetPCLK2Freq()/1000000U));
+			hList = WM_GetDialogItem(pMsg->hWin, ID_LISTBOX1);
+			LISTBOX_AddString(hList, buf);
+			//LISTBOX_SetSel(hList, -1);
+			last_item++;
+
+			// Update progress bar
+			//hItem = WM_GetDialogItem(pMsg->hWin, ID_PROGBAR_0);
+			//PROGBAR_SetValue(hItem, 10);
+
+			state_id++;
+			break;
+		}
+#endif
+		// ESP32 Firmware version request
+		case 0:
+		{
+			hList = WM_GetDialogItem(pMsg->hWin, ID_LISTBOX1);
+			LISTBOX_AddString(hList, "Reading ESP32 firmware version..." );
+			//LISTBOX_SetSel(hList, -1);
+
+			// Update progress bar
+			//hItem = WM_GetDialogItem(pMsg->hWin, ID_PROGBAR_0);
+			//PROGBAR_SetValue(hItem, 20);
+
+			// Request UART call
+			esp_msg.ucMessageID = 0x01;
+			esp_msg.ucProcStatus = TASK_PROC_WORK;
+			osMessagePut(hEspMessage, (ulong)&esp_msg, osWaitForever);
+
+			break;
+		}
+
+		// Result from previous state
+		case 1:
+		{
+			hList = WM_GetDialogItem(pMsg->hWin, ID_LISTBOX1);
+			LISTBOX_DeleteItem(hList, last_item);
+
+			if(esp_msg.ucExecResult == 0)
+			{
+				LISTBOX_AddString(hList, "Reading ESP32 firmware version...Success" );
+				if(esp_msg.ucDataReady)
+				{
+					printf("ui: %s\r\n", (char *)(esp_msg.ucData));
+
+					memset(buf, 0, sizeof(buf));
+					sprintf(buf,  "ESP32 firmware: %s", (char *)(esp_msg.ucData + 10));
+					LISTBOX_AddString(hList, buf);
+					last_item++;
+
+					//hItem = WM_GetDialogItem(pMsg->hWin, ID_HEADER_0);
+					//HEADER_SetItemText(hItem, 1, (char *)(esp_msg.ucData + 10));
+				}
+			}
+			else
+			{
+				memset(buf, 0, sizeof(buf));
+				sprintf(buf,  "Reading ESP32 firmware version...Error %d", esp_msg.ucExecResult);
+				LISTBOX_AddString(hList, buf);
+			}
+			//LISTBOX_SetSel(hList, -1);
+			last_item++;
+
+			// Update progress bar
+			//hItem = WM_GetDialogItem(pMsg->hWin, ID_PROGBAR_0);
+			//PROGBAR_SetValue(hItem, 30);
+
+			state_id++;
+			break;
+		}
+
+		// ESP32 WiFi details
+		case 2:
+		{
+			hList = WM_GetDialogItem(pMsg->hWin, ID_LISTBOX1);
+			LISTBOX_AddString(hList, "Reading WiFi details..." );
+			//LISTBOX_SetSel(hList, -1);
+
+			// Update progress bar
+			//hItem = WM_GetDialogItem(pMsg->hWin, ID_PROGBAR_0);
+			//PROGBAR_SetValue(hItem, 40);
+
+			// Request UART call
+			esp_msg.ucMessageID = 0x02;
+			esp_msg.ucProcStatus = TASK_PROC_WORK;
+			osMessagePut(hEspMessage, (ulong)&esp_msg, osWaitForever);
+
+			break;
+		}
+
+		// Result from previous state
+		case 3:
+		{
+			hList = WM_GetDialogItem(pMsg->hWin, ID_LISTBOX1);
+			LISTBOX_DeleteItem(hList, last_item);
+
+			if(esp_msg.ucExecResult == 0)
+			{
+				LISTBOX_AddString(hList, "Reading WiFi details...Success" );
+				if(esp_msg.ucDataReady)
+				{
+					printf("[gui] data size: %d\r\n", esp_msg.ucDataReady);
+					if(esp_msg.ucData[9])
+					{
+						memset(buf, 0, sizeof(buf));
+						sprintf(buf,  "MAC: %02x:%02x:%02x:%02x:%02x:%02x, IP: %d.%d.%d.%d, SSID: %s", 	esp_msg.ucData[10],
+																										esp_msg.ucData[11],
+																										esp_msg.ucData[12],
+																										esp_msg.ucData[13],
+																										esp_msg.ucData[14],
+																										esp_msg.ucData[15],
+																										esp_msg.ucData[16],
+																										esp_msg.ucData[17],
+																										esp_msg.ucData[18],
+																										esp_msg.ucData[19],
+																										(char *)(&esp_msg.ucData[21]));
+						LISTBOX_AddString(hList, buf);
+						last_item++;
+					}
+				}
+			}
+			else
+			{
+				memset(buf, 0, sizeof(buf));
+				sprintf(buf,  "Reading WiFi details...Error %d", esp_msg.ucExecResult);
+				LISTBOX_AddString(hList, buf);
+			}
+			//LISTBOX_SetSel(hList, -1);
+			last_item++;
+
+			// Update progress bar
+			//hItem = WM_GetDialogItem(pMsg->hWin, ID_PROGBAR_0);
+			//PROGBAR_SetValue(hItem, 50);
+
+			state_id++;
+			break;
+		}
+
+#if 0
+		// Delay before unload
+		case 4:
+		{
+			splash_wait++;
+			if(splash_wait == 500)
+				state_id++;
+
+			break;
+		}
+
+		// Force unload
+		case 5:
+		{
+			//splash_done = 1;
+			break;
+		}
+#endif
+
+		default:
+			break;
+	}
+}
+
+
 static void _cbDialog(WM_MESSAGE * pMsg)
 {
 	WM_HWIN 			hItem;
 	int 				Id, NCode;
+	WM_HWIN 			hList;
 	SCROLLBAR_Handle 	hScrollV;
 
 	switch (pMsg->MsgId)
@@ -339,6 +563,10 @@ static void _cbDialog(WM_MESSAGE * pMsg)
 			TEXT_SetTextColor(hItem, GUI_BLACK);
 			about_print_pcb_rev(hItem);
 
+			hList = WM_GetDialogItem(pMsg->hWin, ID_LISTBOX1);
+			LISTBOX_SetFont(hList, &GUI_Font8x16_1);
+			//LISTBOX_SetTextColor(hList,LISTBOX_CI_UNSEL|LISTBOX_CI_SEL,GUI_LIGHTBLUE);
+
 			break;
 		}
 
@@ -347,7 +575,11 @@ static void _cbDialog(WM_MESSAGE * pMsg)
 			// Text frames
 			GUI_SetColor(GUI_ORANGE);
 			GUI_DrawRoundedRect(  5,  5,395,360,10);
-			GUI_DrawRoundedRect(405,  5,790,360,10);
+			//GUI_DrawRoundedRect(405,  5,790,360,10);
+
+			// Update state machine
+			state_machine(pMsg);
+			state_id++;
 
 			break;
 		}

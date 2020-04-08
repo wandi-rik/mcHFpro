@@ -1,49 +1,23 @@
-/**
-  ******************************************************************************
-  * @file    MenuLauncher/Core/CM7/Src/main.c
-  * @author  MCD Application Team
-  *          This is the main program for Cortex-M7
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under Ultimate Liberty license
-  * SLA0044, the "License"; You may not use this file except in compliance with
-  * the License. You may obtain a copy of the License at:
-  *                             www.st.com/SLA0044
-  *
-  ******************************************************************************
-  */
 
-/* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "mchf_pro_board.h"
 #include "version.h"
 #include "k_rtc.h"
 
-//#include "splash.h"
 #include "bsp.h"
 #include "WM.h"
-//#include "gui_task.h"
 
-#include "esp32_proc.h"
+#include "ipc_proc.h"
 #include "ui_proc.h"
 #include "icc_proc.h"
 #include "audio_proc.h"
 #include "touch_proc.h"
+#include "rotary_proc.h"
 
 #if configAPPLICATION_ALLOCATED_HEAP == 1
-#if defined ( __ICCARM__ )
-#pragma location="heap_mem"
-#else
-__attribute__((section("heap_mem")))
+__attribute__((section("heap_mem"))) uint8_t ucHeap[ configTOTAL_HEAP_SIZE ];
 #endif
-uint8_t ucHeap[ configTOTAL_HEAP_SIZE ];
-#endif /* configAPPLICATION_ALLOCATED_HEAP */
 
-/* Private typedef -----------------------------------------------------------*/
 typedef  void (*pFunc)(void);
 
 #define PWR_CFG_SMPS    0xCAFECAFE
@@ -55,8 +29,6 @@ typedef struct pwr_db
   __IO uint32_t PDR1;
 }PWDDBG_TypeDef;
 
-/* Private define ------------------------------------------------------------*/
-//#define HSEM_ID_0                       (0U) /* HW semaphore 0*/
 #define AUTO_DEMO_TIMEOUT_0               20
 #define AUTO_DEMO_TIMEOUT_1                5
 
@@ -98,38 +70,17 @@ static void SystemClock_Config(void);
 
 //extern void SUBDEMO_StartAutoDemo(const uint8_t demo_id);
 
+// Public radio state
+extern struct	TRANSCEIVER_STATE_UI	tsu;
+
+// UI process
 extern struct	UI_DRIVER_STATE			ui_s;
+
+// DSP core state
+struct TransceiverState 	ts;
 
 TaskHandle_t hIccTask;
 TaskHandle_t hTouchTask;
-
-struct TransceiverState 	ts;
-
-#if 0
-static void TouchScreenTask(void const *argument)
-{
-  /* Create the TS semaphore */
-  osSemaphoreDef(TSSemaphore);
-  TSSemaphoreID = osSemaphoreCreate(osSemaphore(TSSemaphore), 1);
-
-  /* initially take the TS Lock */
-  osSemaphoreWait( TSSemaphoreID, osWaitForever );
-
-  while(1)
-  {
-    osSemaphoreWait( TSSemaphoreID, osWaitForever );
-
-    /* Capture input event and updade cursor */
-    if(BSP_Initialized == 1)
-    {
-      if(BSP_TouchUpdate() && AutoDemoEvent)
-      {
-        osMessagePut ( AutoDemoEvent, AUTO_DEMO_RESET, 0);
-      }
-    }
-  }
-}
-#endif
 
 /**
   * @brief  EXTI line detection callbacks.
@@ -426,8 +377,20 @@ static void MPU_Config(void)
   MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
   MPU_InitStruct.SubRegionDisable = 0x00;
   MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
-
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+  	MPU_InitStruct.Enable = MPU_REGION_ENABLE;
+    MPU_InitStruct.BaseAddress = D3_BKPSRAM_BASE;
+    MPU_InitStruct.Size = MPU_REGION_SIZE_4KB;
+    MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+    MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
+    MPU_InitStruct.IsCacheable = MPU_ACCESS_CACHEABLE;
+    MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
+    MPU_InitStruct.Number = MPU_REGION_NUMBER5;
+    MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
+    MPU_InitStruct.SubRegionDisable = 0x00;
+    MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
+    HAL_MPU_ConfigRegion(&MPU_InitStruct);
 
   HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
 }
@@ -515,6 +478,238 @@ void assert_failed(uint8_t* file, uint32_t line)
 #endif
 
 //*----------------------------------------------------------------------------
+//* Function Name       : WRITE_EEPROM
+//* Object              :
+//* Notes    			:
+//* Notes   			:
+//* Notes    			:
+//* Context    			: anyone!
+//*----------------------------------------------------------------------------
+void WRITE_EEPROM(ushort addr,uchar value)
+{
+	uchar *bkp = (uchar *)EEP_BASE;
+
+	if(!tsu.eeprom_init_done)
+		return;
+
+	if(addr > 0xFFF)
+		return;
+
+	// Write to BackUp SRAM
+	*(bkp + addr) = value;
+}
+
+//*----------------------------------------------------------------------------
+//* Function Name       : READ_EEPROM
+//* Object              :
+//* Notes    			:
+//* Notes   			:
+//* Notes    			:
+//* Context    			: anyone!
+//*----------------------------------------------------------------------------
+uchar READ_EEPROM(ushort addr)
+{
+	uchar ret;
+	uchar *bkp = (uchar *)EEP_BASE;
+
+	if(!tsu.eeprom_init_done)
+		return 0xFF;
+
+	if(addr > 0xFFF)
+		return 0xFF;
+
+	// Read BackUp SRAM
+	return *(bkp + addr);
+}
+
+//*----------------------------------------------------------------------------
+//* Function Name       : transceiver_load_eep_values
+//* Object              :
+//* Input Parameters    :
+//* Output Parameters   :
+//* Functions called    :
+//*----------------------------------------------------------------------------
+void transceiver_init_eep_defaults(void)
+{
+	ulong i;
+	//uchar *bkp = (uchar *)0x38800000;
+
+	// Generate band info values
+	for(i = 0; i < MAX_BANDS; i++)
+	{
+		// Startup volume
+		tsu.band[i].volume 		= 8;
+		tsu.band[i].step 		= T_STEP_1KHZ;
+		tsu.band[i].filter		= AUDIO_3P6KHZ;
+		tsu.band[i].dsp_mode 	= 0;
+		tsu.band[i].nco_freq	= 0;
+		tsu.band[i].active_vfo	= VFO_A;
+		tsu.band[i].fixed_mode	= 0;
+
+		// VFOs values
+		switch(i)
+		{
+			case BAND_MODE_80:
+				tsu.band[i].vfo_a 		= BAND_FREQ_80;
+				tsu.band[i].vfo_b 		= BAND_FREQ_80;
+				tsu.band[i].band_start 	= BAND_FREQ_80;
+				tsu.band[i].band_end 	= (BAND_FREQ_80 + BAND_SIZE_80);
+				tsu.band[i].demod_mode	= DEMOD_LSB;
+				break;
+			case BAND_MODE_60:
+				tsu.band[i].vfo_a 		= BAND_FREQ_60;
+				tsu.band[i].vfo_b 		= BAND_FREQ_60;
+				tsu.band[i].band_start 	= BAND_FREQ_60;
+				tsu.band[i].band_end 	= (BAND_FREQ_60 + BAND_SIZE_60);
+				tsu.band[i].demod_mode	= DEMOD_LSB;
+				break;
+			case BAND_MODE_40:
+				tsu.band[i].vfo_a 		= BAND_FREQ_40;
+				tsu.band[i].vfo_b 		= BAND_FREQ_40;
+				tsu.band[i].band_start 	= BAND_FREQ_40;
+				tsu.band[i].band_end 	= (BAND_FREQ_40 + BAND_SIZE_40);
+				tsu.band[i].demod_mode	= DEMOD_LSB;
+				break;
+			case BAND_MODE_30:
+				tsu.band[i].vfo_a 		= BAND_FREQ_30;
+				tsu.band[i].vfo_b 		= BAND_FREQ_30;
+				tsu.band[i].band_start 	= BAND_FREQ_30;
+				tsu.band[i].band_end 	= (BAND_FREQ_30 + BAND_SIZE_30);
+				tsu.band[i].demod_mode	= DEMOD_USB;
+				break;
+			case BAND_MODE_20:
+				tsu.band[i].vfo_a 		= BAND_FREQ_20;
+				tsu.band[i].vfo_b 		= BAND_FREQ_20;
+				tsu.band[i].band_start 	= BAND_FREQ_20;
+				tsu.band[i].band_end 	= (BAND_FREQ_20 + BAND_SIZE_20);
+				tsu.band[i].demod_mode	= DEMOD_USB;
+				break;
+			case BAND_MODE_17:
+				tsu.band[i].vfo_a 		= BAND_FREQ_17;
+				tsu.band[i].vfo_b 		= BAND_FREQ_17;
+				tsu.band[i].band_start 	= BAND_FREQ_17;
+				tsu.band[i].band_end 	= (BAND_FREQ_17 + BAND_SIZE_17);
+				tsu.band[i].demod_mode	= DEMOD_USB;
+				break;
+			case BAND_MODE_15:
+				tsu.band[i].vfo_a 		= BAND_FREQ_15;
+				tsu.band[i].vfo_b 		= BAND_FREQ_15;
+				tsu.band[i].band_start 	= BAND_FREQ_15;
+				tsu.band[i].band_end 	= (BAND_FREQ_15 + BAND_SIZE_15);
+				tsu.band[i].demod_mode	= DEMOD_USB;
+				break;
+			case BAND_MODE_12:
+				tsu.band[i].vfo_a 		= BAND_FREQ_12;
+				tsu.band[i].vfo_b 		= BAND_FREQ_12;
+				tsu.band[i].band_start 	= BAND_FREQ_12;
+				tsu.band[i].band_end 	= (BAND_FREQ_12 + BAND_SIZE_12);
+				tsu.band[i].demod_mode	= DEMOD_USB;
+				break;
+			case BAND_MODE_10:
+				tsu.band[i].vfo_a 		= BAND_FREQ_10;
+				tsu.band[i].vfo_b 		= BAND_FREQ_10;
+				tsu.band[i].band_start 	= BAND_FREQ_10;
+				tsu.band[i].band_end 	= (BAND_FREQ_10 + BAND_SIZE_10);
+				tsu.band[i].demod_mode	= DEMOD_USB;
+				break;
+			default:
+				break;
+		}
+	}
+
+	//uchar *dst,*src;
+	//ulong size;
+
+	//dst = (bkp + EEP_BANDS);
+	//src = (uchar *)(&(tsu.band[0].band_start));
+	//size = (MAX_BANDS * sizeof(BAND_INFO));
+
+	//printf("dst = %08x\r\n",dst);
+	//printf("src = %08x\r\n",src);
+	//printf("size = %08x\r\n",size);
+
+	// All at once
+	//memcpy((bkp + EEP_BANDS),(uchar *)(&(tsu.band[0].band_start)),(MAX_BANDS * sizeof(BAND_INFO)));
+	save_band_info();
+
+	// ------------------------------------
+	// Set as initialised
+	WRITE_EEPROM(EEP_BASE_ADDR,0x73);
+}
+
+//*----------------------------------------------------------------------------
+//* Function Name       : transceiver_load_eep_values
+//* Object              :
+//* Input Parameters    :
+//* Output Parameters   :
+//* Functions called    :
+//*----------------------------------------------------------------------------
+static void transceiver_load_eep_values(void)
+{
+	ulong i;
+	uchar *bkp = (uchar *)EEP_BASE;
+	uchar r0;
+
+	// Test - force write
+	//--WRITE_EEPROM(EEP_BASE_ADDR,0x00);
+
+	// Check if data is valid
+	if(READ_EEPROM(EEP_BASE_ADDR) != 0x73)
+		transceiver_init_eep_defaults();
+
+	// All at once
+	memcpy((uchar *)(&(tsu.band[0].band_start)),(bkp + EEP_BANDS),(MAX_BANDS * sizeof(BAND_INFO)));
+
+#if 0
+	// Debug print band values from eeprom
+	for(i = 0; i < MAX_BANDS; i++)
+	{
+		printf("------------------------------\r\n");
+		printf("vfo_a = %d\r\n",tsu.band[i].vfo_a);
+		printf("vfo_b = %d\r\n",tsu.band[i].vfo_b);
+		printf("start = %d\r\n",tsu.band[i].band_start);
+		printf("__end = %d\r\n",tsu.band[i].band_end);
+		printf("ncofr = %d\r\n",tsu.band[i].nco_freq);
+
+		printf("acvfo = %d\r\n",tsu.band[i].active_vfo);
+		printf("c/fix = %d\r\n",tsu.band[i].fixed_mode);
+		printf("tstep = %d\r\n",tsu.band[i].step);
+		printf("filte = %d\r\n",tsu.band[i].filter);
+		printf("demod = %d\r\n",tsu.band[i].demod_mode);
+		printf("dspmo = %d\r\n",tsu.band[i].dsp_mode);
+		printf("volum = %d\r\n",tsu.band[i].volume);
+	}
+#endif
+
+	// ---------------------------------------
+	// Load audio level
+	//r0 = READ_EEPROM(EEP_AUDIO_VOL);
+	//printf("r0 = %d\r\n",r0);
+	//if(r0 != 0xFF) tsu.audio_volume = r0;
+	// ---------------------------------------
+
+	// Load band
+	r0 = READ_EEPROM(EEP_CURR_BAND);
+	printf("r0 = %d\r\n",r0);
+	if(r0 != 0xFF)
+		tsu.curr_band = r0;
+	else
+		tsu.curr_band = BAND_MODE_20;
+
+	// ---------------------------------------
+	// Load demodulator mode
+	//r0 = READ_EEPROM(EEP_DEMOD_MOD);
+	//printf("r0 = %d\r\n",r0);
+	//if(r0 != 0xFF) tsu.demod_mode = r0;
+	// ---------------------------------------
+	// Load filter
+	//r0 = READ_EEPROM(EEP_CURFILTER);
+	//printf("r0 = %d\r\n",r0);
+	//if(r0 != 0xFF) tsu.curr_filter = r0;
+	// ---------------------------------------
+}
+
+//*----------------------------------------------------------------------------
 //* Function Name       : TransceiverStateInit
 //* Object              :
 //* Object              :
@@ -524,6 +719,79 @@ void assert_failed(uint8_t* file, uint32_t line)
 //*----------------------------------------------------------------------------
 void TransceiverStateInit(void)
 {
+	ulong i;
+
+	// Eeprom flags
+	tsu.eeprom_init_done	= 0;
+	//tsu.eeprom_data_valid 	= 0;
+
+	// Set clocks in use - fix in HW init!!
+	//--tsu.main_clk = EXT_16MHZ_XTAL;
+	//--tsu.rcc_clk = EXT_32KHZ_XTAL;
+
+	// DSP status
+	tsu.dsp_alive 			= 1;	// assume alive
+	tsu.dsp_seq_number_old 	= 0;
+	tsu.dsp_seq_number	 	= 0;	// track if alive
+	tsu.dsp_freq			= 0;	// set as zero ?
+	tsu.dsp_volume			= 0;	// set as zero ?
+
+	// Local status
+	//tsu.audio_volume		= START_UP_AUDIO_VOL;
+	//tsu.vfo_a 				= 0xFFFFFFFF;			// Invalid, do not update DSP
+	//tsu.vfo_b 				= 0xFFFFFFFF;			// Invalid, do not update DSP
+	//tsu.active_vfo			= VFO_A;
+	tsu.step				= 0xFFFFFFFF;			// Invalid, do not update DSP
+	//tsu.demod_mode 			= 0xFF;					// Invalid, do not update DSP
+	tsu.curr_band			= 0xFF;					// Invalid, do not update DSP
+	//tsu.curr_filter			= 0xFF;					// Invalid, do not update DSP
+	tsu.step_idx			= 0xFF;					// Invalid, do not update DSP
+	//tsu.nco_freq			= 0;					// NCO -20kHz to +20kHz, zero disables translation routines in the the DSP
+	//tsu.fixed_mode			= 0;					// vfo in centre mode
+	tsu.cw_tx_state			= 0;					// rx mode
+	tsu.cw_iamb_type		= 0;					// iambic type, nothing selected
+
+	// DSP API requests
+	tsu.update_audio_dsp_req 	= 0;
+	tsu.update_freq_dsp_req  	= 0;
+	tsu.update_band_dsp_req		= 0;
+	tsu.update_demod_dsp_req	= 0;
+	tsu.update_filter_dsp_req	= 0;
+	tsu.update_nco_dsp_req		= 0;
+	tsu.update_dsp_eep_req 		= 0;
+	tsu.update_dsp_restart 		= 0;
+
+	// Mute off
+	tsu.audio_mute_flag = 0;
+
+	transceiver_load_eep_values();
+
+	// needed ?
+	// Band info structures init with default values
+	// need re-load from eeprom
+/*	for(i = 0; i < MAX_BANDS; i++)
+	{
+		// Startup volume
+		tsu.band[i].volume 		= START_UP_AUDIO_VOL;
+		//
+		// VFOs values
+		tsu.band[i].vfo_a 		= 0xFFFFFFFF;
+		tsu.band[i].vfo_b 		= 0xFFFFFFFF;
+		tsu.band[i].step 		= 0xFFFFFFFF;
+		tsu.band[i].nco_freq	= 0;
+		tsu.band[i].active_vfo	= VFO_A;
+		tsu.band[i].fixed_mode	= 0;
+		//
+		tsu.band[i].filter		= 0xFF;
+		//
+		tsu.band[i].demod_mode	= 0xFF;
+		//
+		// Not implemented
+		tsu.band[i].dsp_mode 	= 0;
+		tsu.band[i].band_start 	= 0;
+		tsu.band[i].band_end 	= 0;
+	}*/
+
 	// Defaults always
 	ts.txrx_mode 		= TRX_MODE_RX;				// start in RX
 	ts.samp_rate		= SAI_AUDIO_FREQUENCY_48K;		// set sampling rate
@@ -741,24 +1009,29 @@ static void start_tasks(void)
 {
 	// Create TS Thread
 	#if 1
-    if(xTaskCreate((TaskFunction_t)touch_proc_task,"touch_proc", TS_TaskSTACK_SIZE, NULL, TS_TaskPRIORITY, &hTouchTask) != pdPASS)
+    if(xTaskCreate((TaskFunction_t)touch_proc_task, "touch_proc", TS_TaskSTACK_SIZE, NULL, TS_TaskPRIORITY, &hTouchTask) != pdPASS)
     	printf("unable to create touch task\r\n");
 	#endif
 
 	#ifdef CONTEXT_DRIVER_UI
-    if(xTaskCreate((TaskFunction_t)ui_proc_task,"gui_proc", GUI_TaskSTACK_SIZE, NULL, GUI_TaskPRIORITY, NULL) != pdPASS)
+    if(xTaskCreate((TaskFunction_t)ui_proc_task, "gui_proc", GUI_TaskSTACK_SIZE, NULL, GUI_TaskPRIORITY, NULL) != pdPASS)
         printf("unable to create emwin_ui task\r\n");
     #endif
 
 	#if 1
-    if(xTaskCreate((TaskFunction_t)icc_proc_task,"icc_proc", GUI_TaskSTACK_SIZE, NULL, GUI_TaskPRIORITY, &hIccTask) != pdPASS)
+    if(xTaskCreate((TaskFunction_t)icc_proc_task, "icc_proc", GUI_TaskSTACK_SIZE, NULL, GUI_TaskPRIORITY, &hIccTask) != pdPASS)
        printf("unable to create icc task\r\n");
 	#endif
 
-	#ifdef ESP32_UART_TASK
+	#ifdef CONTEXT_ROTARY
+    if(xTaskCreate((TaskFunction_t)rotary_proc, "enc_proc", TS_TaskSTACK_SIZE, NULL, TS_TaskPRIORITY, NULL) != pdPASS)
+    printf("unable to create rotary task\r\n");
+	#endif
+
+	#ifdef CONTEXT_IPC_PROC
     hEspMessage = xQueueCreate(5, sizeof(struct ESPMessage *));
-    if(xTaskCreate((TaskFunction_t)esp32_proc_task,"esp32_proc", GUI_TaskSTACK_SIZE, NULL, GUI_TaskPRIORITY, NULL) != pdPASS)
-    	printf("unable to create esp32_uart task\r\n");
+    if(xTaskCreate((TaskFunction_t)ipc_proc_task,"ipc_proc", GUI_TaskSTACK_SIZE, NULL, GUI_TaskPRIORITY, NULL) != pdPASS)
+    	printf("unable to create ipc task\r\n");
 	#endif
 
 	#ifdef CONTEXT_AUDIO__
@@ -798,18 +1071,21 @@ int main(void)
 
     HAL_Init();
 
-    /* Configure the system clock to 400 MHz */
+    // Configure the system clock to 400 MHz
     SystemClock_Config();
 
     k_CalendarBkupInit();
 
-    // Set radio public values
-    TransceiverStateInit();
-
-    /* Add Cortex-M7 user application code here */
+    // Add Cortex-M7 user application code here
     BSP_Initialized = BSP_Config();
     if(BSP_Initialized)
     {
+    	// Enable virtual eeprom
+    	tsu.eeprom_init_done = 1;
+
+   	   // Set radio public values
+   	    TransceiverStateInit();
+
     	// Init the SD Card hardware and its IRQ handler manager
     	Storage_Init();
 

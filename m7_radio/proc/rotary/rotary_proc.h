@@ -14,14 +14,10 @@
 **          non-commercial use only. All source files under GPL-3.0, unless        **
 **          third party drivers specifies otherwise. Thank you!                    **
 ************************************************************************************/
-#ifndef __ROTARY_DRIVER_H
-#define __ROTARY_DRIVER_H
+#ifndef __ROTARY_PROC_H
+#define __ROTARY_PROC_H
 
-//uchar rotary_audio_enc_init(void);
-//uchar rotary_freq_enc_init(void);
-
-void rotary_driver_hw_init(void);
-void rotary_driver(void const * argument);
+void rotary_proc(void const *arg);
 
 
 #endif

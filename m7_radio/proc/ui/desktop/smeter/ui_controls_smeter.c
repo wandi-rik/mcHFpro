@@ -431,7 +431,7 @@ void ui_controls_smeter_init(void)
 	#endif
 
 	// From Eeprom
-	sm.smet_disabled = 0;//!(*(uchar *)(EEP_BASE + EEP_AN_MET_ON));
+	sm.smet_disabled = (*(uchar *)(EEP_BASE + EEP_AN_MET_ON));
 
 	// Debug
 	sm.repaints = 0;

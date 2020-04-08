@@ -48,7 +48,7 @@
 									<listOptionValue builtIn="false" value="../../../proc/ui/menu/items/reset"/>
 									<listOptionValue builtIn="false" value="../../../proc/ui/menu/items/clock"/>
 									<listOptionValue builtIn="false" value="../../../proc/ui/desktop"/>
-									<listOptionValue builtIn="false" value="../../../proc/esp32"/>
+									<listOptionValue builtIn="false" value="../../../proc/ipc"/>
 									<listOptionValue builtIn="false" value="../../../proc/rotary"/>
 									<listOptionValue builtIn="false" value="../../../proc/icc"/>
 									<listOptionValue builtIn="false" value="../../../proc/audio"/>

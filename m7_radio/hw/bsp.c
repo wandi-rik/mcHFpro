@@ -23,12 +23,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "bsp.h"
 
-#include "esp32_proc.h"
+#include "ipc_proc.h"
 #include "audio_proc.h"
 #include "touch_proc.h"
 #include "version.h"
 
-#define HSEM_ID_0                       (0U) /* HW semaphore 0*/
+//#define HSEM_ID_0                       (0U) /* HW semaphore 0*/
 
 #define MAX_FLASH_WRITE_FAILURE         10
 
@@ -160,6 +160,7 @@ static inline uint32_t GetBank(uint32_t Addr)
   return bank;
 }
 
+#if 0
 // test only
 static void pa8_on(void)
 {
@@ -177,6 +178,7 @@ static void pa8_on(void)
 
 	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
 }
+#endif
 
 static void LCD_LL_Reset(void)
 {
@@ -211,227 +213,110 @@ static void LCD_LL_Reset(void)
   */
 uint8_t BSP_Config(void)
 {
-  uint8_t RetVal = 0;
-  uint8_t counter = 10;
+	uint8_t RetVal = 0;
+	uint8_t counter = 10;
 
-  /* Enable CRC to Unlock GUI */
-  __HAL_RCC_CRC_CLK_ENABLE();
+	// All GPIO clocks on
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	__HAL_RCC_GPIOB_CLK_ENABLE();
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+	__HAL_RCC_GPIOD_CLK_ENABLE();
+	__HAL_RCC_GPIOE_CLK_ENABLE();
+	__HAL_RCC_GPIOF_CLK_ENABLE();
+	__HAL_RCC_GPIOG_CLK_ENABLE();
+	__HAL_RCC_GPIOH_CLK_ENABLE();
+	__HAL_RCC_GPIOI_CLK_ENABLE();
+	__HAL_RCC_GPIOJ_CLK_ENABLE();
+	__HAL_RCC_GPIOK_CLK_ENABLE();
 
-  /* Configure LEDs */
-  BSP_LED_Init(LED_GREEN);
-  BSP_LED_Init(LED_ORANGE);
-  //BSP_LED_Init(LED_RED);
-  //BSP_LED_Init(LED_BLUE);
+	// Enable CRC to Unlock GUI
+	__HAL_RCC_CRC_CLK_ENABLE();
 
-  /* Init Wakeup/Select push-button in EXTI Mode */
-  BSP_PB_Init(BUTTON_WAKEUP, BUTTON_MODE_EXTI);
+	// Configure LEDs
+	BSP_LED_Init(LED_GREEN);
+	BSP_LED_Init(LED_ORANGE);
+	//BSP_LED_Init(LED_RED);	- DSP core uses those!
+	//BSP_LED_Init(LED_BLUE);
 
-#if defined(USE_JOYSTICK)
-  BSP_JOY_Init(JOY_MODE_EXTI);
-#endif /* USE_JOYSTICK */
+	// Init Wakeup/Select push-button in EXTI Mode
+	BSP_PB_Init(BUTTON_WAKEUP, BUTTON_MODE_EXTI);
 
-  // moved to printf.c, open and close is dynamic now
-  //BSP_ConfigSerial();
+	#if defined(USE_JOYSTICK)
+	BSP_JOY_Init(JOY_MODE_EXTI);
+	#endif /* USE_JOYSTICK */
 
-  printf_init(1);
-  printf("--------------------------------------\r\n");
-  printf("--- Debug Print Session on (radio) ---\r\n");
-  printf("Firmware v: %d.%d.%d.%d\r\n", MCHF_R_VER_MAJOR, MCHF_R_VER_MINOR, MCHF_R_VER_RELEASE, MCHF_R_VER_BUILD);
+	printf_init(1);
+	printf("--------------------------------------\r\n");
+	printf("--- Debug Print Session on (radio) ---\r\n");
+	printf("Firmware v: %d.%d.%d.%d\r\n", MCHF_R_VER_MAJOR, MCHF_R_VER_MINOR, MCHF_R_VER_RELEASE, MCHF_R_VER_BUILD);
 
-  #ifdef ESP32_UART_TASK
-  esp32_proc_init();
-  #endif
+  	#ifdef CONTEXT_IPC_PROC
+	ipc_proc_init();
+  	#endif
 
-  #ifdef CONTEXT_AUDIO
-  audio_proc_hw_init();
-  #endif
+  	#ifdef CONTEXT_AUDIO
+	audio_proc_hw_init();
+  	#endif
 
-  /* Print Clock configuration */
-  //printf( "CPU running at %luMHz, Peripherals at %luMHz/%luMHz\r\n" , (HAL_RCCEx_GetD1SysClockFreq()/1000000U)
-  //                                                                  , (HAL_RCC_GetPCLK1Freq()/1000000U)
-  //                                                                  , (HAL_RCC_GetPCLK2Freq()/1000000U) );
+	/* Print Clock configuration */
+	//printf( "CPU running at %luMHz, Peripherals at %luMHz/%luMHz\r\n" , (HAL_RCCEx_GetD1SysClockFreq()/1000000U)
+	//                                                                  , (HAL_RCC_GetPCLK1Freq()/1000000U)
+	//                                                                  , (HAL_RCC_GetPCLK2Freq()/1000000U) );
 
-  /* Initialize the SDRAM memory */
-  if ((RetVal = BSP_SDRAM_Init(0)) != BSP_ERROR_NONE)
-  {
-    printf("Failed to initialize the SDRAM !! (Error %d)\n", RetVal);
-    return 0;
-  }
+	// Initialize the SDRAM memory
+	if ((RetVal = BSP_SDRAM_Init(0)) != BSP_ERROR_NONE)
+	{
+		printf("Failed to initialize the SDRAM !! (Error %d)\n", RetVal);
+		return 0;
+	}
 
-#if 0
-  /* Initialize the NOR QuadSPI flash */
-  BSP_QSPI_Init_t init ;
-  init.InterfaceMode=MT25TL01G_QPI_MODE;
-  init.TransferRate= MT25TL01G_DTR_TRANSFER ;
-  init.DualFlashMode= MT25TL01G_DUALFLASH_ENABLE;
-  if ((RetVal = BSP_QSPI_Init(0,&init)) != BSP_ERROR_NONE)
-  {
-    printf("Failed to initialize the QSPI !! (Error %d)\n", RetVal);
-    return 0;
-  }
-  else
-  {
-    if((RetVal = BSP_QSPI_EnableMemoryMappedMode(0)) != BSP_ERROR_NONE)
-    {
-      printf("Failed to configure the QSPI !! (Error %d)\n", RetVal);
-      return 0;
-    }
-  }
-#endif
+	#if 0
+	/* Initialize the NOR QuadSPI flash */
+	BSP_QSPI_Init_t init ;
+	init.InterfaceMode=MT25TL01G_QPI_MODE;
+	init.TransferRate= MT25TL01G_DTR_TRANSFER ;
+	init.DualFlashMode= MT25TL01G_DUALFLASH_ENABLE;
+	if ((RetVal = BSP_QSPI_Init(0,&init)) != BSP_ERROR_NONE)
+	{
+		printf("Failed to initialize the QSPI !! (Error %d)\n", RetVal);
+		return 0;
+	}
+	else
+	{
+		if((RetVal = BSP_QSPI_EnableMemoryMappedMode(0)) != BSP_ERROR_NONE)
+		{
+			printf("Failed to configure the QSPI !! (Error %d)\n", RetVal);
+			return 0;
+		}
+	}
+	#endif
 
+	LCD_LL_Reset(); /* LCD controller need to be initialized */
 
-  LCD_LL_Reset(); /* LCD controller need to be initialized */
+	// Initialize the Touch screen
+	touch_proc_hw_init();
 
-  /* Initialize the Touch screen */
-  touch_proc_hw_init();
+	/* Enable Back up SRAM */
+	/* Enable write access to Backup domain */
+	PWR->CR1 |= PWR_CR1_DBP;
+	while((PWR->CR1 & PWR_CR1_DBP) == RESET)
+	{
+	}
+	/*Enable BKPRAM clock*/
+	__HAL_RCC_BKPRAM_CLK_ENABLE();
 
-#if 0
-  TS_Init_t hTS;
-  hTS.Width = 800;
-  hTS.Height = 480;
-  hTS.Orientation = TS_SWAP_XY | TS_SWAP_Y;
-  hTS.Accuracy = 5;
-  do
-  {
-    RetVal = BSP_TS_Init(0, &hTS);
-    HAL_Delay(100);
-    counter--;
-  }
-  while (counter && (RetVal != BSP_ERROR_NONE));
+	// ToDo: check!
+	//Copy_EXT_RAM_data();
 
-  if(RetVal != BSP_ERROR_NONE)
-  {
-    printf("Failed to initialize TS !! (Error %d)\n", RetVal);
-    return 0;
-  }
+	// Test
+	//pa8_on();
 
-  RetVal =  BSP_TS_EnableIT(0);;
-  if(RetVal != BSP_ERROR_NONE)
-  {
-    printf("Failed to initialize TS (IT) !! (Error %d)\n", RetVal);
-    return 0;
-  }
-#endif
+	// Oscillator clock - 25 Mhz
+	//HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_HSE, RCC_MCODIV_1);
 
-  /* Enable Back up SRAM */
-  /* Enable write access to Backup domain */
-  PWR->CR1 |= PWR_CR1_DBP;
-  while((PWR->CR1 & PWR_CR1_DBP) == RESET)
-  {
-  }
-  /*Enable BKPRAM clock*/
-  __HAL_RCC_BKPRAM_CLK_ENABLE();
-
-  // ToDo: check!
-  //Copy_EXT_RAM_data();
-
-  // Test
-  //pa8_on();
-
-  // Oscillator clock - 25 Mhz
-  //HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_HSE, RCC_MCODIV_1);
-
-  BSP_LED_On(LED_GREEN);
-  return 1;
+	BSP_LED_On(LED_GREEN);
+	return 1;
 }
-
-#if 0
-/**
-  * @brief  Provide the GUI with current state of the touch screen
-  * @param  None
-  * @retval None
-  */
-uint8_t BSP_TouchUpdate(void)
-{
-//#ifdef GUI_TASK
-  static GUI_PID_STATE TS_State = {0, 0, 0, 0};
-  __IO TS_State_t  ts;
-  uint16_t xDiff, yDiff;
-
-  BSP_TS_GetState(0,(TS_State_t *)&ts);
-
-  ts.TouchX = TouchScreen_Get_Calibrated_X(ts.TouchX);
-  ts.TouchY = TouchScreen_Get_Calibrated_Y(ts.TouchY);
-
-  if((ts.TouchX >= LCD_GetXSize()) ||(ts.TouchY >= LCD_GetYSize()) )
-  {
-    ts.TouchX = 0;
-    ts.TouchY = 0;
-  }
-
-  xDiff = (TS_State.x > ts.TouchX) ? (TS_State.x - ts.TouchX) : (ts.TouchX - TS_State.x);
-  yDiff = (TS_State.y > ts.TouchY) ? (TS_State.y - ts.TouchY) : (ts.TouchY - TS_State.y);
-
-  if((TS_State.Pressed != ts.TouchDetected ) ||
-     (xDiff > 8 )||
-       (yDiff > 8))
-  {
-    TS_State.Pressed = ts.TouchDetected;
-    TS_State.Layer = 0;
-    if(ts.TouchDetected)
-    {
-      TS_State.x = ts.TouchX;
-      TS_State.y = ts.TouchY ;
-      GUI_TOUCH_StoreStateEx(&TS_State);
-    }
-    else
-    {
-      GUI_TOUCH_StoreStateEx(&TS_State);
-      TS_State.x = 0;
-      TS_State.y = 0;
-    }
-
-    return 1;
-  }
-//#endif
-  return 0;
-}
-#endif
-
-#if 0
-/**
-  * @brief  Jump to Sub demo application
-  * @param  Address  : Address where the sub demonstration code is located
-  * @retval None
-  */
-void BSP_JumpToSubDemo(uint32_t SubDemoAddress)
-{
-	//printf("jump\r\n");
-
-	/* Store the address of the Sub Demo binary */
-	HAL_PWR_EnableBkUpAccess();
-	WRITE_REG(BKP_REG_SUBDEMO_ADDRESS, (uint32_t) SubDemoAddress);
-	HAL_PWR_DisableBkUpAccess();
-
-	/* Disable LCD */
-	LCD_Off();
-
-	//GUI_Delay(200);		// causes re-entrance
-	HAL_Delay(200);
-  
-	/* Disable the MPU */
-	HAL_MPU_Disable();
-
-	/* DeInit Storage */
-	Storage_DeInit();
-
-	// ToDo: stop uart driver..
-	//       other hw ?
-
-	printf("\r\nJumping to Sub-Demo @0x%08x ...\r\n", (int)SubDemoAddress);
-
-	/* Disable and Invalidate I-Cache */
-	//SCB_DisableICache();
-	//SCB_InvalidateICache();
-
-	/* Disable, Clean and Invalidate D-Cache */
-	//SCB_DisableDCache();
-	//SCB_CleanInvalidateDCache();
-
-	//printf("reset\r\n");
-	HAL_NVIC_SystemReset();
-}
-#endif
 
 static int BSP_VerifyData(const uint64_t *pData, const uint64_t *pFlash, uint32_t DataSize)
 {

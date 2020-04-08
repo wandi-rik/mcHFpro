@@ -79,6 +79,9 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *UartHandle)
 		UartError = SET;
 }
 
+//
+// ToDo: Change this function !!!
+//
 static void print_hex_array(uchar *pArray, uint aSize)
 {
 	uint i = 0,j = 0, c = 15;
@@ -302,7 +305,7 @@ uchar esp32_uart_exchange(uchar cmd, uchar *payload, uchar p_size, uchar *buffer
 	// Copy to caller task
 	if((buffer != NULL) && (ret_size != NULL))
 	{
-		print_hex_array(RxBuffer, expected);
+		//print_hex_array(RxBuffer, expected);
 
 		memcpy(buffer,RxBuffer + 1, expected);
 		*ret_size = expected;
@@ -360,7 +363,7 @@ static void check_msg(void)
 			printf("no handler for msg: %d\r\n",esp_msg->ucMessageID);
 			goto complete;
 	}
-	printf("uart comm res: %d\r\n",esp_msg->ucExecResult);
+	//printf("uart comm res: %d\r\n",esp_msg->ucExecResult);
 
 complete:
 	// Mark as complete

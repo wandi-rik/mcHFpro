@@ -111,6 +111,7 @@ typedef enum AutoDemoEvent_e
 /* Exported constants --------------------------------------------------------*/
 #define SW_FLAG_AUTO_DEMO         (1L << 0)
 
+#if 0
 #define	TASK_PROC_IDLE				0
 #define	TASK_PROC_WORK				1
 #define	TASK_PROC_DONE				2
@@ -125,6 +126,7 @@ struct ESPMessage {
 	uchar 	ucData[128];
 
 } ESPMessage;
+#endif
 
 /* Exported macros -----------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */

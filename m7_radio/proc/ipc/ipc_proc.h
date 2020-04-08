@@ -15,10 +15,10 @@
 **          third party drivers specifies otherwise. Thank you!                    **
 ************************************************************************************/
 
-#ifndef __ESP32_PROC_H
-#define __ESP32_PROC_H
+#ifndef __IPC_PROC_H
+#define __IPC_PROC_H
 
-#ifdef ESP32_UART_TASK
+#ifdef CONTEXT_IPC_PROC
 
 /* Definition for USARTx's DMA */
 #define USARTx_TX_DMA_STREAM             DMA2_Stream7
@@ -35,8 +35,8 @@
 /* Definition for USARTx's NVIC */
 #define USARTx_IRQn                      UART8_IRQn
 
-void esp32_proc_init(void);
-void esp32_proc_task(void const *arg);
+void ipc_proc_init(void);
+void ipc_proc_task(void const *arg);
 
 #endif
 

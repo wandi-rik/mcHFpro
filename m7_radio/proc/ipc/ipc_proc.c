@@ -15,14 +15,16 @@
 **          third party drivers specifies otherwise. Thank you!                    **
 ************************************************************************************/
 
+#include "mchf_pro_board.h"
 #include "main.h"
 #include "bsp.h"
 
-#include "esp32_proc.h"
+#include "ipc_proc.h"
 
 #include "wifi.h"
+#include "mchf_ipc_def.h"
 
-#ifdef ESP32_UART_TASK
+#ifdef CONTEXT_IPC_PROC
 
 UART_HandleTypeDef 	UART8_Handle;
 
@@ -108,7 +110,7 @@ static void print_hex_array(uchar *pArray, uint aSize)
 //* Notes    			:
 //* Context    			: CONTEXT_RESET_VECTOR
 //*----------------------------------------------------------------------------
-void esp32_proc_init(void)
+void ipc_proc_init(void)
 {
 	GPIO_InitTypeDef  GPIO_InitStruct;
 	RCC_PeriphCLKInitTypeDef RCC_PeriphClkInit;
@@ -328,27 +330,27 @@ static void check_msg(void)
 
 	struct ESPMessage *esp_msg = (struct ESPMessage *)event.value.p;
 
-	//printf("[uart] msg id: %d \r\n", esp_msg->ucMessageID);
+	printf("[uart] msg id: %d \r\n", esp_msg->ucMessageID);
 	switch(esp_msg->ucMessageID)
 	{
 		// Read firmware version
 		case 1:
-			esp_msg->ucExecResult = esp32_uart_exchange(0x10, NULL, 0, esp_msg->ucData,&esp_msg->ucDataReady, 200);
+			esp_msg->ucExecResult = esp32_uart_exchange(MENU_READ_ESP_32_VERSION, NULL, 0, esp_msg->ucData,&esp_msg->ucDataReady, 200);
 			break;
 
 		// Read WiFi details
 		case 2:
-			esp_msg->ucExecResult = esp32_uart_exchange(0x06, NULL, 0, esp_msg->ucData,&esp_msg->ucDataReady, 200);
+			esp_msg->ucExecResult = esp32_uart_exchange(MENU_WIFI_GET_DETAILS, NULL, 0, esp_msg->ucData,&esp_msg->ucDataReady, 200);
 			break;
 
 		// Connect to WiFi network
 		case 3:
 		{
-			esp_msg->ucExecResult = esp32_uart_exchange(0x23, (uchar *)vc, sizeof(vc), esp_msg->ucData,&esp_msg->ucDataReady, 200);
+			esp_msg->ucExecResult = esp32_uart_exchange(MENU_WIFI_CONNECT_TO_NETWORK, (uchar *)vc, sizeof(vc), esp_msg->ucData,&esp_msg->ucDataReady, 200);
 			if(esp_msg->ucExecResult == 0)
 			{
 				// Reboot it
-				esp32_uart_exchange(0xF0, NULL, 0, NULL, NULL, 200);
+				esp32_uart_exchange(MENU_ESP32_REBOOT, NULL, 0, NULL, NULL, 200);
 				// Give it time to reboot and connect to wifi network
 				vTaskDelay(3000);
 			}
@@ -367,17 +369,16 @@ complete:
 }
 
 //*----------------------------------------------------------------------------
-//* Function Name       : esp32_uart_task
+//* Function Name       : ipc_proc_task
 //* Object              :
 //* Notes    			:
 //* Notes    			:
-//* Context    			: CONTEXT_ESP32_TASK
+//* Context    			: CONTEXT_IPC_PROC
 //*----------------------------------------------------------------------------
-void esp32_proc_task(void const *arg)
+void ipc_proc_task(void const *arg)
 {
-	//printf("esp32_uart task init\r\n");
 	vTaskDelay(500);
-	printf("esp32_uart task start\r\n");
+	printf("ipc task start\r\n");
 
 	for(;;)
 	{

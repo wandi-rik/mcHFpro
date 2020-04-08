@@ -824,7 +824,7 @@ static void ui_controls_update_smooth_control(uchar init)
 {
 	uchar pub_smooth;
 
-	pub_smooth = 1;//*(uchar *)(EEP_BASE + EEP_SW_SMOOTH);
+	pub_smooth = *(uchar *)(EEP_BASE + EEP_SW_SMOOTH);
 
 	if(!init)
 	{
@@ -1139,9 +1139,9 @@ void ui_controls_spectrum_init(void)
 	loc_vfo_mode = 0x99;
 
 	// Control size based on saved eeprom value - only in CW mode ??
-	//if(*(uchar *)(EEP_BASE + EEP_KEYER_ON))
-	//	ui_sw.ctrl_type = SW_CONTROL_MID;
-	//else
+	if(*(uchar *)(EEP_BASE + EEP_KEYER_ON))
+		ui_sw.ctrl_type = SW_CONTROL_MID;
+	else
 		ui_sw.ctrl_type = SW_CONTROL_BIG;
 
 	ui_sw.bandpass_start 	= SPECTRUM_MID_POINT - SPECTRUM_DEF_HALF_BW*2;

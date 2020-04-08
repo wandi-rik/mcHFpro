@@ -27,7 +27,7 @@
 #include "ui_controls_band.h"
 #include "desktop\ui_controls_layout.h"
 
-//#include "desktop\freq\ui_controls_frequency.h"
+#include "desktop\freq\ui_controls_frequency.h"
 
 uchar loc_band;
 
@@ -35,8 +35,8 @@ uchar loc_band;
 extern struct	TRANSCEIVER_STATE_UI	tsu;
 
 // API Driver messaging
-extern osMessageQId 					hApiMessage;
-struct APIMessage						api_band;
+//extern osMessageQId 					hApiMessage;
+//struct APIMessage						api_band;
 
 // ToDo: this control kinda sucks, it needs serious re-write!
 //
@@ -132,6 +132,7 @@ void ui_controls_band_refresh(void)
 	// -----------------------------------------------------------
 	// Update audio volume(band specific)
 	tsu.update_audio_dsp_req = 1;
+#endif
 
 	// -----------------------------------------------------------
 	// Controls that need complete repaint - call them directly
@@ -180,8 +181,6 @@ void ui_controls_band_refresh(void)
 	loc_band = tsu.curr_band;
 
 	WRITE_EEPROM(EEP_CURR_BAND,tsu.curr_band);
-
-	#endif
 }
 
 #endif
