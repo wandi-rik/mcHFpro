@@ -21,16 +21,16 @@
 #ifdef CONTEXT_IPC_PROC
 
 /* Definition for USARTx's DMA */
-#define USARTx_TX_DMA_STREAM             DMA2_Stream7
-#define USARTx_RX_DMA_STREAM             DMA2_Stream1
+#define USARTx_TX_DMA_STREAM             DMA1_Stream7
+#define USARTx_RX_DMA_STREAM             DMA1_Stream1
 
 /* Definition for USARTx's DMA Request */
 #define USARTx_TX_DMA_REQUEST            DMA_REQUEST_UART8_TX
 #define USARTx_RX_DMA_REQUEST            DMA_REQUEST_UART8_RX
 
 /* Definition for USARTx's NVIC */
-#define USARTx_DMA_TX_IRQn               DMA2_Stream7_IRQn
-#define USARTx_DMA_RX_IRQn               DMA2_Stream1_IRQn
+#define USARTx_DMA_TX_IRQn               DMA1_Stream7_IRQn
+#define USARTx_DMA_RX_IRQn               DMA1_Stream1_IRQn
 
 /* Definition for USARTx's NVIC */
 #define USARTx_IRQn                      UART8_IRQn

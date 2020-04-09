@@ -30,24 +30,19 @@ UART_HandleTypeDef 	UART8_Handle;
 
 __IO ITStatus 		UartReady = RESET;
 __IO ITStatus 		UartError = RESET;
-//
+
 DMA_HandleTypeDef 	hdma_tx;
 DMA_HandleTypeDef	hdma_rx;
-//
-// Criteria:
-// 1. need correct RAM (0x24000000)
-// 2. need to be aligned to 32 bytes
-// 3. invalidate cache before read
-//
+
 __attribute__((section("heap_mem"))) ALIGN_32BYTES (uint8_t TxBuffer[128]);
 __attribute__((section("heap_mem"))) ALIGN_32BYTES (uint8_t RxBuffer[128]);
 
-void DMA2_Stream1_IRQHandler(void)
+void DMA1_Stream1_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(UART8_Handle.hdmarx);
 }
 
-void DMA2_Stream7_IRQHandler(void)
+void DMA1_Stream7_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(UART8_Handle.hdmatx);
 }
@@ -80,6 +75,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *UartHandle)
 		UartError = SET;
 }
 
+/*
 static void print_hex_array(uchar *pArray, uint aSize)
 {
 	uint i = 0,j = 0, c = 15;
@@ -101,6 +97,30 @@ static void print_hex_array(uchar *pArray, uint aSize)
 	}
 
 	printf("%s\r\n",buf);
+}
+*/
+
+void print_hex_array(uchar *pArray, ushort aSize)
+{
+	ulong i = 0,j = 0, c = 0;
+	char *buf;
+
+	buf = (char *)malloc(aSize * 10);
+	memset(buf, 0, (aSize * 10));
+
+	for (i = 0; i < aSize; i++)
+	{
+		j += sprintf( buf+j ,"%02x ", *pArray );
+		pArray++;
+		if (c++==15)
+		{
+			j += sprintf(buf+j ,"\r\n");
+			//printf(buf);
+			c = 0;
+		}
+	}
+	printf(buf);
+	free(buf);
 }
 
 //*----------------------------------------------------------------------------
@@ -124,7 +144,7 @@ void ipc_proc_init(void)
 	HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphClkInit);
 
 	__HAL_RCC_UART8_CLK_ENABLE();
-	__HAL_RCC_DMA2_CLK_ENABLE();
+	__HAL_RCC_DMA1_CLK_ENABLE();
 
 	// Uart8
 	GPIO_InitStruct.Pin       = GPIO_PIN_8|GPIO_PIN_9;
@@ -150,7 +170,7 @@ void ipc_proc_init(void)
 	hdma_tx.Init.Request             = USARTx_TX_DMA_REQUEST;
 	HAL_DMA_Init(&hdma_tx);
 
-	/* Associate the initialized DMA handle to the UART handle */
+	/* Associate the initialised DMA handle to the UART handle */
 	__HAL_LINKDMA(&UART8_Handle, hdmatx, hdma_tx);
 
 	/* Configure the DMA handler for reception process */
@@ -169,7 +189,7 @@ void ipc_proc_init(void)
 	hdma_rx.Init.Request             = USARTx_RX_DMA_REQUEST;
 	HAL_DMA_Init(&hdma_rx);
 
-	/* Associate the initialized DMA handle to the the UART handle */
+	/* Associate the initialised DMA handle to the the UART handle */
 	__HAL_LINKDMA(&UART8_Handle, hdmarx, hdma_rx);
 
 	UART8_Handle.Instance            = UART8;
@@ -210,7 +230,6 @@ void ipc_proc_init(void)
 //* Notes    			:
 //* Context    			: CONTEXT_ESP32_TASK
 //*----------------------------------------------------------------------------
-//uchar seq = 0;
 uchar esp32_uart_exchange(uchar cmd, uchar *payload, uchar p_size, uchar *buffer, uchar *ret_size, ulong timeout)
 {
 	ulong i;
@@ -351,6 +370,7 @@ static void check_msg(void)
 			{
 				// Reboot it
 				esp32_uart_exchange(MENU_ESP32_REBOOT, NULL, 0, NULL, NULL, 200);
+
 				// Give it time to reboot and connect to wifi network
 				vTaskDelay(3000);
 			}

@@ -32,21 +32,16 @@ __IO ITStatus 		UartError = RESET;
 //
 DMA_HandleTypeDef 	hdma_tx;
 DMA_HandleTypeDef	hdma_rx;
-//
-// Criteria:
-// 1. need correct RAM (0x24000000)
-// 2. need to be aligned to 32 bytes
-// 3. invalidate cache before read
-//
+
 __attribute__((section("heap_mem"))) ALIGN_32BYTES (uint8_t TxBuffer[128]);
 __attribute__((section("heap_mem"))) ALIGN_32BYTES (uint8_t RxBuffer[128]);
 
-void DMA2_Stream1_IRQHandler(void)
+void DMA1_Stream1_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(UART8_Handle.hdmarx);
 }
 
-void DMA2_Stream7_IRQHandler(void)
+void DMA1_Stream7_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(UART8_Handle.hdmatx);
 }
@@ -79,6 +74,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *UartHandle)
 		UartError = SET;
 }
 
+#if 0
 //
 // ToDo: Change this function !!!
 //
@@ -104,6 +100,7 @@ static void print_hex_array(uchar *pArray, uint aSize)
 
 	printf("%s\r\n",buf);
 }
+#endif
 
 //*----------------------------------------------------------------------------
 //* Function Name       : esp32_uart_init
@@ -126,7 +123,7 @@ void esp32_uart_init(void)
 	HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphClkInit);
 
 	__HAL_RCC_UART8_CLK_ENABLE();
-	__HAL_RCC_DMA2_CLK_ENABLE();
+	__HAL_RCC_DMA1_CLK_ENABLE();
 
 	// Uart8
 	GPIO_InitStruct.Pin       = GPIO_PIN_8|GPIO_PIN_9;
