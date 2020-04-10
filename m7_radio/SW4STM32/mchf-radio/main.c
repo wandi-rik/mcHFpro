@@ -686,7 +686,7 @@ static void transceiver_load_eep_values(void)
 
 	// Load band
 	r0 = READ_EEPROM(EEP_CURR_BAND);
-	printf("r0 = %d\r\n",r0);
+	//printf("r0 = %d\r\n",r0);
 	if(r0 != 0xFF)
 		tsu.curr_band = r0;
 	else

@@ -441,4 +441,6 @@ void 	mchf_pro_board_sensitive_hw_init(void);
 // in main.c !
 void 	transceiver_init_eep_defaults(void);
 
+void print_hex_array(uchar *pArray, ushort aSize);
+
 #endif

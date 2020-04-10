@@ -20,6 +20,8 @@
 
 #ifdef CONTEXT_IPC_PROC
 
+//#define IPC_USE_IDLE_LINE
+
 /* Definition for USARTx's DMA */
 #define USARTx_TX_DMA_STREAM             DMA1_Stream7
 #define USARTx_RX_DMA_STREAM             DMA1_Stream1

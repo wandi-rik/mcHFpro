@@ -28,40 +28,57 @@
 
 UART_HandleTypeDef 	UART8_Handle;
 
-__IO ITStatus 		UartReady = RESET;
-__IO ITStatus 		UartError = RESET;
+__IO ITStatus 		UartReady 		= RESET;
+__IO ITStatus 		UartError 		= RESET;
+__IO ITStatus 		UartLineIdle 	= RESET;
 
 DMA_HandleTypeDef 	hdma_tx;
 DMA_HandleTypeDef	hdma_rx;
 
+extern QueueHandle_t 	hEspMessage;
+
 __attribute__((section("heap_mem"))) ALIGN_32BYTES (uint8_t TxBuffer[128]);
-__attribute__((section("heap_mem"))) ALIGN_32BYTES (uint8_t RxBuffer[128]);
+__attribute__((section("heap_mem"))) ALIGN_32BYTES (uint8_t RxBuffer[1056]);	// [10b header][1024b payload][1b checksum], cache aligned
+
+void UART8_IRQHandler(void)
+{
+	#ifdef IPC_USE_IDLE_LINE
+	//if (UART8_Handle.Instance->ISR & USART_ISR_IDLE)
+	if(RESET != __HAL_UART_GET_FLAG(&UART8_Handle, UART_FLAG_IDLE))
+	{
+		UartLineIdle = SET;
+
+		volatile uint32_t tmp;
+	    tmp = UART8_Handle.Instance->ISR;
+	    tmp = UART8_Handle.Instance->RDR;
+
+	    //__HAL_UART_CLEAR_IDLEFLAG(&UART8_Handle);
+	    //HAL_UART_DMAStop(&UART8_Handle);
+	    //((DMA_Stream_TypeDef *)hdma_rx.Instance)->CR &= ~DMA_SxCR_EN;
+	}
+	#endif
+
+	HAL_UART_IRQHandler(&UART8_Handle);
+}
 
 void DMA1_Stream1_IRQHandler(void)
 {
-  HAL_DMA_IRQHandler(UART8_Handle.hdmarx);
+	HAL_DMA_IRQHandler(UART8_Handle.hdmarx);
 }
 
 void DMA1_Stream7_IRQHandler(void)
 {
-  HAL_DMA_IRQHandler(UART8_Handle.hdmatx);
-}
-
-void UART8_IRQHandler(void)
-{
-  HAL_UART_IRQHandler(&UART8_Handle);
+	HAL_DMA_IRQHandler(UART8_Handle.hdmatx);
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *UartHandle)
 {
-  /* Set transmission flag: transfer complete */
-  UartReady = SET;
+	UartReady = SET;
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
 {
-  /* Set transmission flag: transfer complete */
-  UartReady = SET;
+	UartReady = SET;
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *UartHandle)
@@ -73,54 +90,6 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *UartHandle)
 	}
 	else
 		UartError = SET;
-}
-
-/*
-static void print_hex_array(uchar *pArray, uint aSize)
-{
-	uint i = 0,j = 0, c = 15;
-	char buf[400];
-
-	if(aSize > 128)
-		return;
-
-	for (i=0;i<aSize;i++)
-	{
-		if (c++==15)
-		{
-			j += sprintf( buf+j ,"\r\n" );
-			c = 0;
-		}
-
-		j += sprintf( buf+j ,"%02x ", *pArray );
-		pArray++;
-	}
-
-	printf("%s\r\n",buf);
-}
-*/
-
-void print_hex_array(uchar *pArray, ushort aSize)
-{
-	ulong i = 0,j = 0, c = 0;
-	char *buf;
-
-	buf = (char *)malloc(aSize * 10);
-	memset(buf, 0, (aSize * 10));
-
-	for (i = 0; i < aSize; i++)
-	{
-		j += sprintf( buf+j ,"%02x ", *pArray );
-		pArray++;
-		if (c++==15)
-		{
-			j += sprintf(buf+j ,"\r\n");
-			//printf(buf);
-			c = 0;
-		}
-	}
-	printf(buf);
-	free(buf);
 }
 
 //*----------------------------------------------------------------------------
@@ -210,9 +179,16 @@ void ipc_proc_init(void)
 	HAL_NVIC_SetPriority(USARTx_DMA_RX_IRQn, 5, 0);
 	HAL_NVIC_EnableIRQ(USARTx_DMA_RX_IRQn);
 
-	/* NVIC for USART, to catch the TX complete */
+	#ifdef IPC_USE_IDLE_LINE
+	// Enable Idle Line + TX complete interrupt
+	__HAL_UART_ENABLE_IT(&UART8_Handle, UART_IT_TC|UART_IT_IDLE);
+	__HAL_DMA_ENABLE_IT (&hdma_rx, 		DMA_IT_TC);
+	__HAL_DMA_ENABLE_IT (&hdma_tx, 		DMA_IT_TC);
+	#endif
+
+	// NVIC for USART, to catch the TX complete and Line Idle
 	HAL_NVIC_SetPriority(USARTx_IRQn, 5, 0);
-	HAL_NVIC_EnableIRQ(USARTx_IRQn);
+	HAL_NVIC_EnableIRQ  (USARTx_IRQn);
 
 	// Flush UART
 	memset(TxBuffer, 0x00, 10);
@@ -221,6 +197,18 @@ void ipc_proc_init(void)
 	// Flush cache
 	SCB_CleanDCache_by_Addr((uint32_t *)TxBuffer, sizeof(TxBuffer));
 	SCB_CleanDCache_by_Addr((uint32_t *)RxBuffer, sizeof(RxBuffer));
+}
+
+unsigned char chechSumXOR(unsigned char *data, unsigned int len)
+{
+	unsigned char xorCS = 0x00;
+
+	for (int i = 0; i < len; i++)
+	{
+		unsigned char extract = *data++;
+		xorCS ^= extract;
+	}
+	return xorCS;
 }
 
 //*----------------------------------------------------------------------------
@@ -232,8 +220,11 @@ void ipc_proc_init(void)
 //*----------------------------------------------------------------------------
 uchar esp32_uart_exchange(uchar cmd, uchar *payload, uchar p_size, uchar *buffer, uchar *ret_size, ulong timeout)
 {
-	ulong i;
-	uchar expected, out_size;
+	ulong 	i;
+	ushort 	expected, out_size;
+	uchar 	chksum;
+
+	printf("-------------------------\r\n");
 
 	// Flush cache
 	SCB_CleanDCache_by_Addr((uint32_t *)TxBuffer, sizeof(TxBuffer));
@@ -241,6 +232,28 @@ uchar esp32_uart_exchange(uchar cmd, uchar *payload, uchar p_size, uchar *buffer
 	// Clear buffers
 	memset(RxBuffer, 0, sizeof(RxBuffer));
 	memset(TxBuffer, 0, sizeof(TxBuffer));
+
+	#ifndef IPC_USE_IDLE_LINE
+	expected	= 10;	// header size
+	switch(cmd)
+	{
+		case MENU_READ_ESP_32_VERSION:
+			expected += 17;
+			break;
+		case MENU_WIFI_GET_DETAILS:
+			expected += 62;
+			break;
+		case MENU_WIFI_CONNECT_TO_NETWORK:
+			expected += 1;
+			break;
+		case MENU_WIFI_GET_NETWORK_RSSI:
+			expected += 4;
+			break;
+		default:
+			break;
+	}
+	expected++;			// Checksum
+	#endif
 
 	// Init command
 	TxBuffer[0] = cmd;		// command
@@ -277,28 +290,46 @@ uchar esp32_uart_exchange(uchar cmd, uchar *payload, uchar p_size, uchar *buffer
 	}
 
 	// Prepare transfer
-	UartReady 	= RESET;
-	i 			= 0;
+	UartReady 		= RESET;
+	UartError 		= RESET;
+	UartLineIdle 	= RESET;
+	i 				= 0;
 
-	switch(cmd)
+	#ifdef IPC_USE_IDLE_LINE
+	// Start read
+	int h_err = HAL_UART_Receive_DMA(&UART8_Handle, (uint8_t *)RxBuffer, 32);//sizeof(RxBuffer));
+	if(h_err != HAL_OK)
 	{
-		case 0x10:
-			expected = 27;
-			break;
-		case 0x06:
-			expected = 72;
-			break;
-		case 0x23:
-			expected = 11;
-			break;
-		default:
-			expected = 10; // header only ?
-			break;
+		printf("hal err %d\r\n", h_err);
+		return 4;
 	}
 
-	// ToDo: investigate how on this chip
-	//__HAL_UART_ENABLE_IT(&UART8_Handle, UART_IT_IDLE);
+	while(UartReady == RESET)	//UartLineIdle == RESET)
+	{
+		//if(UartLineIdle == SET)
+		//	break;
 
+		if(i == timeout)
+		{
+			printf("UartLineIdle %d\r\n", UartLineIdle);
+			if(UartLineIdle == SET)
+			{
+				expected = 32 - __HAL_DMA_GET_COUNTER(&hdma_rx);
+				printf("data_length %d\r\n", expected);
+
+				//HAL_DMA_Abort(&hdma_rx);
+				HAL_UART_DMAStop(&UART8_Handle);
+				break;
+			}
+			return 6;
+		}
+
+		vTaskDelay(1);
+		i++;
+	}
+	#endif
+
+	#ifndef IPC_USE_IDLE_LINE
 	// Start read
 	if(HAL_UART_Receive_DMA(&UART8_Handle, (uint8_t *)RxBuffer, expected) != HAL_OK)
 		return 4;
@@ -315,16 +346,23 @@ uchar esp32_uart_exchange(uchar cmd, uchar *payload, uchar p_size, uchar *buffer
 		vTaskDelay(1);
 		i++;
 	}
+	#endif
 
 	// Invalidate Data Cache to get the updated content of the SRAM
 	SCB_InvalidateDCache_by_Addr((uint32_t *)RxBuffer, sizeof(RxBuffer));
 
+	// Calculate checksum
+	chksum = chechSumXOR(RxBuffer, (expected - 1));
+	//printf("chk sum %02x\r\n", chksum);
+
+	if(chksum != RxBuffer[expected - 1])
+		return 7;
+
 	// Copy to caller task
 	if((buffer != NULL) && (ret_size != NULL))
 	{
-		//print_hex_array(RxBuffer, expected);
-
-		memcpy(buffer,RxBuffer + 1, expected);
+		print_hex_array(RxBuffer, expected);
+		memcpy(buffer,RxBuffer, expected);
 		*ret_size = expected;
 	}
 
@@ -332,9 +370,30 @@ uchar esp32_uart_exchange(uchar cmd, uchar *payload, uchar p_size, uchar *buffer
 	return 0;
 }
 
-extern QueueHandle_t 	hEspMessage;
+static void ipc_proc_poll_rssi(void)
+{
+	uchar rssi_buf[20];
+	uchar ret_size = 0, err;
 
-static void check_msg(void)
+	static uchar rssi_read_skip = 0;
+
+	rssi_read_skip++;
+	if(rssi_read_skip < 40)
+		return;
+
+	rssi_read_skip = 0;
+
+	err = esp32_uart_exchange(MENU_WIFI_GET_NETWORK_RSSI, NULL, 0, rssi_buf, &ret_size, 200);
+	if(err == 0)
+	{
+		//int rssi = ((rssi_buf[10] << 24)|(rssi_buf[11] << 16)|(rssi_buf[12] << 8)|(rssi_buf[13]));
+		//printf("rssi %d\r\n", rssi);
+	}
+	//else
+		//printf("err %d\r\n", err);
+}
+
+static void icc_proc_check_msg(void)
 {
 	osEvent event;
 
@@ -349,7 +408,7 @@ static void check_msg(void)
 
 	struct ESPMessage *esp_msg = (struct ESPMessage *)event.value.p;
 
-	printf("[uart] msg id: %d \r\n", esp_msg->ucMessageID);
+	//printf("[uart] msg id: %d \r\n", esp_msg->ucMessageID);
 	switch(esp_msg->ucMessageID)
 	{
 		// Read firmware version
@@ -397,12 +456,13 @@ complete:
 //*----------------------------------------------------------------------------
 void ipc_proc_task(void const *arg)
 {
-	vTaskDelay(500);
+	vTaskDelay(5000);
 	printf("ipc task start\r\n");
 
 	for(;;)
 	{
-		check_msg();
+		icc_proc_check_msg();
+		ipc_proc_poll_rssi();
 	}
 }
 #endif

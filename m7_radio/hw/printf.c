@@ -686,6 +686,40 @@ signed int fputs(const char *pStr, FILE *pStream)
 }
 
 //*----------------------------------------------------------------------------
+//* Function Name       : print_hex_array
+//* Object              :
+//* Notes    			: nicely formatted hex array print
+//* Notes    			:
+//* Context    			: any task
+//*----------------------------------------------------------------------------
+void print_hex_array(uchar *pArray, ushort aSize)
+{
+	ulong i, j, k;
+	char buf[100];
+
+	for(k = 0; k < aSize/16; k++)
+	{
+		for(i = 0,j = 0; i < 16; i++)
+		{
+			j += sprintf( buf+j ,"%02x ", *pArray );
+			pArray++;
+		}
+		printf("%s\r\n",buf);
+		aSize -= 16;
+	}
+
+	if(aSize%16)
+	{
+		for(i = 0,j = 0; i < aSize; i++)
+		{
+			j += sprintf( buf+j ,"%02x ", *pArray );
+			pArray++;
+		}
+		printf("%s\r\n",buf);
+	}
+}
+
+//*----------------------------------------------------------------------------
 //* Function Name       : printf_init
 //* Object              :
 //* Notes    			: init core to core shared resource and debug port params
