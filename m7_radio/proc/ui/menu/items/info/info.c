@@ -16,6 +16,7 @@
 ************************************************************************************/
 
 #include "mchf_pro_board.h"
+#include "main.h"
 #include "version.h"
 
 #ifdef CONTEXT_DRIVER_UI
@@ -37,7 +38,7 @@
 static void Startup(WM_HWIN hWin, uint16_t xpos, uint16_t ypos);
 
 // Public radio state
-//extern struct	TRANSCEIVER_STATE_UI	tsu;
+extern struct	TRANSCEIVER_STATE_UI	tsu;
 
 extern GUI_CONST_STORAGE GUI_BITMAP bmgeneralinfoA;
 
@@ -53,19 +54,8 @@ K_ModuleItem_Typedef  info =
 #define ID_WINDOW_0               	(GUI_ID_USER + 0x00)
 #define ID_BUTTON_EXIT            	(GUI_ID_USER + 0x01)
 
-#define ID_TEXT_UI_HDR             	(GUI_ID_USER + 0x03)
-#define ID_TEXT_LO_HDR            	(GUI_ID_USER + 0x04)
-
-#define ID_TEXT_UI_FW_V           	(GUI_ID_USER + 0x05)
-#define ID_TEXT_UI_FW_A           	(GUI_ID_USER + 0x06)
-#define ID_TEXT_UI_OS_V           	(GUI_ID_USER + 0x07)
-#define ID_TEXT_UI_GUI_V           	(GUI_ID_USER + 0x08)
-#define ID_TEXT_UI_TS_V           	(GUI_ID_USER + 0x09)
-#define ID_TEXT_UI_CPU_ID          	(GUI_ID_USER + 0x0A)
-#define ID_TEXT_UI_FLS_SZ          	(GUI_ID_USER + 0x0B)
-
-#define ID_TEXT_LO_PCB_V           	(GUI_ID_USER + 0x0C)
-#define ID_LISTBOX1           		(GUI_ID_USER + 0x0D)
+#define ID_LISTBOX1           		(GUI_ID_USER + 0x02)
+#define ID_LISTBOX2           		(GUI_ID_USER + 0x03)
 
 static const GUI_WIDGET_CREATE_INFO _aDialog[] = 
 {
@@ -76,31 +66,10 @@ static const GUI_WIDGET_CREATE_INFO _aDialog[] =
 	{ WINDOW_CreateIndirect,	"", 						ID_WINDOW_0,		0,    	0,		800,	430, 	0, 		0x64, 	0 },
 	// Back Button
 	{ BUTTON_CreateIndirect, 	"Back",			 			ID_BUTTON_EXIT, 	670, 	375, 	120, 	45, 	0, 		0x0, 	0 },
-	// Board headers
-	{ TEXT_CreateIndirect, 		"User Interface", 			ID_TEXT_UI_HDR,		120,	10,		300,	40,		0,		0x0,	0 },
-	{ TEXT_CreateIndirect, 		"Logic Board", 				ID_TEXT_LO_HDR,		530,	10,		300,	40,		0,		0x0,	0 },
-	// UI board entries
-	{ TEXT_CreateIndirect, 		"Firm.Vers", 				ID_TEXT_UI_FW_V,	10,		 50,	360,	20,		0,		0x0,	0 },
-	{ TEXT_CreateIndirect, 		"Firm.Auth", 				ID_TEXT_UI_FW_A,	10,		 66,	360,	20,		0,		0x0,	0 },
-	{ TEXT_CreateIndirect, 		"RTOS.Vers", 				ID_TEXT_UI_OS_V,	10,		 82,	360,	20,		0,		0x0,	0 },
-	{ TEXT_CreateIndirect, 		"RTOS.Vers", 				ID_TEXT_UI_GUI_V,	10,		 98,	360,	20,		0,		0x0,	0 },
-	{ TEXT_CreateIndirect, 		"Digi.Vers", 				ID_TEXT_UI_TS_V,	10,		114,	360,	20,		0,		0x0,	0 },
-	{ TEXT_CreateIndirect, 		"Cpu.ID",	 				ID_TEXT_UI_CPU_ID,	10,		130,	360,	20,		0,		0x0,	0 },
-	{ TEXT_CreateIndirect, 		"Flash.Size", 				ID_TEXT_UI_FLS_SZ,	10,		146,	360,	20,		0,		0x0,	0 },
-	// Logic board entries
-//	{ TEXT_CreateIndirect, 		"Logic.PCB", 				ID_TEXT_LO_PCB_V,	420,	 50,	360,	20,		0,		0x0,	0 },
-	{ LISTBOX_CreateIndirect, 	"Listbox",					ID_LISTBOX1, 		405, 	 10, 	380, 	350, 	0, 		0x0, 	0 },
+	// List boxes
+	{ LISTBOX_CreateIndirect, 	"Listbox",					ID_LISTBOX1, 		  5, 	 10, 	520, 	410, 	0, 		0x0, 	0 },
+	{ LISTBOX_CreateIndirect, 	"Listbox",					ID_LISTBOX2, 		535, 	 10, 	255, 	350, 	0, 		0x0, 	0 },
 };
-
-#define	TEXT_1					"Device ID:"
-#define	TEXT_2					"Author ID:"
-#define	TEXT_3					"Scheduler:"
-#define	TEXT_4					"UI GuiLib:"
-#define	TEXT_5					"Digitizer:"
-#define	TEXT_6					"Unique ID:"
-#define	TEXT_7					"FlashSize:"
-
-#define	TEXT_8					"Logic PCB:"
 
 // ------------------------------------------------------
 //
@@ -114,28 +83,22 @@ extern 	osMessageQId 			hEspMessage;
 struct 	ESPMessage				esp_msg;
 //
 ulong 							state_id  = 0xFF;
-int								last_item = 0;
-
 
 static void about_print_fw_vers(WM_HWIN hItem)
 {
 	char fw_id[200];
 	char *p = fw_id;
 
-	EnterCriticalSection();
     memset(fw_id,0,sizeof(fw_id));
-    strcpy(p,TEXT_1);
-    p += strlen(TEXT_1);
+    strcpy(p,"Device ID:");
+    p += strlen("Device ID:");
     strcpy(p," ");
     p++;
     strcpy(p,DEVICE_STRING);
     p += strlen(DEVICE_STRING);
     sprintf(p," v %d.%d.%d.%d",MCHF_R_VER_MAJOR, MCHF_R_VER_MINOR, MCHF_R_VER_RELEASE,MCHF_R_VER_BUILD);
-    ExitCriticalSection();
 
-    p = fw_id;
-
-    TEXT_SetText(hItem,fw_id);
+    LISTBOX_AddString(hItem,fw_id);
 }
 
 static void about_print_fw_auth(WM_HWIN hItem)
@@ -143,19 +106,11 @@ static void about_print_fw_auth(WM_HWIN hItem)
 	char fw_id[200];
 	char *p = fw_id;
 
-	EnterCriticalSection();
     memset(fw_id,0,sizeof(fw_id));
-    strcpy(p,TEXT_2);
-    p += strlen(TEXT_2);
-    strcpy(p," ");
-    p++;
     strcpy(p,AUTHOR_STRING);
-    p += strlen(AUTHOR_STRING);
-    ExitCriticalSection();
 
-    p = fw_id;
-
-    TEXT_SetText(hItem,fw_id);
+    LISTBOX_AddString(hItem, fw_id);
+    LISTBOX_SetSel(hItem, -1);
 }
 
 static void about_print_fw_rtos(WM_HWIN hItem)
@@ -163,15 +118,10 @@ static void about_print_fw_rtos(WM_HWIN hItem)
 	char fw_id[200];
 	char *p = fw_id;
 
-	EnterCriticalSection();
     memset(fw_id,0,sizeof(fw_id));
-    //sprintf(p,"Switch: FreeRTOS %s",tskKERNEL_VERSION_NUMBER);
-    sprintf(p,"%s FreeRTOS %s",TEXT_3,tskKERNEL_VERSION_NUMBER);
-    ExitCriticalSection();
+    sprintf(p,"%s FreeRTOS %s","Scheduler:",tskKERNEL_VERSION_NUMBER);
 
-    p = fw_id;
-
-    TEXT_SetText(hItem,fw_id);
+    LISTBOX_AddString(hItem, fw_id);
 }
 
 static void about_print_fw_gui(WM_HWIN hItem)
@@ -179,17 +129,23 @@ static void about_print_fw_gui(WM_HWIN hItem)
 	char fw_id[200];
 	char *p = fw_id;
 
-	EnterCriticalSection();
     memset(fw_id,0,sizeof(fw_id));
-    //sprintf(p,"GuiLib: emWin v %s",GUI_GetVersionString());
-    sprintf(p,"%s emWin v %s",TEXT_4,GUI_GetVersionString());
-    ExitCriticalSection();
+    sprintf(p,"%s emWin v %s","UI GuiLib:",GUI_GetVersionString());
 
-    p = fw_id;
-
-    TEXT_SetText(hItem,fw_id);
+    LISTBOX_AddString(hItem, fw_id);
 }
 
+static void about_print_fw_dsp(WM_HWIN hItem)
+{
+	char fw_id[200];
+
+    memset(fw_id,0,sizeof(fw_id));
+    sprintf(fw_id,"DSP v: %d.%d.%d.%d",tsu.dsp_rev1,tsu.dsp_rev2,tsu.dsp_rev3,tsu.dsp_rev4);
+
+    LISTBOX_AddString(hItem, fw_id);
+}
+
+#if 0
 static void about_print_fw_digi(WM_HWIN hItem)
 {
 	char fw_id[200];
@@ -267,6 +223,7 @@ static void about_print_pcb_rev(WM_HWIN hItem)
 
     TEXT_SetText(hItem,fw_id);
 }
+#endif
 
 static void _cbControl(WM_MESSAGE * pMsg, int Id, int NCode)
 {
@@ -295,12 +252,15 @@ static void _cbControl(WM_MESSAGE * pMsg, int Id, int NCode)
 
 static void info_state_machine(WM_MESSAGE * pMsg)
 {
-	WM_HWIN 	hItem, hList;
+	WM_HWIN 	hList;
 	char 		buf[200];
 
 	// Is it enabled ?
 	if(state_id == 0xFF)
 		return;
+
+	hList = WM_GetDialogItem(pMsg->hWin, ID_LISTBOX1);
+	LISTBOX_SetSel(hList, -1);
 
 	// Caller finished ?
 	if(esp_msg.ucProcStatus == TASK_PROC_DONE)
@@ -311,182 +271,110 @@ static void info_state_machine(WM_MESSAGE * pMsg)
 	else if(esp_msg.ucProcStatus == TASK_PROC_WORK)
 		return;
 
+	//--printf("state id: %d\r\n", state_id);
+
 	// State machine
 	switch(state_id)
 	{
-#if 0
-		// Project details
-		case 20:
+		// Radio firmware version
+		case 0:
 		{
-			memset(buf, 0, sizeof(buf));
-			sprintf(buf,"%s v %d.%d.%d.%d - %s", DEVICE_STRING,
-											MCHF_L_VER_MAJOR,
-											MCHF_L_VER_MINOR,
-											MCHF_L_VER_RELEASE,
-											MCHF_L_VER_BUILD,
-											AUTHOR_STRING);
-
-			hList = WM_GetDialogItem(pMsg->hWin, ID_LISTBOX1);
-			LISTBOX_AddString(hList, buf);
-			//LISTBOX_SetSel(hList, -1);
-			last_item++;
-
-			// Update progress bar
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_PROGBAR_0);
-			PROGBAR_SetValue(hItem, 10);
-
+			about_print_fw_vers(hList);
 			state_id++;
 			break;
 		}
-#endif
+
+		// DSP firmware version
+		case 1:
+		{
+			about_print_fw_dsp(hList);
+			state_id++;
+			break;
+		}
+
+		// OS version
+		case 2:
+		{
+			about_print_fw_rtos(hList);
+			state_id++;
+			break;
+		}
+
+		// OS version
+		case 3:
+		{
+			about_print_fw_gui(hList);
+			state_id++;
+			break;
+		}
 
 		// CPU Speed
-		case 0:
+		case 4:
 		{
 			memset(buf, 0, sizeof(buf));
-			sprintf(buf, "CPU: %d MHz, PCLK1: %d MHz, PCLK2: %d MHz",(int)(HAL_RCCEx_GetD1SysClockFreq()/1000000U),
-			                                           				(int)(HAL_RCC_GetPCLK1Freq()/1000000U),
-																(int)(HAL_RCC_GetPCLK2Freq()/1000000U));
-			hList = WM_GetDialogItem(pMsg->hWin, ID_LISTBOX1);
+			sprintf(buf, "CPU: %d MHz, PCLK1: %d MHz, PCLK2: %d MHz",	(int)(HAL_RCCEx_GetD1SysClockFreq()/1000000U),
+			                                           					(int)(HAL_RCC_GetPCLK1Freq()/1000000U),
+																		(int)(HAL_RCC_GetPCLK2Freq()/1000000U));
 			LISTBOX_AddString(hList, buf);
-			//LISTBOX_SetSel(hList, -1);
-			//last_item++;
-
-			// Update progress bar
-			//hItem = WM_GetDialogItem(pMsg->hWin, ID_PROGBAR_0);
-			//PROGBAR_SetValue(hItem, 10);
-
 			state_id++;
 			break;
 		}
 
 		// ESP32 Firmware version request
-		case 1:
+		case 5:
 		{
-			//hList = WM_GetDialogItem(pMsg->hWin, ID_LISTBOX1);
-			//LISTBOX_AddString(hList, "Reading ESP32 firmware version..." );
-			//LISTBOX_SetSel(hList, -1);
-
-			// Request UART call
 			esp_msg.ucMessageID = 0x01;
 			esp_msg.ucProcStatus = TASK_PROC_WORK;
-			if(osMessagePut(hEspMessage, (ulong)&esp_msg, osWaitForever) != osOK)
-			{
-				state_id = 0xFF;
-				return;
-			}
-
+			osMessagePut(hEspMessage, (ulong)&esp_msg, osWaitForever);
 			break;
 		}
 
 		// Result from previous state
-		case 2:
+		case 6:
 		{
-			hList = WM_GetDialogItem(pMsg->hWin, ID_LISTBOX1);
-			//LISTBOX_DeleteItem(hList, last_item);
-
-			if(esp_msg.ucExecResult == 0)
+			if((esp_msg.ucExecResult == 0) && (esp_msg.ucDataReady))
 			{
-				//LISTBOX_AddString(hList, "Reading ESP32 firmware version...Success" );
-				if(esp_msg.ucDataReady)
-				{
-					printf("ui: %s\r\n", (char *)(esp_msg.ucData));
-
-					memset(buf, 0, sizeof(buf));
-					sprintf(buf,  "ESP32 firmware: %s", (char *)(esp_msg.ucData + 10));
-					LISTBOX_AddString(hList, buf);
-					last_item++;
-				}
+				//printf("ui: %s\r\n", (char *)(esp_msg.ucData));
+				memset(buf, 0, sizeof(buf));
+				sprintf(buf,  "ESP32 firmware: %s", (char *)(esp_msg.ucData + 10));
+				LISTBOX_AddString(hList, buf);
 			}
-			else
-			{
-				//memset(buf, 0, sizeof(buf));
-				//sprintf(buf,  "Reading ESP32 firmware version...Error %d", esp_msg.ucExecResult);
-				//LISTBOX_AddString(hList, buf);
-
-				state_id = 0xFF;
-				return;
-			}
-			//LISTBOX_SetSel(hList, -1);
-			last_item++;
-
 			state_id++;
 			break;
 		}
 
 		// ESP32 WiFi details
-		case 3:
+		case 7:
 		{
-			hList = WM_GetDialogItem(pMsg->hWin, ID_LISTBOX1);
-			//LISTBOX_AddString(hList, "Reading WiFi details..." );
-			//LISTBOX_SetSel(hList, -1);
-
-			// Update progress bar
-			//hItem = WM_GetDialogItem(pMsg->hWin, ID_PROGBAR_0);
-			//PROGBAR_SetValue(hItem, 40);
-
-			// Request UART call
-			esp_msg.ucMessageID = 0x02;
+			esp_msg.ucMessageID  = 0x02;
 			esp_msg.ucProcStatus = TASK_PROC_WORK;
-			if(osMessagePut(hEspMessage, (ulong)&esp_msg, osWaitForever) != osOK)
-			{
-				state_id = 0xFF;
-				return;
-			}
-
+			osMessagePut(hEspMessage, (ulong)&esp_msg, osWaitForever);
 			break;
 		}
 
 		// Result from previous state
-		case 4:
+		case 8:
 		{
-			hList = WM_GetDialogItem(pMsg->hWin, ID_LISTBOX1);
-			//LISTBOX_DeleteItem(hList, last_item);
-
-			if(esp_msg.ucExecResult == 0)
+			if((esp_msg.ucExecResult == 0) && (esp_msg.ucDataReady) && (esp_msg.ucData[9]))
 			{
-				//LISTBOX_AddString(hList, "Reading WiFi details...Success" );
-				if(esp_msg.ucDataReady)
-				{
-					printf("[gui] data size: %d\r\n", esp_msg.ucDataReady);
-					if(esp_msg.ucData[9])
-					{
-						memset(buf, 0, sizeof(buf));
-						sprintf(buf,  "MAC: %02x:%02x:%02x:%02x:%02x:%02x, IP: %d.%d.%d.%d", 	esp_msg.ucData[10],
-																								esp_msg.ucData[11],
-																								esp_msg.ucData[12],
-																								esp_msg.ucData[13],
-																								esp_msg.ucData[14],
-																								esp_msg.ucData[15],
-																								esp_msg.ucData[16],
-																								esp_msg.ucData[17],
-																								esp_msg.ucData[18],
-																								esp_msg.ucData[19]);
+				memset(buf, 0, sizeof(buf));
+				sprintf(buf,  "MAC: %02x:%02x:%02x:%02x:%02x:%02x, IP: %d.%d.%d.%d", 	esp_msg.ucData[10],
+																						esp_msg.ucData[11],
+																						esp_msg.ucData[12],
+																						esp_msg.ucData[13],
+																						esp_msg.ucData[14],
+																						esp_msg.ucData[15],
+																						esp_msg.ucData[16],
+																						esp_msg.ucData[17],
+																						esp_msg.ucData[18],
+																						esp_msg.ucData[19]);
 
-						LISTBOX_AddString(hList, buf);
-						//last_item++;
+				LISTBOX_AddString(hList, buf);
 
-						memset(buf, 0, sizeof(buf));
-						sprintf(buf, "SSID: %s", (char *)(&esp_msg.ucData[21]));
-						LISTBOX_AddString(hList, buf);
-					}
-				}
+				memset(buf, 0, sizeof(buf));
+				sprintf(buf, "SSID: %s", (char *)(&esp_msg.ucData[21]));
+				LISTBOX_AddString(hList, buf);
 			}
-			else
-			{
-				//memset(buf, 0, sizeof(buf));
-				//sprintf(buf,  "Reading WiFi details...Error %d", esp_msg.ucExecResult);
-				//LISTBOX_AddString(hList, buf);
-
-				state_id = 0xFF;
-				return;
-			}
-
-			//last_item++;
-
-			// Update progress bar
-			//hItem = WM_GetDialogItem(pMsg->hWin, ID_PROGBAR_0);
-			//PROGBAR_SetValue(hItem, 50);
 
 			state_id++;
 			break;
@@ -502,95 +390,42 @@ static void _cbDialog(WM_MESSAGE * pMsg)
 	WM_HWIN 			hItem;
 	int 				Id, NCode;
 	WM_HWIN 			hList;
-	SCROLLBAR_Handle 	hScrollV;
+	//SCROLLBAR_Handle 	hScrollV;
 
 	switch (pMsg->MsgId)
 	{
 		case WM_INIT_DIALOG:
 		{
-			// Init Exit button
-			//hItem = BUTTON_CreateEx(695, 375, 100, 60, pMsg->hWin, WM_CF_SHOW, 0, ID_BUTTON_EXIT);
-			//WM_SetCallback(hItem, _cbButton_exit);
-
-			// Format Text
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_UI_HDR);
-			TEXT_SetFont(hItem,&GUI_Font32_1);
-			//
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_LO_HDR);
-			TEXT_SetFont(hItem,&GUI_Font32_1);
-
-			// Print firmware info
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_UI_FW_V);
-			TEXT_SetFont(hItem,&GUI_Font8x16_1);
-			TEXT_SetTextColor(hItem, GUI_BLACK);
-			about_print_fw_vers(hItem);
-			//
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_UI_FW_A);
-			TEXT_SetFont(hItem,&GUI_Font8x16_1);
-			TEXT_SetTextColor(hItem, GUI_BLACK);
-			about_print_fw_auth(hItem);
-			//
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_UI_OS_V);
-			TEXT_SetFont(hItem,&GUI_Font8x16_1);
-			TEXT_SetTextColor(hItem, GUI_BLACK);
-			about_print_fw_rtos(hItem);
-			//
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_UI_GUI_V);
-			TEXT_SetFont(hItem,&GUI_Font8x16_1);
-			TEXT_SetTextColor(hItem, GUI_BLACK);
-			about_print_fw_gui(hItem);
-			//
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_UI_TS_V);
-			TEXT_SetFont(hItem,&GUI_Font8x16_1);
-			TEXT_SetTextColor(hItem, GUI_BLACK);
-			about_print_fw_digi(hItem);
-			//
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_UI_CPU_ID);
-			TEXT_SetFont(hItem,&GUI_Font8x16_1);
-			TEXT_SetTextColor(hItem, GUI_BLACK);
-			about_print_fw_cpu_id(hItem);
-			//
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_UI_FLS_SZ);
-			TEXT_SetFont(hItem,&GUI_Font8x16_1);
-			TEXT_SetTextColor(hItem, GUI_BLACK);
-			about_print_fw_fls_sz(hItem);
-
-			// Print firmware info
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_LO_PCB_V);
-			TEXT_SetFont(hItem,&GUI_Font8x16_1);
-			TEXT_SetTextColor(hItem, GUI_BLACK);
-			about_print_pcb_rev(hItem);
+			hList = WM_GetDialogItem(pMsg->hWin, ID_LISTBOX2);
+			LISTBOX_SetFont(hList, &GUI_Font16B_ASCII);
+			about_print_fw_auth(hList);
 
 			hList = WM_GetDialogItem(pMsg->hWin, ID_LISTBOX1);
-			LISTBOX_SetFont(hList, &GUI_Font8x16_1);
-			//LISTBOX_SetTextColor(hList,LISTBOX_CI_UNSEL|LISTBOX_CI_SEL,GUI_LIGHTBLUE);
+			LISTBOX_SetFont(hList, &GUI_Font24B_ASCII);
+			//LISTBOX_SetTextColor(hList,LISTBOX_CI_UNSEL|LISTBOX_CI_SEL|LISTBOX_CI_SELFOCUS|LISTBOX_CI_DISABLED,GUI_BLUE);
 
 			// Start the state machine
 			hTimerListFill = WM_CreateTimer(pMsg->hWin, 0, LIST_TIMER_RESOLUTION, 0);
 			esp_msg.ucProcStatus = TASK_PROC_IDLE;
 			state_id  = 0;
-			last_item = 0;
 
 			break;
 		}
 
 		case WM_TIMER:
 		{
-			//WM_InvalidateWindow(pMsg->hWin);
-			info_state_machine(pMsg);			// next state
-			WM_RestartTimer(pMsg->Data.v, LIST_TIMER_RESOLUTION);
+			// Next line
+			info_state_machine(pMsg);
+
+			// Update state
+			if(state_id < 9)
+				WM_RestartTimer(pMsg->Data.v, LIST_TIMER_RESOLUTION);
+
 			break;
 		}
 
 		case WM_PAINT:
-		{
-			// Text frames
-			GUI_SetColor(GUI_ORANGE);
-			GUI_DrawRoundedRect(  5,  5,395,360,10);
-			//GUI_DrawRoundedRect(405,  5,790,360,10);
 			break;
-		}
-
 		case WM_DELETE:
 			break;
 
