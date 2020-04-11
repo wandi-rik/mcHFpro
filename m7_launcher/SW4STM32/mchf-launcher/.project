@@ -377,24 +377,24 @@
 			<locationURI>copy_PARENT1/STM32CubeH7/Middlewares/Third_Party/FreeRTOS/Source/timers.c</locationURI>
 		</link>
 		<link>
-			<name>app/uart/esp32_uart.c</name>
+			<name>proc/ipc/ipc_proc.c</name>
 			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/app/uart/esp32_uart.c</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/ipc/ipc_proc.c</locationURI>
 		</link>
 		<link>
-			<name>app/uart/esp32_uart.h</name>
+			<name>proc/ipc/ipc_proc.h</name>
 			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/app/uart/esp32_uart.h</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/ipc/ipc_proc.h</locationURI>
 		</link>
 		<link>
-			<name>app/ui/gui_task.c</name>
+			<name>proc/ui/ui_proc.c</name>
 			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/app/ui/gui_task.c</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/ui/ui_proc.c</locationURI>
 		</link>
 		<link>
-			<name>app/ui/gui_task.h</name>
+			<name>proc/ui/ui_proc.h</name>
 			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/app/ui/gui_task.h</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/ui/ui_proc.h</locationURI>
 		</link>
 		<link>
 			<name>Drivers/BSP/Components/ft6x06.c</name>
@@ -502,24 +502,24 @@
 			<locationURI>copy_PARENT1/STM32CubeH7/Middlewares/ST/STemWin/OS/GUI_X_OS.c</locationURI>
 		</link>
 		<link>
-			<name>app/ui/lcd_driver/GUIConf.c</name>
+			<name>proc/ui/lcd_driver/GUIConf.c</name>
 			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/app/ui/lcd_driver/GUIConf.c</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/ui/lcd_driver/GUIConf.c</locationURI>
 		</link>
 		<link>
-			<name>app/ui/lcd_driver/GUIConf.h</name>
+			<name>proc/ui/lcd_driver/GUIConf.h</name>
 			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/app/ui/lcd_driver/GUIConf.h</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/ui/lcd_driver/GUIConf.h</locationURI>
 		</link>
 		<link>
-			<name>app/ui/lcd_driver/LCDConf.c</name>
+			<name>proc/ui/lcd_driver/LCDConf.c</name>
 			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/app/ui/lcd_driver/LCDConf.c</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/ui/lcd_driver/LCDConf.c</locationURI>
 		</link>
 		<link>
-			<name>app/ui/lcd_driver/LCDConf.h</name>
+			<name>proc/ui/lcd_driver/LCDConf.h</name>
 			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/app/ui/lcd_driver/LCDConf.h</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/ui/lcd_driver/LCDConf.h</locationURI>
 		</link>
 	</linkedResources>
 	<variableList>

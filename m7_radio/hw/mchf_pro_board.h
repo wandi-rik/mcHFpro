@@ -127,6 +127,9 @@
 // Core to core communication: M7 <-> M4
 #define CONTEXT_ICC
 //
+
+#define IPC_PROC_START_DELAY 	5000
+
 // -----------------------------------------------------------------------------
 //
 //#define H7_200MHZ

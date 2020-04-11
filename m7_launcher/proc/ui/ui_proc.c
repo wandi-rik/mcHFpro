@@ -29,7 +29,7 @@
 
 #ifdef GUI_TASK
 
-#include "gui_task.h"
+#include "ui_proc.h"
 
 //extern osMessageQId AutoDemoEvent;
 

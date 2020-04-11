@@ -19,6 +19,11 @@
 #ifndef __MCHF_IPC_DEF_H
 #define __MCHF_IPC_DEF_H
 
+#define CMD_NOT_SUPPORTED							0xFFFF
+#define CMD_NO_RESPONSE								0x8000
+
+// --------------------------------------------------------
+
 #define MENU_0X01									0x01
 #define MENU_0X01_SZ								10
 
@@ -86,6 +91,6 @@
 #define MENU_SET_SOAP_SERVER_SZ						1
 
 #define MENU_ESP32_REBOOT							0xF0
-// no data is returned!
+#define MENU_ESP32_REBOOT_SZ						CMD_NO_PAYLOAD
 
 #endif

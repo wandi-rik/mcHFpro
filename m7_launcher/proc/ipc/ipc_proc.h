@@ -6,7 +6,7 @@
 **                                 twitter: @bph_co                                **
 **---------------------------------------------------------------------------------**
 **                                                                                 **
-**  File name:                                                                     **
+**  File name:       v 0.2                                                         **
 **  Description:                                                                   **
 **  Last Modified:                                                                 **
 **  Licence:                                                                       **
@@ -15,10 +15,19 @@
 **          third party drivers specifies otherwise. Thank you!                    **
 ************************************************************************************/
 
-#ifndef __ESP32_UART_H
-#define __ESP32_UART_H
+#ifndef __IPC_PROC_H
+#define __IPC_PROC_H
 
-#ifdef ESP32_UART_TASK
+#ifdef CONTEXT_IPC_PROC
+
+// The IPC protocol is well defined in common/mchf_ipf_def.h
+// file, including return payload size (which is variable)
+// So we have two options here on RX DMA - use pre-defined
+// payload sizes from the .h file or do DMA with full
+// buffer size, then abort the transfer when LINE_IDLE IRQ
+// fires (which is somewhat challenging on ST Cortex chips)
+//
+//#define IPC_USE_IDLE_LINE
 
 /* Definition for USARTx's DMA */
 #define USARTx_TX_DMA_STREAM             DMA1_Stream7
@@ -35,8 +44,8 @@
 /* Definition for USARTx's NVIC */
 #define USARTx_IRQn                      UART8_IRQn
 
-void esp32_uart_init(void);
-void esp32_uart_task(void const *arg);
+void ipc_proc_init(void);
+void ipc_proc_task(void const *arg);
 
 #endif
 

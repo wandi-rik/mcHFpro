@@ -28,8 +28,10 @@
 #include "mchf_types.h"
 
 
-#define ESP32_UART_TASK
+#define CONTEXT_IPC_PROC
 #define GUI_TASK
+
+#define IPC_PROC_START_DELAY 	500
 
 /* Includes ------------------------------------------------------------------*/
 #ifndef WIN32
@@ -61,7 +63,7 @@
 /* Kernel includes components */
 #include "storage.h"
 #include "calibration.h"
-#include "gui_task.h"
+#include "ui_proc.h"
 #endif /* !WIN32 */
 
 /* standard includes components */

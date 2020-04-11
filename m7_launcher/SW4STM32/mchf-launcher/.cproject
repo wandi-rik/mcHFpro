@@ -36,10 +36,10 @@
 									<listOptionValue builtIn="false" value="../"/>
 									<listOptionValue builtIn="false" value="../../../../common"/>
 									<listOptionValue builtIn="false" value="../../../hw"/>
-									<listOptionValue builtIn="false" value="../../../app"/>
-									<listOptionValue builtIn="false" value="../../../app/ui"/>
-									<listOptionValue builtIn="false" value="../../../app/ui/lcd_driver"/>
-									<listOptionValue builtIn="false" value="../../../app/uart"/>
+									<listOptionValue builtIn="false" value="../../../proc"/>
+									<listOptionValue builtIn="false" value="../../../proc/ui"/>
+									<listOptionValue builtIn="false" value="../../../proc/ui/lcd_driver"/>
+									<listOptionValue builtIn="false" value="../../../proc/ipc"/>
 									<listOptionValue builtIn="false" value="../../../../"/>
 									<listOptionValue builtIn="false" value="../../../../STM32CubeH7/Drivers/CMSIS/Device/ST/STM32H7xx/Include"/>
 									<listOptionValue builtIn="false" value="../../../../STM32CubeH7/Drivers/STM32H7xx_HAL_Driver/Inc"/>

@@ -23,9 +23,9 @@
 
 #include "bsp.h"
 #include "WM.h"
-#include "gui_task.h"
 
-#include "esp32_uart.h"
+#include "ui_proc.h"
+#include "ipc_proc.h"
 
 #if configAPPLICATION_ALLOCATED_HEAP == 1
 __attribute__((section("heap_mem"))) uint8_t ucHeap[ configTOTAL_HEAP_SIZE ];
@@ -304,7 +304,7 @@ static void MPU_Config(void)
 
 	// Disable the MPU
 	HAL_MPU_Disable();
-
+#if 0
 	// Configure the MPU attributes as WB for Flash
 	MPU_InitStruct.Enable           = MPU_REGION_ENABLE;
 	MPU_InitStruct.BaseAddress      = FLASH_BASE;
@@ -360,6 +360,95 @@ static void MPU_Config(void)
 	MPU_InitStruct.SubRegionDisable = 0x00;
 	MPU_InitStruct.DisableExec      = MPU_INSTRUCTION_ACCESS_DISABLE;
 	HAL_MPU_ConfigRegion(&MPU_InitStruct);
+#endif
+
+
+	// Setup Flash - launcher and radio code execution
+	MPU_InitStruct.Enable           = MPU_REGION_ENABLE;
+	MPU_InitStruct.BaseAddress      = FLASH_BASE;					// 0x08000000
+	MPU_InitStruct.Size             = MPU_REGION_SIZE_2MB;			// 2MB
+	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+	MPU_InitStruct.IsBufferable     = MPU_ACCESS_BUFFERABLE;
+	MPU_InitStruct.IsCacheable      = MPU_ACCESS_CACHEABLE;
+	MPU_InitStruct.IsShareable      = MPU_ACCESS_NOT_SHAREABLE;
+	MPU_InitStruct.Number           = MPU_REGION_NUMBER0;
+	MPU_InitStruct.TypeExtField     = MPU_TEX_LEVEL0;
+	MPU_InitStruct.SubRegionDisable = 0x00;
+	MPU_InitStruct.DisableExec      = MPU_INSTRUCTION_ACCESS_ENABLE;
+	HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+	// Setup SDRAM - emWin video buffers
+	MPU_InitStruct.Enable           = MPU_REGION_ENABLE;
+	MPU_InitStruct.BaseAddress      = SDRAM_DEVICE_ADDR;			// 0xD0000000
+	MPU_InitStruct.Size             = MPU_REGION_SIZE_32MB;			// 32MB
+	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+	MPU_InitStruct.IsBufferable     = MPU_ACCESS_NOT_BUFFERABLE;
+	MPU_InitStruct.IsCacheable      = MPU_ACCESS_CACHEABLE;
+	MPU_InitStruct.IsShareable      = MPU_ACCESS_NOT_SHAREABLE;
+	MPU_InitStruct.Number           = MPU_REGION_NUMBER1;
+	MPU_InitStruct.TypeExtField     = MPU_TEX_LEVEL0;
+	MPU_InitStruct.SubRegionDisable = 0x00;
+	MPU_InitStruct.DisableExec      = MPU_INSTRUCTION_ACCESS_DISABLE;
+	HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+	// Setup D3 SRAM - OpenAMP core to core comms
+	MPU_InitStruct.Enable 			= MPU_REGION_ENABLE;
+	MPU_InitStruct.BaseAddress 		= D3_SRAM_BASE;					// 0x38000000
+	MPU_InitStruct.Size 			= MPU_REGION_SIZE_64KB;			// 64KB
+	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+	MPU_InitStruct.IsBufferable 	= MPU_ACCESS_NOT_BUFFERABLE;
+	MPU_InitStruct.IsCacheable 		= MPU_ACCESS_CACHEABLE;
+	MPU_InitStruct.IsShareable 		= MPU_ACCESS_SHAREABLE;
+	MPU_InitStruct.Number 			= MPU_REGION_NUMBER2;
+	MPU_InitStruct.TypeExtField 	= MPU_TEX_LEVEL0;
+	MPU_InitStruct.SubRegionDisable = 0x00;
+	MPU_InitStruct.DisableExec 		= MPU_INSTRUCTION_ACCESS_DISABLE;
+	HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+	// Setup AXI SRAM - OS heap
+	MPU_InitStruct.Enable           = MPU_REGION_ENABLE;
+	MPU_InitStruct.BaseAddress      = D1_AXISRAM_BASE;				// 0x24000000
+	MPU_InitStruct.Size             = MPU_REGION_SIZE_512KB;		// 512KB
+	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+	MPU_InitStruct.IsBufferable     = MPU_ACCESS_NOT_BUFFERABLE;
+	MPU_InitStruct.IsCacheable      = MPU_ACCESS_CACHEABLE;
+	MPU_InitStruct.IsShareable      = MPU_ACCESS_NOT_SHAREABLE;
+	MPU_InitStruct.Number           = MPU_REGION_NUMBER3;
+	MPU_InitStruct.TypeExtField     = MPU_TEX_LEVEL0;
+	MPU_InitStruct.SubRegionDisable = 0x00;
+	MPU_InitStruct.DisableExec      = MPU_INSTRUCTION_ACCESS_DISABLE;
+	HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+	#if 0
+	// Setup ITCM RAM - OS code, interrupt handlers
+	MPU_InitStruct.Enable           = MPU_REGION_ENABLE;
+	MPU_InitStruct.BaseAddress      = D1_ITCMRAM_BASE;				// 0x00000000
+	MPU_InitStruct.Size             = MPU_REGION_SIZE_64KB;			// 64KB
+	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+	MPU_InitStruct.IsBufferable     = MPU_ACCESS_NOT_BUFFERABLE;
+	MPU_InitStruct.IsCacheable      = MPU_ACCESS_NOT_CACHEABLE;
+	MPU_InitStruct.IsShareable      = MPU_ACCESS_NOT_SHAREABLE;
+	MPU_InitStruct.Number           = MPU_REGION_NUMBER4;
+	MPU_InitStruct.TypeExtField     = MPU_TEX_LEVEL0;
+	MPU_InitStruct.SubRegionDisable = 0x00;
+	MPU_InitStruct.DisableExec      = MPU_INSTRUCTION_ACCESS_ENABLE;
+	HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+	// Setup DTCM RAM - DMA buffers
+	MPU_InitStruct.Enable           = MPU_REGION_ENABLE;
+	MPU_InitStruct.BaseAddress      = D1_DTCMRAM_BASE;				// 0x20000000
+	MPU_InitStruct.Size             = MPU_REGION_SIZE_128KB;		// 128KB
+	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+	MPU_InitStruct.IsBufferable     = MPU_ACCESS_NOT_BUFFERABLE;
+	MPU_InitStruct.IsCacheable      = MPU_ACCESS_NOT_CACHEABLE;
+	MPU_InitStruct.IsShareable      = MPU_ACCESS_NOT_SHAREABLE;
+	MPU_InitStruct.Number           = MPU_REGION_NUMBER5;
+	MPU_InitStruct.TypeExtField     = MPU_TEX_LEVEL0;
+	MPU_InitStruct.SubRegionDisable = 0x00;
+	MPU_InitStruct.DisableExec      = MPU_INSTRUCTION_ACCESS_DISABLE;
+	HAL_MPU_ConfigRegion(&MPU_InitStruct);
+	#endif
+
 
 	HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
 }
@@ -500,9 +589,9 @@ int main(void)
     #endif
 
     // ESP32 UART
-    #ifdef ESP32_UART_TASK
+    #ifdef CONTEXT_IPC_PROC
     hEspMessage = xQueueCreate(5, sizeof(struct ESPMessage *));
-    if(xTaskCreate((TaskFunction_t)esp32_uart_task,"esp32_uart_task", GUI_TaskSTACK_SIZE, NULL, GUI_TaskPRIORITY, NULL) != pdPASS)
+    if(xTaskCreate((TaskFunction_t)ipc_proc_task,"ipc_task", GUI_TaskSTACK_SIZE, NULL, GUI_TaskPRIORITY, NULL) != pdPASS)
     {
     	printf("unable to create esp32_uart task\r\n");
     	goto failed_to_boot;

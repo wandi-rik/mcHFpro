@@ -20,7 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "bsp.h"
 
-#include "esp32_uart.h"
+#include "ipc_proc.h"
 #include "version.h"
 
 /** @addtogroup CORE
@@ -245,6 +245,19 @@ uint8_t BSP_Config(void)
   uint8_t RetVal = 0;
   uint8_t counter = 10;
 
+	// All GPIO clocks on
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	__HAL_RCC_GPIOB_CLK_ENABLE();
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+	__HAL_RCC_GPIOD_CLK_ENABLE();
+	__HAL_RCC_GPIOE_CLK_ENABLE();
+	__HAL_RCC_GPIOF_CLK_ENABLE();
+	__HAL_RCC_GPIOG_CLK_ENABLE();
+	__HAL_RCC_GPIOH_CLK_ENABLE();
+	__HAL_RCC_GPIOI_CLK_ENABLE();
+	__HAL_RCC_GPIOJ_CLK_ENABLE();
+	__HAL_RCC_GPIOK_CLK_ENABLE();
+
   /* Enable CRC to Unlock GUI */
   __HAL_RCC_CRC_CLK_ENABLE();
 
@@ -262,8 +275,8 @@ uint8_t BSP_Config(void)
   // moved to printf.c, open and close is dynamic now
   //BSP_ConfigSerial();
 
-  #ifdef ESP32_UART_TASK
-  esp32_uart_init();
+  #ifdef CONTEXT_IPC_PROC
+  ipc_proc_init();
   #endif
 
   printf_init(0);
