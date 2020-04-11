@@ -20,6 +20,13 @@
 
 #ifdef CONTEXT_IPC_PROC
 
+// The IPC protocol is well defined in common/mchf_ipf_def.h
+// file, including return payload size (which is variable)
+// So we have two options here on RX DMA - use pre-defined
+// payload sizes from the .h file or do DMA with full
+// buffer size, then abort the transfer when LINE_IDLE IRQ
+// fires (which is somewhat challenging on ST Cortex chips)
+//
 //#define IPC_USE_IDLE_LINE
 
 /* Definition for USARTx's DMA */
