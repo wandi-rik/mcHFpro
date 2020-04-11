@@ -426,7 +426,9 @@ static void _cbDialog(WM_MESSAGE * pMsg)
 
 		case WM_PAINT:
 			break;
+
 		case WM_DELETE:
+			WM_DeleteTimer(hTimerListFill);
 			break;
 
 		case WM_NOTIFY_PARENT:

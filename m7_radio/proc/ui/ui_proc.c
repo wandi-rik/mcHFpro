@@ -48,6 +48,7 @@
 #include "dsp_stat\ui_controls_dsp_stat.h"
 #include "sd_icon\ui_controls_sd_icon.h"
 #include "agc\ui_controls_agc.h"
+#include "wifi_stat\ui_controls_wifi.h"
 // -----------------------------------------------------------------------------------------------
 // Side Encoder Options Menu
 //#include "side_enc_menu\ui_side_enc_menu.h"
@@ -209,6 +210,7 @@ static void ui_driver_init_desktop(void)
 	ui_controls_frequency_init();
 	#endif
 
+	ui_controls_wifi_init(WM_HBKWIN);
 	ui_controls_volume_init();
 	ui_controls_band_init();
 	ui_controls_filter_init();
@@ -254,6 +256,7 @@ static void ui_driver_change_mode(void)
 
 			// Destroy desktop controls
 			ui_controls_volume_quit();
+			ui_controls_wifi_quit();
 			ui_controls_smeter_quit();
 			ui_controls_spectrum_quit();
 

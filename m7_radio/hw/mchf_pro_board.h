@@ -344,6 +344,8 @@ struct TRANSCEIVER_STATE_UI {
 
 	uchar	update_dsp_restart;
 
+	int		wifi_rssi;
+
 	// Always align last member!
 
 } TRANSCEIVER_STATE_UI;

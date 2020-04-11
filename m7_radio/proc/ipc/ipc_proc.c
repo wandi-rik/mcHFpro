@@ -35,6 +35,9 @@ __IO ITStatus 		UartLineIdle 	= RESET;
 DMA_HandleTypeDef 	hdma_tx;
 DMA_HandleTypeDef	hdma_rx;
 
+// Public radio state
+extern struct	TRANSCEIVER_STATE_UI	tsu;
+
 extern QueueHandle_t 	hEspMessage;
 
 __attribute__((section("heap_mem"))) ALIGN_32BYTES (uint8_t TxBuffer[128]);
@@ -203,7 +206,7 @@ uchar ipc_proc_exchange(uchar cmd, uchar *payload, uchar p_size, uchar *buffer, 
 	ushort 	expected, out_size;
 	uchar 	chksum;
 
-	printf("ipc cmd: %02x\r\n", cmd);
+	//printf("ipc cmd: %02x\r\n", cmd);
 
 	// Flush cache
 	SCB_CleanDCache_by_Addr((uint32_t *)TxBuffer, sizeof(TxBuffer));
@@ -361,8 +364,8 @@ static void ipc_proc_poll_rssi(void)
 	err = ipc_proc_exchange(MENU_WIFI_GET_NETWORK_RSSI, NULL, 0, rssi_buf, &ret_size, 50);
 	if((err == 0) && (rssi_buf[9] == 4))
 	{
-		int rssi = ((rssi_buf[10] << 24)|(rssi_buf[11] << 16)|(rssi_buf[12] << 8)|(rssi_buf[13]));
-		printf("rssi %d\r\n", rssi);
+		tsu.wifi_rssi = ((rssi_buf[10] << 24)|(rssi_buf[11] << 16)|(rssi_buf[12] << 8)|(rssi_buf[13]));
+		//printf("rssi %d\r\n", tsu.wifi_rssi);
 	}
 	//else
 	//	printf("err %d\r\n", err);
@@ -390,7 +393,7 @@ static void icc_proc_check_msg(void)
 
 	struct ESPMessage *esp_msg = (struct ESPMessage *)event.value.p;
 
-	printf("-------------------------\r\n");
+	//printf("-------------------------\r\n");
 	//printf("ipc msg id: %d \r\n", esp_msg->ucMessageID);
 
 	switch(esp_msg->ucMessageID)
@@ -426,7 +429,7 @@ static void icc_proc_check_msg(void)
 	}
 
 	if(esp_msg->ucExecResult)
-		printf("uart comm res: %d\r\n",esp_msg->ucExecResult);
+		printf("uart comm err: %d (cmd %d)\r\n",esp_msg->ucExecResult, esp_msg->ucMessageID);
 
 complete:
 	// Mark as complete
@@ -557,7 +560,7 @@ void ipc_proc_task(void const *arg)
 	for(;;)
 	{
 		icc_proc_check_msg();
-		//ipc_proc_poll_rssi();
+		ipc_proc_poll_rssi();
 	}
 }
 #endif

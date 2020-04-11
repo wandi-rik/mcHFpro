@@ -24,6 +24,9 @@
 #define ID_BUTTON_VOLUMEM          	(GUI_ID_USER + 0x02)
 #define ID_BUTTON_VOLUMEP          	(GUI_ID_USER + 0x03)
 
+#define ID_WINDOW_WIFI          	(GUI_ID_USER + 0x10)
+#define ID_TEXT_WIFI          		(GUI_ID_USER + 0x11)
+
 // ----------------------------------------------------------------------------
 // Analogue S-meter
 //
@@ -303,6 +306,14 @@
 //
 #define FILTER_SIZE_X				438
 #define FILTER_SIZE_Y				24
+//
+// ----------------------------------------------------------------------------
+// Speaker control
+#define WIFI_X						500
+#define WIFI_Y						75
+//
+#define WIFI_SIZE_X					80
+#define WIFI_SIZE_Y					15
 //
 // ----------------------------------------------------------------------------
 #endif
