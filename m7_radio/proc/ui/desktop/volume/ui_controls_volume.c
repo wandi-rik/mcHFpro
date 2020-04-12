@@ -169,7 +169,7 @@ static void VDHandler(WM_MESSAGE *pMsg)
 			break;
 		}
 
-		// Process key messages not supported by ICON_VIEW control
+		// Trap keyboard messages
 		case WM_KEY:
 		{
 			switch (((WM_KEY_INFO*)(pMsg->Data.p))->Key)
@@ -178,7 +178,6 @@ static void VDHandler(WM_MESSAGE *pMsg)
 		        case GUI_KEY_HOME:
 		        {
 		        	//printf("GUI_KEY_HOME\r\n");
-		        	//GUI_EndDialog(pMsg->hWin, 0);
 		        	break;
 		        }
 			}

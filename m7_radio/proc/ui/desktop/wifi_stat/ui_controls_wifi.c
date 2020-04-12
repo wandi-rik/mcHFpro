@@ -25,8 +25,6 @@
 #include "ui_controls_wifi.h"
 #include "desktop\ui_controls_layout.h"
 
-//extern TaskHandle_t hTouchTask;
-
 // Public radio state
 extern struct	TRANSCEIVER_STATE_UI	tsu;
 
@@ -47,7 +45,7 @@ WM_HWIN 	hWiFiDialog;
 //
 WM_HTIMER 						hTimerWiFi;
 
-static void VDHandler(WM_MESSAGE *pMsg)
+static void WDHandler(WM_MESSAGE *pMsg)
 {
 	WM_HWIN hItem;
 	int 	Id, NCode;
@@ -76,6 +74,7 @@ static void VDHandler(WM_MESSAGE *pMsg)
 				TEXT_SetText(hItem, buf);
 			}
 
+//!			WM_InvalidateWindow(hWiFiDialog);
 			WM_RestartTimer(pMsg->Data.v, WIFI_TIMER_RESOLUTION);
 			break;
 		}
@@ -96,7 +95,7 @@ static void VDHandler(WM_MESSAGE *pMsg)
 			break;
 		}
 
-		// Process key messages not supported by ICON_VIEW control
+		// Trap keyboard messages
 		case WM_KEY:
 		{
 			switch (((WM_KEY_INFO*)(pMsg->Data.p))->Key)
@@ -105,7 +104,6 @@ static void VDHandler(WM_MESSAGE *pMsg)
 		        case GUI_KEY_HOME:
 		        {
 		        	//printf("GUI_KEY_HOME\r\n");
-		        	//GUI_EndDialog(pMsg->hWin, 0);
 		        	break;
 		        }
 			}
@@ -119,22 +117,22 @@ static void VDHandler(WM_MESSAGE *pMsg)
 }
 
 //*----------------------------------------------------------------------------
-//* Function Name       :
+//* Function Name       : ui_controls_wifi_init
 //* Object              :
-//* Notes    			:
+//* Notes    			: create control
 //* Notes   			:
 //* Notes    			:
 //* Context    			: CONTEXT_DRIVER_UI
 //*----------------------------------------------------------------------------
 void ui_controls_wifi_init(WM_HWIN hParent)
 {
-	hWiFiDialog = GUI_CreateDialogBox(WiFiDialog, GUI_COUNTOF(WiFiDialog), VDHandler, hParent, WIFI_X, WIFI_Y);
+	hWiFiDialog = GUI_CreateDialogBox(WiFiDialog, GUI_COUNTOF(WiFiDialog), WDHandler, hParent, WIFI_X, WIFI_Y);
 }
 
 //*----------------------------------------------------------------------------
-//* Function Name       :
+//* Function Name       : ui_controls_wifi_quit
 //* Object              :
-//* Notes    			:
+//* Notes    			: clean-up
 //* Notes   			:
 //* Notes    			:
 //* Context    			: CONTEXT_DRIVER_UI
@@ -142,30 +140,6 @@ void ui_controls_wifi_init(WM_HWIN hParent)
 void ui_controls_wifi_quit(void)
 {
 	GUI_EndDialog(hWiFiDialog, 0);
-}
-
-//*----------------------------------------------------------------------------
-//* Function Name       :
-//* Object              :
-//* Notes    			:
-//* Notes   			:
-//* Notes    			:
-//* Context    			: CONTEXT_DRIVER_UI
-//*----------------------------------------------------------------------------
-void ui_controls_wifi_touch(void)
-{
-}
-
-//*----------------------------------------------------------------------------
-//* Function Name       :
-//* Object              :
-//* Notes    			:
-//* Notes   			:
-//* Notes    			:
-//* Context    			: CONTEXT_DRIVER_UI
-//*----------------------------------------------------------------------------
-void ui_controls_wifi_refresh(void)
-{
 }
 
 #endif

@@ -17,7 +17,7 @@
 #ifndef __ROTARY_PROC_H
 #define __ROTARY_PROC_H
 
+void rotary_proc_hw_init(void);
 void rotary_proc(void const *arg);
-
 
 #endif

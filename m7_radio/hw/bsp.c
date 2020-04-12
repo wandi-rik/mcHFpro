@@ -26,6 +26,7 @@
 #include "ipc_proc.h"
 #include "audio_proc.h"
 #include "touch_proc.h"
+#include "rotary_proc.h"
 #include "version.h"
 
 //#define HSEM_ID_0                       (0U) /* HW semaphore 0*/
@@ -206,6 +207,33 @@ static void LCD_LL_Reset(void)
   HAL_Delay(300);
 }
 
+//*----------------------------------------------------------------------------
+//* Function Name       : tasks_initial_init
+//* Object              :
+//* Notes    			: All hardware init that needs to be done before the
+//* Notes   			: OS start here
+//* Notes    			:
+//* Context    			: CONTEXT_RESET
+//*----------------------------------------------------------------------------
+static void tasks_initial_init(void)
+{
+	#ifdef CONTEXT_ROTARY
+	rotary_proc_hw_init();
+	#endif
+
+  	#ifdef CONTEXT_IPC_PROC
+	ipc_proc_init();
+  	#endif
+
+  	#ifdef CONTEXT_AUDIO
+	audio_proc_hw_init();
+  	#endif
+
+	#ifdef CONTEXT_TOUCH
+	touch_proc_hw_init();
+	#endif
+}
+
 /**
   * @brief  Initializes the STM324x9I-EVAL's LCD and LEDs resources.
   * @param  None
@@ -250,13 +278,11 @@ uint8_t BSP_Config(void)
 	printf("--- Debug Print Session on (radio) ---\r\n");
 	printf("Firmware v: %d.%d.%d.%d\r\n", MCHF_R_VER_MAJOR, MCHF_R_VER_MINOR, MCHF_R_VER_RELEASE, MCHF_R_VER_BUILD);
 
-  	#ifdef CONTEXT_IPC_PROC
-	ipc_proc_init();
-  	#endif
+	// LCD controller need to be initialised
+	LCD_LL_Reset();
 
-  	#ifdef CONTEXT_AUDIO
-	audio_proc_hw_init();
-  	#endif
+	// Task hw basic init
+	tasks_initial_init();
 
 	/* Print Clock configuration */
 	//printf( "CPU running at %luMHz, Peripherals at %luMHz/%luMHz\r\n" , (HAL_RCCEx_GetD1SysClockFreq()/1000000U)
@@ -269,32 +295,6 @@ uint8_t BSP_Config(void)
 		printf("Failed to initialize the SDRAM !! (Error %d)\n", RetVal);
 		return 0;
 	}
-
-	#if 0
-	/* Initialize the NOR QuadSPI flash */
-	BSP_QSPI_Init_t init ;
-	init.InterfaceMode=MT25TL01G_QPI_MODE;
-	init.TransferRate= MT25TL01G_DTR_TRANSFER ;
-	init.DualFlashMode= MT25TL01G_DUALFLASH_ENABLE;
-	if ((RetVal = BSP_QSPI_Init(0,&init)) != BSP_ERROR_NONE)
-	{
-		printf("Failed to initialize the QSPI !! (Error %d)\n", RetVal);
-		return 0;
-	}
-	else
-	{
-		if((RetVal = BSP_QSPI_EnableMemoryMappedMode(0)) != BSP_ERROR_NONE)
-		{
-			printf("Failed to configure the QSPI !! (Error %d)\n", RetVal);
-			return 0;
-		}
-	}
-	#endif
-
-	LCD_LL_Reset(); /* LCD controller need to be initialized */
-
-	// Initialize the Touch screen
-	touch_proc_hw_init();
 
 	/* Enable Back up SRAM */
 	/* Enable write access to Backup domain */

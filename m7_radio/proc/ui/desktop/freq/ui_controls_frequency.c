@@ -777,7 +777,7 @@ void ui_controls_frequency_refresh(uchar flags)
 	// Did the active VFO changed since last repaint ?
 	if(df.last_active_vfo != tsu.band[tsu.curr_band].active_vfo)
 	{
-		//printf("vfo changed\r\n");
+		printf("vfo changed\r\n");
 
 		// ToDo: If switching from center to fixed mode, copy VFO A to VFO B
 		// 		 and on band changes, etc...

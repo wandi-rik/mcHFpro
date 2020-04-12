@@ -66,7 +66,7 @@
 #define	MIN_BANDS					0		// lowest band number
 #define	MAX_BANDS					9		// Highest band number:  9 = General coverage (RX only) band
 
-#define	KHZ_MULT					4000	// multiplier to convert oscillator frequency or band size to display kHz, used below
+#define	KHZ_MULT					1000	// multiplier to convert oscillator frequency or band size to display kHz, used below
 //
 // Bands definition
 // - ID

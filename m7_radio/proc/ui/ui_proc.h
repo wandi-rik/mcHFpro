@@ -17,6 +17,8 @@
 #ifndef __UI_PROC_H
 #define __UI_PROC_H
 
+#define		UI_REFRESH_25HZ			(1000/25)
+
 // Disable individual controls
 #define 	SPECTRUM_WATERFALL
 #define 	VFO_BOTH
@@ -25,13 +27,7 @@
 #define		DESKTOP_SPECTRUM		1
 #define		DESKTOP_WATERFALL		2
 
-// Debug print, temp here
-//void print_text(char *text);
-//void print_int(char *text, int value);
-//void print_hex_array(uchar *data,uchar size);
-
-//void ui_driver_emwin_528_init(void);
-
+// ----------------------------------------------
 void ui_proc_task(void const *arg);
 
 #endif

@@ -42,6 +42,8 @@ TIM_HandleTypeDef htim1;
 ushort audio_old = 0;
 ushort freq_old = 0;
 
+uchar front_init_done = 0;
+
 // Public radio state
 extern struct	TRANSCEIVER_STATE_UI	tsu;
 extern struct	UI_DRIVER_STATE			ui_s;
@@ -248,7 +250,7 @@ static void rotary_update_freq_publics(int pot_diff)
 			// ToDo: Range check...
 		}
 	}
-	//printf("freq = %d\r\n",tsu.freq);
+	printf("freq = %d\r\n", tsu.band[tsu.curr_band].vfo_a);
 
 	// Save band info to eeprom
 	save_band_info();
@@ -258,6 +260,9 @@ static void rotary_check_front_enc(void)
 {
 	ushort 	cnt;
 	int		pot_diff = 0;
+
+	if(front_init_done == 0)
+		return;
 
 	// No update on invalid local copy of the frequency
 	if(tsu.band[tsu.curr_band].active_vfo == 0)
@@ -402,18 +407,12 @@ uchar rotary_front_enc_init(void)
 	if(HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_1 | TIM_CHANNEL_2) != HAL_OK)
 		return 3;
 
+	HAL_NVIC_SetPriority(TIM1_TRG_COM_IRQn, 5 ,0U);
+	HAL_NVIC_EnableIRQ	(TIM1_TRG_COM_IRQn);
+
+	front_init_done = 1;
+
 	return 0;
-}
-
-// call from main() on startup
-void rotary_driver_hw_init(void)
-{
-	// Encoders
-	rotary_side_enc_init();
-	rotary_front_enc_init();
-
-	// Push buttons
-	rotary_init_side_encoder_switch_pin();
 }
 
 //*----------------------------------------------------------------------------
@@ -427,11 +426,22 @@ void rotary_driver_hw_init(void)
 static void rotary_worker(void)
 {
 	// Encoders
-	rotary_check_side_enc();
+	//rotary_check_side_enc();
 	rotary_check_front_enc();
 
 	// Push buttons
-	rotary_check_side_encoder_switch();
+	//rotary_check_side_encoder_switch();
+}
+
+// call from main() on startup
+void rotary_proc_hw_init(void)
+{
+	// Encoders
+	//rotary_side_enc_init();
+	rotary_front_enc_init();
+
+	// Push buttons
+	//rotary_init_side_encoder_switch_pin();
 }
 
 //*----------------------------------------------------------------------------
@@ -448,12 +458,9 @@ void rotary_proc(void const *arg)
 	vTaskDelay(1000);
 	printf("rotary driver start\r\n");
 
-	if(rotary_front_enc_init() != 0)
-		printf("err init freq encoder!\r\n");
-
 rotary_driver_loop:
 	rotary_worker();
-	vTaskDelay(5);
+	vTaskDelay(100);
 	goto rotary_driver_loop;
 }
 

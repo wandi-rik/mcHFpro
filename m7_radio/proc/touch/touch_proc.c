@@ -23,6 +23,8 @@
 
 #include "touch_proc.h"
 
+#ifdef CONTEXT_TOUCH
+
 #include "stm32h747i_discovery_audio.h"
 
 osSemaphoreId TSSemaphoreID;
@@ -216,4 +218,5 @@ void touch_proc_task(void const *argument)
 		}
   }
 }
+#endif
 

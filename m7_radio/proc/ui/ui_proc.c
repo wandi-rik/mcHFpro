@@ -617,13 +617,16 @@ ui_proc_loop:
 		case MODE_DESKTOP:
 		{
 			WM_InvalidateWindow(WM_HBKWIN);
-			GUI_Delay(40);
+			//GUI_Exec();
+
+
+			GUI_Delay(UI_REFRESH_25HZ);
 			break;
 		}
 
 		case MODE_MENU:
 		{
-			GUI_Delay(40);
+			GUI_Delay(UI_REFRESH_25HZ);
 			break;
 		}
 

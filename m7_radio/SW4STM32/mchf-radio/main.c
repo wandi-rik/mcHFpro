@@ -799,7 +799,7 @@ void TransceiverStateInit(void)
 	ts.band		  		= BAND_MODE_20;				// band from eeprom
 	ts.band_change		= 0;						// used in muting audio during band change
 	ts.filter_band		= 0;						// used to indicate the bpf filter selection for power detector coefficient selection
-	ts.dmod_mode 		= DEMOD_USB;				// demodulator mode
+	ts.dmod_mode 		= DEMOD_LSB;				// demodulator mode
 	ts.audio_gain		= 0;//DEFAULT_AUDIO_GAIN;		// Set initial volume
 	ts.audio_gain		= 0;//MAX_VOLUME_DEFAULT;		// Set max volume default
 	ts.audio_gain_active = 1;						// this variable is used in the active RX audio processing function
