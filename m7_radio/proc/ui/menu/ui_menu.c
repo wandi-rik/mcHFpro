@@ -4,6 +4,7 @@
 #include "gui.h"
 #include "dialog.h"
 //#include "ST_GUI_Addons.h"
+#include "c_keypad.h"
 
 #include "k_module.h"
 #include "ui_menu.h"
@@ -18,11 +19,13 @@
 #define ID_ICONVIEW_MENU               	(GUI_ID_USER + 0x00)
 #define ID_MENU_NAME                	(GUI_ID_USER + 0xD0)
 
-ICONVIEW_Handle 						hIcon;
-//WM_HWIN         						hCPULoad;
-WM_HWIN   								hItem;
 
-uchar									main_repaint_done;
+ICONVIEW_Handle	hIcon;
+//WM_HWIN      	hCPULoad;
+WM_HWIN   		hItem;
+WM_HWIN 		hKeypad;
+
+uchar			main_repaint_done;
 
 static void ui_menu_update_footer_text(char *text)
 {
@@ -352,6 +355,9 @@ void ui_init_menu(void)
     hItem = TEXT_CreateEx(FOOTER_EDIT_X, FOOTER_EDIT_Y, FOOTER_EDIT_X_SIZE, FOOTER_EDIT_Y_SIZE, WM_GetDesktopWindowEx(0), WM_CF_SHOW, TEXT_CF_LEFT, ID_MENU_NAME, "Main Menu");
     TEXT_SetFont(hItem, &GUI_Font24B_1);
     TEXT_SetTextColor(hItem, GUI_WHITE);
+
+    // Doesn't work in menu, maybe create in each individual menu item ?
+    //hKeypad = GUI_CreateKeyPad(WM_GetDesktopWindowEx(0));
 
     WM_SetFocus(hIcon);
 }

@@ -18,14 +18,10 @@
   */
 
 #include "DIALOG.h"
-
 #include "version.h"
 
-#if defined ( WIN32 )
-#include "main.h"
-#else
 #include "bsp.h"
-#endif
+#include "c_keypad.h"
 
 #ifdef GUI_TASK
 
@@ -300,7 +296,7 @@ static const GUI_WIDGET_CREATE_INFO _aMainDialogCreate[] = {
   { WINDOW_CreateIndirect   , "ST Launcher"     , ID_WINDOW_0           ,   0,   0, 800, 900,   (WM_CF_SHOW), 0x0, 0 },
   //{ IMAGE_CreateIndirect    , "Background"      , ID_IMAGE_0            ,   0,   0, 800, 480,   0, 0x0, 0 },
   //{ IMAGE_CreateIndirect    , "Reflect"         , ID_IMAGE_1            ,   0,   0, 487, 480,   0, 0x0, 0 },
-  { BUTTON_CreateIndirect   , "STemWin"         , ID_BUTTON_DEMO_1      ,  64, 149, 182, 182,   0, 0x0, 4 },
+  { BUTTON_CreateIndirect   , "STemWin"         , ID_BUTTON_DEMO_1      ,  64, 149, 80, 40,   0, 0x0, 4 },
   //{ BUTTON_CreateIndirect   , "TouchGFX"        , ID_BUTTON_DEMO_2      , 309, 149, 182, 182,   0, 0x0, 4 },
   //{ BUTTON_CreateIndirect   , "EmbeddedWizard"  , ID_BUTTON_DEMO_3      , 554, 149, 182, 182,   0, 0x0, 4 },
   // Test
@@ -1746,6 +1742,64 @@ static void _cbInfoDialog(WM_MESSAGE * pMsg) {
 }
 #endif
 
+WM_HWIN hKeypad;
+
+static void _ControlsHandler(WM_MESSAGE * pMsg)
+{
+	int         NCode;
+	int         Id;
+	WM_HWIN		hItem;
+	WM_MESSAGE  Message;
+
+    Id    = WM_GetId(pMsg->hWinSrc);
+    NCode = pMsg->Data.v;
+
+    switch(Id)
+    {
+        case ID_BUTTON_DEMO_1:
+        {
+        	if(NCode == WM_NOTIFICATION_RELEASED)
+        	{
+        		char    cKeyBuffer[64];
+
+        		printf("click 1\r\n");
+
+        		hItem = WM_GetDialogItem(pMsg->hWin, GUI_ID_EDIT0);
+       	        EDIT_GetText(hItem, cKeyBuffer, sizeof(cKeyBuffer));
+       	        EDIT_SetText(hItem, "");
+       	        hItem = WM_GetDialogItem(pMsg->hWin, GUI_ID_TEXT0);
+       	        TEXT_SetText(hItem, cKeyBuffer);
+       	        //
+       	        // Send message with 0 as parameter to close keyboard.
+       	        //
+       	        Message.Data.v  = 0;
+       	        Message.hWin    = hKeypad;
+       	        Message.hWinSrc = pMsg->hWin;
+       	        Message.MsgId   = MSG_ANIMATE;
+       	        WM_SendMessage(hKeypad, &Message);
+        	}
+        	break;
+        }
+
+        case GUI_ID_EDIT0:
+        {
+        	if(NCode == WM_NOTIFICATION_RELEASED)
+            {
+                // Send message with 1 as parameter to open keyboard
+                Message.Data.v  = 1;
+                Message.hWin    = hKeypad;
+                Message.hWinSrc = pMsg->hWin;
+                Message.MsgId   = MSG_ANIMATE;
+                WM_SendMessage(hKeypad, &Message);
+            }
+            break;
+        }
+
+        default:
+        	break;
+    }
+}
+
 /*********************************************************************
 *
 *       _cbMainDialog
@@ -1753,8 +1807,8 @@ static void _cbInfoDialog(WM_MESSAGE * pMsg) {
 static void _cbMainDialog(WM_MESSAGE * pMsg)
 {
 	//WM_HWIN      hItem;
-	int          NCode;
-	int          Id;
+	//int          NCode;
+	//int          Id;
 	//int          Demo_Id = -1;
 
 	WM_HWIN 			hList;
@@ -1764,6 +1818,8 @@ static void _cbMainDialog(WM_MESSAGE * pMsg)
   case WM_INIT_DIALOG:
     GUI_SetBkColor(GUI_BLACK);
     GUI_Clear();
+
+    hKeypad = GUI_CreateKeyPad(pMsg->hWin);
 
     //hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_CPU_FREQ_VAL);
    	//TEXT_SetBkColor(hItem, GUI_INVALID_COLOR);
@@ -1794,14 +1850,16 @@ static void _cbMainDialog(WM_MESSAGE * pMsg)
     WM_SetCallback(hItem, _cbButton);
 	#endif
 
+	#if 1
     hList = WM_GetDialogItem(pMsg->hWin, ID_LISTBOX1);
-    LISTBOX_SetFont(hList, &GUI_Font8x16_1);								// use proportional font
+    //LISTBOX_SetFont(hList, &GUI_Font8x16_1);
+    LISTBOX_SetFont(hList, &GUI_Font24B_ASCII);// use proportional font
     LISTBOX_SetTextColor(hList,LISTBOX_CI_UNSEL,GUI_BLUE);
     //hScrollV = SCROLLBAR_CreateAttached(hList, SCROLLBAR_CF_VERTICAL);
     //
     //TEXT_SetText(	  hText, "  UTC   dB   DT Freq       Message       ");
     //
-    #if 1
+
     LISTBOX_AddString(hList, "network 1"   );
     LISTBOX_AddString(hList, "network 2"   );
     LISTBOX_AddString(hList, "network 3"   );
@@ -1812,6 +1870,9 @@ static void _cbMainDialog(WM_MESSAGE * pMsg)
     LISTBOX_AddString(hList, "network 8"   );
     #endif
 
+    TEXT_CreateEx(10, 10, 80, 20, pMsg->hWin, WM_CF_SHOW, 0, GUI_ID_TEXT0, "");
+    EDIT_CreateEx(10, 40, 80, 20, pMsg->hWin, WM_CF_SHOW, 0, GUI_ID_EDIT0, 64);
+
     break;
 
   case WM_PAINT:
@@ -1819,41 +1880,7 @@ static void _cbMainDialog(WM_MESSAGE * pMsg)
 	  break;
 
   case WM_NOTIFY_PARENT:
-
-	//  Demo_Id = -1;
-    Id    = WM_GetId(pMsg->hWinSrc);
-    NCode = pMsg->Data.v;
-    if(NCode == WM_NOTIFICATION_RELEASED)
-    {
-      switch(Id) {
-        case ID_BUTTON_DEMO_1: // Notifications sent by 'STemWin'
-        {
-        	printf("click 1\r\n");
-        	break;
-        }
-       // case ID_BUTTON_DEMO_2: // Notifications sent by 'TouchGFX'
-       // 	printf("click 2\r\n");
-        //	break;
-       // case ID_BUTTON_DEMO_3: // Notifications sent by 'TARA'
-        //	printf("click 3\r\n");
-        //	break;
-          // USER START (Optionally insert code for reacting on notification message)
-          //Demo_Id = GetDemoIndex(Id);
-          //break;
-      }
-    }
-
-	#if 0
-    if (Demo_Id >= 0)
-    {
-		#ifdef WIN32
-      SUBDEMO_Sim(pMsg->hWin, &SubDemo[Demo_Id]);
-		#else
-      //SUBDEMO_Start(pMsg->hWin, &SubDemo[Demo_Id]);
-	#endif /* WIN32 */
-    }
-	#endif
-
+    _ControlsHandler(pMsg);
     break;
 
   default:

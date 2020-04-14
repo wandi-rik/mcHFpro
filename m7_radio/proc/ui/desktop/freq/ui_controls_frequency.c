@@ -223,7 +223,7 @@ static void ui_controls_frequency_update_vfo_a(ulong freq)
 	if(df.vfo_a_scr_freq == freq)
 		return;
 
-	//printf("freq a: %d\r\n",freq);
+	printf("freq a: %d\r\n",freq);
 
 	// Did step change ? Then do full repaint
 	// Still not perfect, as highlighted digit

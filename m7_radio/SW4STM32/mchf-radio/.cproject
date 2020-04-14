@@ -73,6 +73,7 @@
 									<listOptionValue builtIn="false" value="../../../../STM32CubeH7/Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc"/>
 									<listOptionValue builtIn="false" value="../../../../STM32CubeH7/Middlewares/Third_Party/OpenAMP/open-amp/lib/include"/>
 									<listOptionValue builtIn="false" value="../../../../STM32CubeH7/Middlewares/Third_Party/OpenAMP/libmetal/lib/include"/>
+									<listOptionValue builtIn="false" value="../../../../controls/keypad"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1720876904" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER"/>

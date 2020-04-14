@@ -250,7 +250,7 @@ static void rotary_update_freq_publics(int pot_diff)
 			// ToDo: Range check...
 		}
 	}
-	printf("freq = %d\r\n", tsu.band[tsu.curr_band].vfo_a);
+	//printf("freq = %d\r\n", tsu.band[tsu.curr_band].vfo_a);
 
 	// Save band info to eeprom
 	save_band_info();

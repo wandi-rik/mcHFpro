@@ -616,10 +616,11 @@ ui_proc_loop:
 	{
 		case MODE_DESKTOP:
 		{
+			// -----------------------------------------
 			WM_InvalidateWindow(WM_HBKWIN);
-			//GUI_Exec();
+			// -----------------------------------------
 
-
+			GUI_Exec();
 			GUI_Delay(UI_REFRESH_25HZ);
 			break;
 		}

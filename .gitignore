@@ -1,4 +1,5 @@
 /base_hw/
+/controls/
 /esp32/
 /STM32CubeH7/
 /uhsdr/

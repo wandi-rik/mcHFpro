@@ -27,6 +27,11 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>controls</name>
+			<type>2</type>
+			<locationURI>PARENT-3-PROJECT_LOC/controls</locationURI>
+		</link>
+		<link>
 			<name>hw/FreeRTOSConfig.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/hw/FreeRTOSConfig.h</locationURI>
