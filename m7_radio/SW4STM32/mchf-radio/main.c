@@ -77,10 +77,12 @@ extern struct	TRANSCEIVER_STATE_UI	tsu;
 extern struct	UI_DRIVER_STATE			ui_s;
 
 // DSP core state
-struct TransceiverState 	ts;
+struct TransceiverState 				ts;
 
-TaskHandle_t hIccTask;
-TaskHandle_t hTouchTask;
+TaskHandle_t 							hIccTask;
+TaskHandle_t 							hTouchTask;
+
+QueueHandle_t 							hEspMessage;
 
 /**
   * @brief  EXTI line detection callbacks.
@@ -414,7 +416,7 @@ void Error_Handler(int err)
 {
   /* Turn LED RED on */
   //if(BSP_Initialized)
-//	BSP_LED_On(LED_RED);
+  //	BSP_LED_On(LED_RED);
 
   printf( " Error Handler %d\n",err);
   configASSERT (0);
@@ -422,11 +424,11 @@ void Error_Handler(int err)
 
 void BSP_ErrorHandler(void)
 {
-  if(BSP_Initialized)
-  {
-    printf( "%s(): BSP Error !!!\n", __func__ );
+  //if(BSP_Initialized)
+  //{
+    //printf( "%s(): BSP Error !!!\n", __func__ );
    // BSP_LED_On(LED_RED);
-  }
+  //}
 }
 
 #ifdef configUSE_MALLOC_FAILED_HOOK
@@ -472,51 +474,6 @@ void assert_failed(uint8_t* file, uint32_t line)
   }
 }
 #endif
-
-//*----------------------------------------------------------------------------
-//* Function Name       : WRITE_EEPROM
-//* Object              :
-//* Notes    			:
-//* Notes   			:
-//* Notes    			:
-//* Context    			: anyone!
-//*----------------------------------------------------------------------------
-void WRITE_EEPROM(ushort addr,uchar value)
-{
-	uchar *bkp = (uchar *)EEP_BASE;
-
-	if(!tsu.eeprom_init_done)
-		return;
-
-	if(addr > 0xFFF)
-		return;
-
-	// Write to BackUp SRAM
-	*(bkp + addr) = value;
-}
-
-//*----------------------------------------------------------------------------
-//* Function Name       : READ_EEPROM
-//* Object              :
-//* Notes    			:
-//* Notes   			:
-//* Notes    			:
-//* Context    			: anyone!
-//*----------------------------------------------------------------------------
-uchar READ_EEPROM(ushort addr)
-{
-	uchar ret;
-	uchar *bkp = (uchar *)EEP_BASE;
-
-	if(!tsu.eeprom_init_done)
-		return 0xFF;
-
-	if(addr > 0xFFF)
-		return 0xFF;
-
-	// Read BackUp SRAM
-	return *(bkp + addr);
-}
 
 //*----------------------------------------------------------------------------
 //* Function Name       : transceiver_load_eep_values
@@ -760,6 +717,9 @@ void TransceiverStateInit(void)
 	// Mute off
 	tsu.audio_mute_flag = 0;
 
+	// Enable virtual eeprom
+	INIT_EEPROM();
+
 	transceiver_load_eep_values();
 
 	// needed ?
@@ -991,8 +951,6 @@ void TransceiverStateInit(void)
 	ts.mem_disp = 0;						// when TRUE, memory display is enabled
 }
 
-QueueHandle_t 	hEspMessage;
-
 //*----------------------------------------------------------------------------
 //* Function Name       : audio_proc_hw_init
 //* Object              :
@@ -1070,32 +1028,27 @@ int main(void)
     // Configure the system clock to 400 MHz
     SystemClock_Config();
 
+    // HW init
+    if(BSP_Config() != 0)
+    	goto stall_radio;
+
     k_CalendarBkupInit();
 
-    // Add Cortex-M7 user application code here
-    BSP_Initialized = BSP_Config();
-    if(BSP_Initialized)
-    {
-    	// Enable virtual eeprom
-    	tsu.eeprom_init_done = 1;
+    // Set radio public values
+    TransceiverStateInit();
 
-   	   // Set radio public values
-   	    TransceiverStateInit();
+    // Init the SD Card hardware and its IRQ handler manager
+    Storage_Init();
 
-    	// Init the SD Card hardware and its IRQ handler manager
-    	Storage_Init();
+    // Define static tasks
+    start_tasks();
 
-    	// Define static tasks
-    	start_tasks();
+    // Do we need this at all ?
+    BSP_Initialized = 1;
 
-    	// Start scheduler
-    	osKernelStart();
-    }
+    // Start scheduler
+    osKernelStart();
 
-    /* We should never get here as control is now taken by the scheduler */
-    while (1)
-    {
-    	//BSP_LED_Toggle(LED_RED);
-    	HAL_Delay(500);
-    }
+stall_radio:
+    while(1);
 }

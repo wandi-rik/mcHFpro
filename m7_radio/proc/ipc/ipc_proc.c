@@ -181,6 +181,10 @@ ushort ipc_proc_exp_size(uchar cmd)
 		case MENU_WIFI_GET_NETWORK_RSSI:
 			expected += MENU_WIFI_GET_NETWORK_RSSI_SZ;
 			break;
+		case MENU_WRITE_SQL_VALUE:
+			expected += MENU_WRITE_SQL_VALUE_SZ;
+			break;
+		// ---------------------------------------------------
 		case MENU_ESP32_REBOOT:
 			expected = (CMD_NO_RESPONSE - 1);
 			break;
@@ -330,7 +334,7 @@ uchar ipc_proc_exchange(uchar cmd, uchar *payload, uchar p_size, uchar *buffer, 
 	// Copy to caller task
 	if((buffer != NULL) && (ret_size != NULL))
 	{
-		//print_hex_array(RxBuffer, expected);
+		print_hex_array(RxBuffer, expected);
 		memcpy(buffer,RxBuffer, expected);
 		*ret_size = expected;
 	}
@@ -422,6 +426,11 @@ static void icc_proc_check_msg(void)
 			}
 			break;
 		}
+
+		// Write virtual eeprom (SQLite call)
+		case 4:
+			esp_msg->ucExecResult = ipc_proc_exchange(MENU_WRITE_SQL_VALUE, esp_msg->ucData, esp_msg->usPayloadSize, esp_msg->ucData, &esp_msg->ucDataReady, 3000);
+			break;
 
 		default:
 			printf("no handler for msg: %d\r\n",esp_msg->ucMessageID);
@@ -557,10 +566,21 @@ void ipc_proc_task(void const *arg)
 	vTaskDelay(IPC_PROC_START_DELAY);
 	printf("ipc task start\r\n");
 
+	#if 0
+	// Try to talk to co-processor
+	if(ipc_proc_exchange(MENU_READ_ESP_32_VERSION, NULL, 0, NULL, 0, 500) == 0)
+	{
+		// Enable virtual eeprom
+		INIT_EEPROM();
+	}
+	else
+		printf("err ipc init\r\n");
+	#endif
+
 	for(;;)
 	{
 		icc_proc_check_msg();
-		ipc_proc_poll_rssi();
+//		ipc_proc_poll_rssi();
 	}
 }
 #endif

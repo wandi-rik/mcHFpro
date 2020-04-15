@@ -19,6 +19,12 @@
 #ifndef __MCHF_IPC_DEF_H
 #define __MCHF_IPC_DEF_H
 
+#define CMD_NOT_SUPPORTED							0xFFFF
+#define CMD_NO_RESPONSE								0x8000
+
+// --------------------------------------------------------
+
+
 #define MENU_0X01									0x01
 #define MENU_0X01_SZ								10
 
@@ -92,10 +98,10 @@
 #define MENU_READ_SQL_VALUE_SZ						13
 
 #define MENU_DELETE_SQL_VALUE						0x52
-#define MENU_DELETE_SQL_VALUE_SZ						1
+#define MENU_DELETE_SQL_VALUE_SZ					1
 
 #define MENU_DEFAULT_SQL_VALUE						0x53
-#define MENU_DEFAULT_SQL_VALUE_SZ						1
+#define MENU_DEFAULT_SQL_VALUE_SZ					1
 
 #define MENU_ESP32_REBOOT							0xF0
 // no data is returned!

@@ -73,6 +73,9 @@ static const GUI_WIDGET_CREATE_INFO _aDialog[] =
 	{ CHECKBOX_CreateIndirect,	"Checkbox", 				ID_CHECKBOX_2, 		20, 	120,	250, 	30, 	0, 		0x0, 	0 },
 };
 
+extern 	osMessageQId 			hEspMessage;
+struct 	ESPMessage				esp_msg;
+
 static void _cbControl(WM_MESSAGE * pMsg, int Id, int NCode)
 {
 	WM_HWIN hItem;
@@ -106,7 +109,22 @@ static void _cbControl(WM_MESSAGE * pMsg, int Id, int NCode)
 				{
 					hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_0);
 					// Save to eeprom
-					*(uchar *)(EEP_BASE + EEP_SW_SMOOTH) = CHECKBOX_GetState(hItem);
+					// *(uchar *)(EEP_BASE + EEP_SW_SMOOTH) = CHECKBOX_GetState(hItem);
+
+					if(esp_msg.ucProcStatus == TASK_PROC_IDLE)
+					{
+						esp_msg.ucMessageID  = 0x04;			// SQLite write
+						esp_msg.ucProcStatus = TASK_PROC_WORK;
+
+						esp_msg.ucData[0] = (uchar)CHECKBOX_GetState(hItem);
+
+						strcpy((char *)(esp_msg.ucData + 5), "sd_smooth");
+						esp_msg.ucData[4] = 10;
+
+						esp_msg.usPayloadSize = 15;
+
+						osMessagePut(hEspMessage, (ulong)&esp_msg, osWaitForever);
+					}
 
 					break;
 				}
@@ -201,6 +219,7 @@ static void _cbDialog(WM_MESSAGE * pMsg)
 			CHECKBOX_SetText(hItem, "Show Iambic Keyer Control");
 			CHECKBOX_SetState(hItem, *(uchar *)(EEP_BASE + EEP_KEYER_ON));
     
+			esp_msg.ucProcStatus = TASK_PROC_IDLE;
 			break;
 		}
 

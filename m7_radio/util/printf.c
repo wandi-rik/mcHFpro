@@ -34,7 +34,7 @@ UART_HandleTypeDef 	DEBUG_UART_Handle;
 uchar				share_port  = 0;
 const char 			cpu_id_str[] = "[m7] ";
 
-SemaphoreHandle_t 	xSemaphore = NULL;
+SemaphoreHandle_t 	dPrintSemaphore = NULL;
 
 //*----------------------------------------------------------------------------
 //* Function Name       : claim_debug_port
@@ -57,11 +57,11 @@ static int claim_debug_port(void)
 		return 0;
 
 	// Mutex invalid
-	if(xSemaphore == NULL)
+	if(dPrintSemaphore == NULL)
 		return 1;
 
 	// Make all printf calls thread safe
-	if(xSemaphoreTake(xSemaphore, (TickType_t)50) != pdTRUE)
+	if(xSemaphoreTake(dPrintSemaphore, (TickType_t)50) != pdTRUE)
 		return 2;
 
 	// Wait to be free
@@ -115,7 +115,7 @@ static void release_debug_port(void)
 	HAL_HSEM_Release(HSEM_ID_27, 0);
 
 	// Release OS mutex
-	xSemaphoreGive(xSemaphore);
+	xSemaphoreGive(dPrintSemaphore);
 }
 
 /**
@@ -746,7 +746,7 @@ void printf_init(uchar is_shared)
 	else
 	{
 		// Local thread safety
-		xSemaphore = xSemaphoreCreateMutex();
+		dPrintSemaphore = xSemaphoreCreateMutex();
 
 		share_port = 1;
 	}

@@ -35,7 +35,9 @@
 								<option id="gnu.c.compiler.option.include.paths.328290999" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="../"/>
 									<listOptionValue builtIn="false" value="../../../../common"/>
+									<listOptionValue builtIn="false" value="../../../startup"/>
 									<listOptionValue builtIn="false" value="../../../hw"/>
+									<listOptionValue builtIn="false" value="../../../util"/>
 									<listOptionValue builtIn="false" value="../../../proc"/>
 									<listOptionValue builtIn="false" value="../../../proc/ui"/>
 									<listOptionValue builtIn="false" value="../../../proc/ui/lcd_driver"/>

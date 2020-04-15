@@ -1,7 +1,7 @@
 /************************************************************************************
 **                                                                                 **
 **                             mcHF Pro QRP Transceiver                            **
-**                         Krassi Atanassov - M0NKA 2012-2019                      **
+**                         Krassi Atanassov - M0NKA 2012-2020                      **
 **                            mail: djchrismarc@gmail.com                          **
 **                                 twitter: @bph_co                                **
 **---------------------------------------------------------------------------------**
@@ -18,8 +18,6 @@
 #define __MCHF_PRO_BOARD_H
 
 #define USE_DSP_CORE
-
-#define EEP_BASE					0x38800000
 //
 #include "mchf_types.h"
 #include "mchf_radio_decl.h"
@@ -31,7 +29,11 @@
 #include <string.h>
 #include <math.h>
 //
+// To measure OS performance
 #include "cpu_utils.h"
+//
+// Eeprom emulation
+#include "virt_eeprom.h"
 
 #include "mchf_icc_def.h"
 //
@@ -229,6 +231,8 @@ struct ESPMessage {
 	uchar	ucDataReady;
 	uchar	ucExecResult;
 
+	ushort	usPayloadSize;
+
 	uchar 	ucData[128];
 
 } ESPMessage;
@@ -375,18 +379,6 @@ struct UI_SW {
 	ushort 	bandpass_end;
 
 } UI_SW;
-// -----------------------------------------------------------------------------
-// Virtual Eeprom in BackUp SRAM access macros
-//
-// assumes: 1. Battery connected to VBAT pin
-//			2. External 32 kHz LSE, all clocks enabled(RCC_OSCILLATORTYPE_LSE,RCC_LSE_ON)
-//			3. Write access to Backup domain enabled (PWR->CR1 |= PWR_CR1_DBP)
-//			4. Enabled BKPRAM clock (__HAL_RCC_BKPRAM_CLK_ENABLE())
-//			5. Enabled Backup SRAM low power Regulator (HAL_PWREx_EnableBkUpReg())
-//
-void  WRITE_EEPROM(ushort addr,uchar value);
-uchar READ_EEPROM (ushort addr);
-#define save_band_info()	{memcpy((uchar *)(EEP_BASE + EEP_BANDS),(uchar *)(&(tsu.band[0].band_start)),(MAX_BANDS * sizeof(BAND_INFO)));}
 //
 // -----------------------------------------------------------------------------
 // HAL compatibility

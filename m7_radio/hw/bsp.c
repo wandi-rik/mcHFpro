@@ -293,7 +293,7 @@ uint8_t BSP_Config(void)
 	if ((RetVal = BSP_SDRAM_Init(0)) != BSP_ERROR_NONE)
 	{
 		printf("Failed to initialize the SDRAM !! (Error %d)\n", RetVal);
-		return 0;
+		return 1;
 	}
 
 	/* Enable Back up SRAM */
@@ -315,7 +315,7 @@ uint8_t BSP_Config(void)
 	//HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_HSE, RCC_MCODIV_1);
 
 	BSP_LED_On(LED_GREEN);
-	return 1;
+	return 0;
 }
 
 static int BSP_VerifyData(const uint64_t *pData, const uint64_t *pFlash, uint32_t DataSize)

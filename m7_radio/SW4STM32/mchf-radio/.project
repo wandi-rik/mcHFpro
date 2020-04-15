@@ -57,16 +57,6 @@
 			<locationURI>PARENT-2-PROJECT_LOC/hw/calibration.h</locationURI>
 		</link>
 		<link>
-			<name>hw/cpu_utils.c</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/hw/cpu_utils.c</locationURI>
-		</link>
-		<link>
-			<name>hw/cpu_utils.h</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/hw/cpu_utils.h</locationURI>
-		</link>
-		<link>
 			<name>hw/ffconf.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/hw/ffconf.h</locationURI>
@@ -115,11 +105,6 @@
 			<name>hw/mt25tl01g_conf.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/hw/mt25tl01g_conf.h</locationURI>
-		</link>
-		<link>
-			<name>hw/printf.c</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/hw/printf.c</locationURI>
 		</link>
 		<link>
 			<name>hw/sd_diskio.h</name>
@@ -189,17 +174,42 @@
 		<link>
 			<name>startup/startup_stm32h747xx_CM7.s</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/startup_stm32h747xx_CM7.s</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/startup/startup_stm32h747xx_CM7.s</locationURI>
 		</link>
 		<link>
 			<name>startup/syscalls.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/syscalls.c</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/startup/syscalls.c</locationURI>
 		</link>
 		<link>
 			<name>startup/system_stm32h7xx_dualcore_bootcm7_cm4gated.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/system_stm32h7xx_dualcore_bootcm7_cm4gated.c</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/startup/system_stm32h7xx_dualcore_bootcm7_cm4gated.c</locationURI>
+		</link>
+		<link>
+			<name>util/cpu_utils.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/util/cpu_utils.c</locationURI>
+		</link>
+		<link>
+			<name>util/cpu_utils.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/util/cpu_utils.h</locationURI>
+		</link>
+		<link>
+			<name>util/printf.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/util/printf.c</locationURI>
+		</link>
+		<link>
+			<name>util/virt_eeprom.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/util/virt_eeprom.c</locationURI>
+		</link>
+		<link>
+			<name>util/virt_eeprom.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/util/virt_eeprom.h</locationURI>
 		</link>
 		<link>
 			<name>Drivers/STM32H7xx_HAL_Driver/stm32h7xx_hal.c</name>
