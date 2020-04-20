@@ -165,7 +165,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
   }
 }
 
-
+#if 0
 /**
   * @brief  System Clock Configuration
   *         The system Clock is configured as follow :
@@ -296,6 +296,7 @@ static void SystemClock_Config(void)
 
   HAL_EnableCompensationCell();
 }
+#endif
 
 static void MPU_Config(void)
 {
