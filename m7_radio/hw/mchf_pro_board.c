@@ -24,7 +24,7 @@ struct	CM7_CORE_DETAILS		ccd;
 // Public radio state
 struct	TRANSCEIVER_STATE_UI	tsu;
 
-__IO  uint32_t SystemClock_MHz 		= 400;
+__IO  uint32_t SystemClock_MHz 		= 480;
 __IO  uint32_t SystemClock_changed 	= 0;
 
 /**
@@ -127,52 +127,48 @@ static void SystemClock_Config_480MHz(void)
 
 void SystemClockChange_Handler(void)
 {
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  if(SystemClock_changed != 0)
-  {
-    /* Select HSE  as system clock source to allow modification of the PLL configuration */
-    RCC_ClkInitStruct.ClockType       = RCC_CLOCKTYPE_SYSCLK;
-    RCC_ClkInitStruct.SYSCLKSource    = RCC_SYSCLKSOURCE_HSE;
-    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
-    {
-      /* Initialization Error */
-      Error_Handler(178);
-    }
+	if(SystemClock_changed != 0)
+	{
+		/* Select HSE  as system clock source to allow modification of the PLL configuration */
+		RCC_ClkInitStruct.ClockType       = RCC_CLOCKTYPE_SYSCLK;
+		RCC_ClkInitStruct.SYSCLKSource    = RCC_SYSCLKSOURCE_HSE;
+		if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+		{
+			/* Initialization Error */
+			Error_Handler(178);
+		}
 
-    if(SystemClock_MHz == 400)
-    {
-      __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
-      while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
+		if(SystemClock_MHz == 400)
+		{
+			__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
+			while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
 
-      SystemClock_Config_480MHz();
-      SystemClock_MHz = 480;
-    }
-    else
-    {
-      SystemClock_Config_400MHz();
+			SystemClock_Config_480MHz();
+			SystemClock_MHz = 480;
+		}
+		else
+		{
+			SystemClock_Config_400MHz();
 
-      __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-      while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
+			__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+			while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
 
-      SystemClock_MHz = 400;
-    }
+			SystemClock_MHz = 400;
+		}
 
-    /* PLL1  as system clock source to allow modification of the PLL configuration */
-    RCC_ClkInitStruct.ClockType       = RCC_CLOCKTYPE_SYSCLK;
-    RCC_ClkInitStruct.SYSCLKSource    = RCC_SYSCLKSOURCE_PLLCLK;
-    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
-    {
-      /* Initialization Error */
-      Error_Handler(179);
-    }
+		/* PLL1  as system clock source to allow modification of the PLL configuration */
+		RCC_ClkInitStruct.ClockType       = RCC_CLOCKTYPE_SYSCLK;
+		RCC_ClkInitStruct.SYSCLKSource    = RCC_SYSCLKSOURCE_PLLCLK;
+		if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
+		{
+			/* Initialization Error */
+			Error_Handler(179);
+		}
 
-    //CurrentZoom = 100;
-    //playOneFrame = 1;
-
-    SystemClock_changed = 0;
-
-  }
+		SystemClock_changed = 0;
+	}
 }
 
 void SystemClock_Config(void)
@@ -254,6 +250,111 @@ void SystemClock_Config(void)
 
 	/* Enables the I/O Compensation Cell */
 	HAL_EnableCompensationCell();
+}
+
+void MPU_Config(void)
+{
+	MPU_Region_InitTypeDef MPU_InitStruct;
+
+	// Disable the MPU
+	HAL_MPU_Disable();
+
+	// Setup Flash - launcher and radio code execution
+	MPU_InitStruct.Enable           = MPU_REGION_ENABLE;
+	MPU_InitStruct.BaseAddress      = FLASH_BASE;					// 0x08000000
+	MPU_InitStruct.Size             = MPU_REGION_SIZE_2MB;			// 2MB
+	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+	MPU_InitStruct.IsBufferable     = MPU_ACCESS_BUFFERABLE;
+	MPU_InitStruct.IsCacheable      = MPU_ACCESS_CACHEABLE;
+	MPU_InitStruct.IsShareable      = MPU_ACCESS_NOT_SHAREABLE;
+	MPU_InitStruct.Number           = MPU_REGION_NUMBER0;
+	MPU_InitStruct.TypeExtField     = MPU_TEX_LEVEL0;
+	MPU_InitStruct.SubRegionDisable = 0x00;
+	MPU_InitStruct.DisableExec      = MPU_INSTRUCTION_ACCESS_ENABLE;
+	HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+	// Setup SDRAM - emWin video buffers
+	MPU_InitStruct.Enable           = MPU_REGION_ENABLE;
+	MPU_InitStruct.BaseAddress      = SDRAM_DEVICE_ADDR;			// 0xD0000000
+	MPU_InitStruct.Size             = MPU_REGION_SIZE_32MB;			// 32MB
+	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+	MPU_InitStruct.IsBufferable     = MPU_ACCESS_NOT_BUFFERABLE;
+	MPU_InitStruct.IsCacheable      = MPU_ACCESS_CACHEABLE;
+	MPU_InitStruct.IsShareable      = MPU_ACCESS_NOT_SHAREABLE;
+	MPU_InitStruct.Number           = MPU_REGION_NUMBER1;
+	MPU_InitStruct.TypeExtField     = MPU_TEX_LEVEL0;
+	MPU_InitStruct.SubRegionDisable = 0x00;
+	MPU_InitStruct.DisableExec      = MPU_INSTRUCTION_ACCESS_DISABLE;
+	HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+	// Setup D3 SRAM - OpenAMP core to core comms
+	MPU_InitStruct.Enable 			= MPU_REGION_ENABLE;
+	MPU_InitStruct.BaseAddress 		= D3_SRAM_BASE;					// 0x38000000
+	MPU_InitStruct.Size 			= MPU_REGION_SIZE_64KB;			// 64KB
+	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+	MPU_InitStruct.IsBufferable 	= MPU_ACCESS_NOT_BUFFERABLE;
+	MPU_InitStruct.IsCacheable 		= MPU_ACCESS_CACHEABLE;
+	MPU_InitStruct.IsShareable 		= MPU_ACCESS_SHAREABLE;
+	MPU_InitStruct.Number 			= MPU_REGION_NUMBER2;
+	MPU_InitStruct.TypeExtField 	= MPU_TEX_LEVEL0;
+	MPU_InitStruct.SubRegionDisable = 0x00;
+	MPU_InitStruct.DisableExec 		= MPU_INSTRUCTION_ACCESS_DISABLE;
+	HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+	// Setup AXI SRAM - OS heap
+	MPU_InitStruct.Enable           = MPU_REGION_ENABLE;
+	MPU_InitStruct.BaseAddress      = D1_AXISRAM_BASE;				// 0x24000000
+	MPU_InitStruct.Size             = MPU_REGION_SIZE_512KB;		// 512KB
+	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+	MPU_InitStruct.IsBufferable     = MPU_ACCESS_NOT_BUFFERABLE;
+	MPU_InitStruct.IsCacheable      = MPU_ACCESS_CACHEABLE;
+	MPU_InitStruct.IsShareable      = MPU_ACCESS_NOT_SHAREABLE;
+	MPU_InitStruct.Number           = MPU_REGION_NUMBER3;
+	MPU_InitStruct.TypeExtField     = MPU_TEX_LEVEL0;
+	MPU_InitStruct.SubRegionDisable = 0x00;
+	MPU_InitStruct.DisableExec      = MPU_INSTRUCTION_ACCESS_DISABLE;
+	HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+	#if 0
+	// Setup ITCM RAM - OS code, interrupt handlers
+	MPU_InitStruct.Enable           = MPU_REGION_ENABLE;
+	MPU_InitStruct.BaseAddress      = D1_ITCMRAM_BASE;				// 0x00000000
+	MPU_InitStruct.Size             = MPU_REGION_SIZE_64KB;			// 64KB
+	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+	MPU_InitStruct.IsBufferable     = MPU_ACCESS_NOT_BUFFERABLE;
+	MPU_InitStruct.IsCacheable      = MPU_ACCESS_NOT_CACHEABLE;
+	MPU_InitStruct.IsShareable      = MPU_ACCESS_NOT_SHAREABLE;
+	MPU_InitStruct.Number           = MPU_REGION_NUMBER4;
+	MPU_InitStruct.TypeExtField     = MPU_TEX_LEVEL0;
+	MPU_InitStruct.SubRegionDisable = 0x00;
+	MPU_InitStruct.DisableExec      = MPU_INSTRUCTION_ACCESS_ENABLE;
+	HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+	// Setup DTCM RAM - DMA buffers
+	MPU_InitStruct.Enable           = MPU_REGION_ENABLE;
+	MPU_InitStruct.BaseAddress      = D1_DTCMRAM_BASE;				// 0x20000000
+	MPU_InitStruct.Size             = MPU_REGION_SIZE_128KB;		// 128KB
+	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+	MPU_InitStruct.IsBufferable     = MPU_ACCESS_NOT_BUFFERABLE;
+	MPU_InitStruct.IsCacheable      = MPU_ACCESS_NOT_CACHEABLE;
+	MPU_InitStruct.IsShareable      = MPU_ACCESS_NOT_SHAREABLE;
+	MPU_InitStruct.Number           = MPU_REGION_NUMBER5;
+	MPU_InitStruct.TypeExtField     = MPU_TEX_LEVEL0;
+	MPU_InitStruct.SubRegionDisable = 0x00;
+	MPU_InitStruct.DisableExec      = MPU_INSTRUCTION_ACCESS_DISABLE;
+	HAL_MPU_ConfigRegion(&MPU_InitStruct);
+	#endif
+
+    HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+}
+
+void CPU_CACHE_Enable(void)
+{
+  /* Enable I-Cache */
+  SCB_EnableICache();
+
+  /* Enable D-Cache */
+  SCB_EnableDCache();
 }
 
 #if 0

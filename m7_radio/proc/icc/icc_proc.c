@@ -649,6 +649,10 @@ uchar icc_proc_init_hw(void)
 	// callback is received on service creation. Wait for the callback
 	if(OPENAMP_Wait_EndPointready(&rp_endpoint) != 0)
 	{
+		printf( "====================\r\n");
+		printf( "====  DSP FAULT ====\r\n");
+		printf( "====================\r\n");
+
 		// Yeah, it is a critical error ;(
 		NVIC_SystemReset();
 	}
@@ -726,7 +730,7 @@ void icc_proc_delayed_dsp_init(void)
 				tsu.dsp_rev2 = aRxBuffer[1];
 				tsu.dsp_rev3 = aRxBuffer[2];
 				tsu.dsp_rev4 = aRxBuffer[3];
-				printf("DSP:%d.%d.%d.%d\r\n",tsu.dsp_rev1,tsu.dsp_rev2,tsu.dsp_rev3,tsu.dsp_rev4);
+				//printf("DSP:%d.%d.%d.%d\r\n",tsu.dsp_rev1,tsu.dsp_rev2,tsu.dsp_rev3,tsu.dsp_rev4);
 			}
 			else
 				tsu.dsp_alive = 0;

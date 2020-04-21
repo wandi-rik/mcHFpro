@@ -244,7 +244,7 @@ osSemaphoreId              LcdUpdateSemaphoreId = 0;
 osSemaphoreId              osDma2dSemph = 0;
 osMutexId                  osDeviceMutex = 0;
 
-void DMA2D_IRQHandler(void);
+//void DMA2D_IRQHandler(void);
 
 /**
   * @}
@@ -260,6 +260,7 @@ static void _DMA_Color2IndexBulk(LCD_COLOR * pColor, void * pIndex, U32 NumItems
 static void _DMA_Fill(int LayerIndex, void * pDst, int xSize, int ySize, int OffLine, U32 ColorIndex);
 static int32_t DSI_IO_Write(uint16_t ChannelNbr, uint16_t Reg, uint8_t *pData, uint16_t Size);
 static int32_t DSI_IO_Read(uint16_t ChannelNbr, uint16_t Reg, uint8_t *pData, uint16_t Size);
+
 /* Color conversion routines using DMA2D */
 DEFINE_DMA2D_COLORCONVERSION(M8888I, LTDC_PIXEL_FORMAT_ARGB8888)
 /* Internal pixel format of emWin is 32 bit, because of that ARGB8888 */
@@ -280,6 +281,32 @@ static const LCD_API_COLOR_CONV * _apColorConvAPI[] =
   COLOR_CONVERSION_1,
 #endif
 };
+
+void LTDC_IRQHandler(void)
+{
+	HAL_LTDC_IRQHandler(&hltdc);
+}
+
+void DSI_IRQHandler(void)
+{
+	//BSP_LED_Toggle(LED_ORANGE);
+	HAL_DSI_IRQHandler(&hdsi);
+}
+
+void DMA2D_IRQHandler(void)
+{
+	//BSP_LED_Toggle(LED_BLUE);
+
+  if (DMA2D->ISR & DMA2D_ISR_TEIF) {
+    Error_Handler(16); /* Should never happen */
+  }
+
+  /* Clear the Transfer complete interrupt */
+  DMA2D->IFCR = (U32)(DMA2D_IFCR_CTCIF | DMA2D_IFCR_CCTCIF | DMA2D_IFCR_CTEIF);
+
+  /* Signal semaphore */
+  osSemaphoreRelease(osDma2dSemph);
+}
 
 static U32 LCD_GetBufferAddress(int LayerIndex, int BufferIndex)
 {
@@ -749,6 +776,7 @@ static void LCD_LL_LayerInit(U32 LayerIndex, U32 address)
   }
 }
 
+#if 0
 void DMA2D_IRQHandler(void)
 {
 	//BSP_LED_Toggle(LED_BLUE);
@@ -763,6 +791,7 @@ void DMA2D_IRQHandler(void)
   /* Signal semaphore */
   osSemaphoreRelease(osDma2dSemph);
 }
+#endif
 
 /**
   * @brief  DMA2D wait for interrupt

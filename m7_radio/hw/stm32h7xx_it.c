@@ -23,114 +23,12 @@
 #include "stm32h7xx_it.h"
 #include "main.h"
 
-/** @addtogroup STM32H7xx_HAL_Examples
-  * @{
-  */
-
-/** @addtogroup Templates
-  * @{
-  */
-
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
-extern LTDC_HandleTypeDef hltdc;
-extern DSI_HandleTypeDef hdsi;
 #if defined(USE_USB_FS) || defined(USE_USB_HS)
 extern HCD_HandleTypeDef hhcd;
 #endif /* USE_USB_FS | USE_USB_HS */
 
 //extern UART_HandleTypeDef 	UART_Handle1;
 
-/* Private function prototypes -----------------------------------------------*/
-/* Private functions ---------------------------------------------------------*/
-
-/******************************************************************************/
-/*            Cortex-M7 Processor Exceptions Handlers                         */
-/******************************************************************************/
-
-/**
-  * @brief   This function handles NMI exception.
-  * @param  None
-  * @retval None
-  */
-void NMI_Handler(void)
-{
-	Error_Handler(11);
-}
-
-/**
-  * @brief  This function handles Hard Fault exception.
-  * @param  None
-  * @retval None
-  */
-void HardFault_Handler(void)
-{
-	Error_Handler(12);
-}
-
-/**
-  * @brief  This function handles Memory Manage exception.
-  * @param  None
-  * @retval None
-  */
-void MemManage_Handler(void)
-{
-	Error_Handler(13);
-}
-
-/**
-  * @brief  This function handles Bus Fault exception.
-  * @param  None
-  * @retval None
-  */
-void BusFault_Handler(void)
-{
-	Error_Handler(14);
-}
-
-/**
-  * @brief  This function handles Usage Fault exception.
-  * @param  None
-  * @retval None
-  */
-void UsageFault_Handler(void)
-{
-	Error_Handler(15);
-}
-
-/**
-  * @brief  This function handles Debug Monitor exception.
-  * @param  None
-  * @retval None
-  */
-void DebugMon_Handler(void)
-{
-}
-
-/**
-  * @brief  This function handles SysTick Handler.
-  * @param  None
-  * @retval None
-  */
-void SysTick_Handler(void)
-{
-	osSystickHandler();
-}
-
-/******************************************************************************/
-/*                 STM32H7xx Peripherals Interrupt Handlers                   */
-/*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */
-/*  available peripheral interrupt handler's name please refer to the startup */
-/*  file (startup_stm32h7xx.s).                                               */
-/******************************************************************************/
-
-/**
-  * @brief  This function handles External line 0 interrupt request.
-  * @param  None
-  * @retval None
-  */
 void EXTI15_10_IRQHandler(void)
 {
 	HAL_GPIO_EXTI_IRQHandler(BUTTON_WAKEUP_PIN);
@@ -185,27 +83,6 @@ void EXTI9_5_IRQHandler(void)
   	  HAL_GPIO_EXTI_IRQHandler(TS_INT_PIN);
 }
 
-/**
-  * @brief  This function handles LTDC interrupt request.
-  * @param  None
-  * @retval None
-  */
-void LTDC_IRQHandler(void)
-{
-	HAL_LTDC_IRQHandler(&hltdc);
-}
-
-/**
-  * @brief  This function handles DSI Handler.
-  * @param  None
-  * @retval None
-  */
-void DSI_IRQHandler(void)
-{
-	//BSP_LED_Toggle(LED_ORANGE);
-	HAL_DSI_IRQHandler(&hdsi);
-}
-
 #if defined(USE_SDCARD)
 /**
 * @brief  This function handles SDMMC interrupt request.
@@ -239,12 +116,3 @@ void HSEM1_IRQHandler(void)
 	HAL_HSEM_IRQHandler();
 }
 
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

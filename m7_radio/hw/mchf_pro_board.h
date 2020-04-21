@@ -422,6 +422,18 @@ typedef void FAST_REFRESH(void);
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
+// CPU exceptions - main.c
+void 	NMI_Handler(void);
+void 	HardFault_Handler(void);
+void 	MemManage_Handler(void);
+void 	BusFault_Handler(void);
+void 	UsageFault_Handler(void);
+void 	SVC_Handler(void);
+void 	DebugMon_Handler(void);
+void 	PendSV_Handler(void);
+void 	SysTick_Handler(void);
+
+// Exports in board file
 void 	mchf_pro_board_debug_led_init(void);
 void 	mchf_pro_board_blink_if_alive(uchar flags);
 
@@ -442,10 +454,12 @@ void 	mchf_pro_board_sensitive_hw_init(void);
 
 void 	SystemClockChange_Handler(void);
 void 	SystemClock_Config(void);
+void 	MPU_Config(void);
+void 	CPU_CACHE_Enable(void);
 
 // in main.c !
 void 	transceiver_init_eep_defaults(void);
 
-void print_hex_array(uchar *pArray, ushort aSize);
+void 	print_hex_array(uchar *pArray, ushort aSize);
 
 #endif

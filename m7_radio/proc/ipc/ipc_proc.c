@@ -334,7 +334,7 @@ uchar ipc_proc_exchange(uchar cmd, uchar *payload, uchar p_size, uchar *buffer, 
 	// Copy to caller task
 	if((buffer != NULL) && (ret_size != NULL))
 	{
-		print_hex_array(RxBuffer, expected);
+		//print_hex_array(RxBuffer, expected);
 		memcpy(buffer,RxBuffer, expected);
 		*ret_size = expected;
 	}
@@ -585,7 +585,7 @@ void ipc_proc_task(void const *arg)
 	for(;;)
 	{
 		icc_proc_check_msg();
-//		ipc_proc_poll_rssi();
+		ipc_proc_poll_rssi();
 	}
 }
 #endif

@@ -45,12 +45,6 @@ typedef struct pwr_db
 #define PWDDBG                          ((PWDDBG_TypeDef*)PWR)
 #define DEVICE_IS_CUT_2_1()             (HAL_GetREVID() & 0x21ff) ? 1 : 0
 
-/* External variables --------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
-//static __IO uint32_t SoftwareReset = 0;
-//static uint32_t AutoDemoTimeOutMs = AUTO_DEMO_TIMEOUT_0;
-//static uint32_t AutoDemoId = 0;
-
 uint8_t BSP_Initialized = 0;
 
 //osSemaphoreId TSSemaphoreID;
@@ -61,14 +55,6 @@ uint32_t wakeup_pressed = 0; /* wakeup_pressed = 1 ==> User request calibration 
 CALIBRATION_Data1Typedef data1;
 CALIBRATION_Data2Typedef data2;
 uint8_t ts_calibration_done = 0;
-
-/* Private function prototypes -----------------------------------------------*/
-//static void SystemClock_Config(void);
-//static void MPU_Config(void);
-//static void CPU_CACHE_Enable(void);
-//static void TouchScreenTask(void const *argument);
-
-//extern void SUBDEMO_StartAutoDemo(const uint8_t demo_id);
 
 // Public radio state
 extern struct	TRANSCEIVER_STATE_UI	tsu;
@@ -83,6 +69,44 @@ TaskHandle_t 							hIccTask;
 TaskHandle_t 							hTouchTask;
 
 QueueHandle_t 							hEspMessage;
+
+void NMI_Handler(void)
+{
+	Error_Handler(11);
+}
+
+void HardFault_Handler(void)
+{
+	printf( "====================\r\n");
+	printf( "==== HARD FAULT ====\r\n");
+	printf( "====================\r\n");
+
+	NVIC_SystemReset();
+}
+
+void MemManage_Handler(void)
+{
+	Error_Handler(13);
+}
+
+void BusFault_Handler(void)
+{
+	Error_Handler(14);
+}
+
+void UsageFault_Handler(void)
+{
+	Error_Handler(15);
+}
+
+void DebugMon_Handler(void)
+{
+}
+
+void SysTick_Handler(void)
+{
+	osSystickHandler();
+}
 
 /**
   * @brief  EXTI line detection callbacks.
@@ -164,6 +188,74 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
       break;
   }
 }
+
+/**
+  * @brief  This function is executed in case of error occurrence.
+  * @param  None
+  * @retval None
+  */
+void Error_Handler(int err)
+{
+  /* Turn LED RED on */
+  //if(BSP_Initialized)
+  //	BSP_LED_On(LED_RED);
+
+  printf( " Error Handler %d\n",err);
+  configASSERT (0);
+}
+
+void BSP_ErrorHandler(void)
+{
+  //if(BSP_Initialized)
+  //{
+    //printf( "%s(): BSP Error !!!\n", __func__ );
+   // BSP_LED_On(LED_RED);
+  //}
+}
+
+#ifdef configUSE_MALLOC_FAILED_HOOK
+/**
+  * @brief  Application Malloc failure Hook
+  * @param  None
+  * @retval None
+  */
+void vApplicationMallocFailedHook(TaskHandle_t xTask, char *pcTaskName)
+{
+  printf( "%s(): MALLOC FAILED !!!\n", pcTaskName );
+
+  Error_Handler(18);
+}
+#endif /* configUSE_MALLOC_FAILED_HOOK */
+
+#ifdef configCHECK_FOR_STACK_OVERFLOW
+void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName )
+{
+  printf( "%s(): STACK OVERFLOW !!!\n", pcTaskName );
+
+  Error_Handler(19);
+}
+#endif /* configCHECK_FOR_STACK_OVERFLOW */
+
+#ifdef  USE_FULL_ASSERT
+
+/**
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
+void assert_failed(uint8_t* file, uint32_t line)
+{
+  /* User can add his own implementation to report the file name and line number,
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+
+  /* Infinite loop */
+  while (1)
+  {
+  }
+}
+#endif
 
 #if 0
 /**
@@ -295,184 +387,6 @@ static void SystemClock_Config(void)
   __HAL_RCC_SYSCFG_CLK_ENABLE() ;
 
   HAL_EnableCompensationCell();
-}
-#endif
-
-static void MPU_Config(void)
-{
-	MPU_Region_InitTypeDef MPU_InitStruct;
-
-	// Disable the MPU
-	HAL_MPU_Disable();
-
-	// Setup Flash - launcher and radio code execution
-	MPU_InitStruct.Enable           = MPU_REGION_ENABLE;
-	MPU_InitStruct.BaseAddress      = FLASH_BASE;					// 0x08000000
-	MPU_InitStruct.Size             = MPU_REGION_SIZE_2MB;			// 2MB
-	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
-	MPU_InitStruct.IsBufferable     = MPU_ACCESS_BUFFERABLE;
-	MPU_InitStruct.IsCacheable      = MPU_ACCESS_CACHEABLE;
-	MPU_InitStruct.IsShareable      = MPU_ACCESS_NOT_SHAREABLE;
-	MPU_InitStruct.Number           = MPU_REGION_NUMBER0;
-	MPU_InitStruct.TypeExtField     = MPU_TEX_LEVEL0;
-	MPU_InitStruct.SubRegionDisable = 0x00;
-	MPU_InitStruct.DisableExec      = MPU_INSTRUCTION_ACCESS_ENABLE;
-	HAL_MPU_ConfigRegion(&MPU_InitStruct);
-
-	// Setup SDRAM - emWin video buffers
-	MPU_InitStruct.Enable           = MPU_REGION_ENABLE;
-	MPU_InitStruct.BaseAddress      = SDRAM_DEVICE_ADDR;			// 0xD0000000
-	MPU_InitStruct.Size             = MPU_REGION_SIZE_32MB;			// 32MB
-	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
-	MPU_InitStruct.IsBufferable     = MPU_ACCESS_NOT_BUFFERABLE;
-	MPU_InitStruct.IsCacheable      = MPU_ACCESS_CACHEABLE;
-	MPU_InitStruct.IsShareable      = MPU_ACCESS_NOT_SHAREABLE;
-	MPU_InitStruct.Number           = MPU_REGION_NUMBER1;
-	MPU_InitStruct.TypeExtField     = MPU_TEX_LEVEL0;
-	MPU_InitStruct.SubRegionDisable = 0x00;
-	MPU_InitStruct.DisableExec      = MPU_INSTRUCTION_ACCESS_DISABLE;
-	HAL_MPU_ConfigRegion(&MPU_InitStruct);
-
-	// Setup D3 SRAM - OpenAMP core to core comms
-	MPU_InitStruct.Enable 			= MPU_REGION_ENABLE;
-	MPU_InitStruct.BaseAddress 		= D3_SRAM_BASE;					// 0x38000000
-	MPU_InitStruct.Size 			= MPU_REGION_SIZE_64KB;			// 64KB
-	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
-	MPU_InitStruct.IsBufferable 	= MPU_ACCESS_NOT_BUFFERABLE;
-	MPU_InitStruct.IsCacheable 		= MPU_ACCESS_CACHEABLE;
-	MPU_InitStruct.IsShareable 		= MPU_ACCESS_SHAREABLE;
-	MPU_InitStruct.Number 			= MPU_REGION_NUMBER2;
-	MPU_InitStruct.TypeExtField 	= MPU_TEX_LEVEL0;
-	MPU_InitStruct.SubRegionDisable = 0x00;
-	MPU_InitStruct.DisableExec 		= MPU_INSTRUCTION_ACCESS_DISABLE;
-	HAL_MPU_ConfigRegion(&MPU_InitStruct);
-
-	// Setup AXI SRAM - OS heap
-	MPU_InitStruct.Enable           = MPU_REGION_ENABLE;
-	MPU_InitStruct.BaseAddress      = D1_AXISRAM_BASE;				// 0x24000000
-	MPU_InitStruct.Size             = MPU_REGION_SIZE_512KB;		// 512KB
-	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
-	MPU_InitStruct.IsBufferable     = MPU_ACCESS_NOT_BUFFERABLE;
-	MPU_InitStruct.IsCacheable      = MPU_ACCESS_CACHEABLE;
-	MPU_InitStruct.IsShareable      = MPU_ACCESS_NOT_SHAREABLE;
-	MPU_InitStruct.Number           = MPU_REGION_NUMBER3;
-	MPU_InitStruct.TypeExtField     = MPU_TEX_LEVEL0;
-	MPU_InitStruct.SubRegionDisable = 0x00;
-	MPU_InitStruct.DisableExec      = MPU_INSTRUCTION_ACCESS_DISABLE;
-	HAL_MPU_ConfigRegion(&MPU_InitStruct);
-
-	#if 0
-	// Setup ITCM RAM - OS code, interrupt handlers
-	MPU_InitStruct.Enable           = MPU_REGION_ENABLE;
-	MPU_InitStruct.BaseAddress      = D1_ITCMRAM_BASE;				// 0x00000000
-	MPU_InitStruct.Size             = MPU_REGION_SIZE_64KB;			// 64KB
-	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
-	MPU_InitStruct.IsBufferable     = MPU_ACCESS_NOT_BUFFERABLE;
-	MPU_InitStruct.IsCacheable      = MPU_ACCESS_NOT_CACHEABLE;
-	MPU_InitStruct.IsShareable      = MPU_ACCESS_NOT_SHAREABLE;
-	MPU_InitStruct.Number           = MPU_REGION_NUMBER4;
-	MPU_InitStruct.TypeExtField     = MPU_TEX_LEVEL0;
-	MPU_InitStruct.SubRegionDisable = 0x00;
-	MPU_InitStruct.DisableExec      = MPU_INSTRUCTION_ACCESS_ENABLE;
-	HAL_MPU_ConfigRegion(&MPU_InitStruct);
-
-	// Setup DTCM RAM - DMA buffers
-	MPU_InitStruct.Enable           = MPU_REGION_ENABLE;
-	MPU_InitStruct.BaseAddress      = D1_DTCMRAM_BASE;				// 0x20000000
-	MPU_InitStruct.Size             = MPU_REGION_SIZE_128KB;		// 128KB
-	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
-	MPU_InitStruct.IsBufferable     = MPU_ACCESS_NOT_BUFFERABLE;
-	MPU_InitStruct.IsCacheable      = MPU_ACCESS_NOT_CACHEABLE;
-	MPU_InitStruct.IsShareable      = MPU_ACCESS_NOT_SHAREABLE;
-	MPU_InitStruct.Number           = MPU_REGION_NUMBER5;
-	MPU_InitStruct.TypeExtField     = MPU_TEX_LEVEL0;
-	MPU_InitStruct.SubRegionDisable = 0x00;
-	MPU_InitStruct.DisableExec      = MPU_INSTRUCTION_ACCESS_DISABLE;
-	HAL_MPU_ConfigRegion(&MPU_InitStruct);
-	#endif
-
-    HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
-}
-
-/**
-* @brief  CPU L1-Cache enable.
-* @param  None
-* @retval None
-*/
-static void CPU_CACHE_Enable(void)
-{
-  /* Enable I-Cache */
-  SCB_EnableICache();
-
-  /* Enable D-Cache */
-  SCB_EnableDCache();
-}
-
-/**
-  * @brief  This function is executed in case of error occurrence.
-  * @param  None
-  * @retval None
-  */
-void Error_Handler(int err)
-{
-  /* Turn LED RED on */
-  //if(BSP_Initialized)
-  //	BSP_LED_On(LED_RED);
-
-  printf( " Error Handler %d\n",err);
-  configASSERT (0);
-}
-
-void BSP_ErrorHandler(void)
-{
-  //if(BSP_Initialized)
-  //{
-    //printf( "%s(): BSP Error !!!\n", __func__ );
-   // BSP_LED_On(LED_RED);
-  //}
-}
-
-#ifdef configUSE_MALLOC_FAILED_HOOK
-/**
-  * @brief  Application Malloc failure Hook
-  * @param  None
-  * @retval None
-  */
-void vApplicationMallocFailedHook(TaskHandle_t xTask, char *pcTaskName)
-{
-  printf( "%s(): MALLOC FAILED !!!\n", pcTaskName );
-
-  Error_Handler(18);
-}
-#endif /* configUSE_MALLOC_FAILED_HOOK */
-
-#ifdef configCHECK_FOR_STACK_OVERFLOW
-void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName )
-{
-  printf( "%s(): STACK OVERFLOW !!!\n", pcTaskName );
-
-  Error_Handler(19);
-}
-#endif /* configCHECK_FOR_STACK_OVERFLOW */
-
-#ifdef  USE_FULL_ASSERT
-
-/**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
-void assert_failed(uint8_t* file, uint32_t line)
-{
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-
-  /* Infinite loop */
-  while (1)
-  {
-  }
 }
 #endif
 
