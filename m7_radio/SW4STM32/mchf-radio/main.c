@@ -63,7 +63,7 @@ CALIBRATION_Data2Typedef data2;
 uint8_t ts_calibration_done = 0;
 
 /* Private function prototypes -----------------------------------------------*/
-static void SystemClock_Config(void);
+//static void SystemClock_Config(void);
 //static void MPU_Config(void);
 //static void CPU_CACHE_Enable(void);
 //static void TouchScreenTask(void const *argument);

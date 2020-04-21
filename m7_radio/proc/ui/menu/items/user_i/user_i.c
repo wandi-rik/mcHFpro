@@ -119,7 +119,7 @@ static void _cbControl(WM_MESSAGE * pMsg, int Id, int NCode)
 						esp_msg.ucData[0] = (uchar)CHECKBOX_GetState(hItem);
 
 						strcpy((char *)(esp_msg.ucData + 5), "sd_smooth");
-						esp_msg.ucData[4] = 10;
+						esp_msg.ucData[4] = 9;
 
 						esp_msg.usPayloadSize = 15;
 

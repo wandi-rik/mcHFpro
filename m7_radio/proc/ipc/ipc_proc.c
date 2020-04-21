@@ -429,7 +429,12 @@ static void icc_proc_check_msg(void)
 
 		// Write virtual eeprom (SQLite call)
 		case 4:
-			esp_msg->ucExecResult = ipc_proc_exchange(MENU_WRITE_SQL_VALUE, esp_msg->ucData, esp_msg->usPayloadSize, esp_msg->ucData, &esp_msg->ucDataReady, 3000);
+			esp_msg->ucExecResult = ipc_proc_exchange(	MENU_WRITE_SQL_VALUE,
+														esp_msg->ucData,
+														esp_msg->usPayloadSize,
+														esp_msg->ucData,
+														&esp_msg->ucDataReady,
+														3000);
 			break;
 
 		default:

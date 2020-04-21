@@ -441,7 +441,7 @@ void 	mchf_pro_board_mco2_on(void);
 void 	mchf_pro_board_sensitive_hw_init(void);
 
 void 	SystemClockChange_Handler(void);
-//void 	SystemClock_Config(void);
+void 	SystemClock_Config(void);
 
 // in main.c !
 void 	transceiver_init_eep_defaults(void);
