@@ -56,7 +56,7 @@
 #define MENU_0X0A_SZ								12
 
 #define MENU_READ_ESP_32_VERSION					0x10
-#define MENU_READ_ESP_32_VERSION_SZ					17
+#define MENU_READ_ESP_32_VERSION_SZ					32
 
 #define MENU_WIFI_SCAN_START						0x20
 #define MENU_WIFI_SCAN_START_SZ						0

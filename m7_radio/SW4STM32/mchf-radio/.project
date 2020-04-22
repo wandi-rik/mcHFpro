@@ -47,16 +47,6 @@
 			<locationURI>PARENT-2-PROJECT_LOC/hw/bsp.h</locationURI>
 		</link>
 		<link>
-			<name>hw/calibration.c</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/hw/calibration.c</locationURI>
-		</link>
-		<link>
-			<name>hw/calibration.h</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/hw/calibration.h</locationURI>
-		</link>
-		<link>
 			<name>hw/ffconf.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/hw/ffconf.h</locationURI>
@@ -200,6 +190,16 @@
 			<name>util/printf.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/util/printf.c</locationURI>
+		</link>
+		<link>
+			<name>util/radio_init.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/util/radio_init.c</locationURI>
+		</link>
+		<link>
+			<name>util/radio_init.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/util/radio_init.h</locationURI>
 		</link>
 		<link>
 			<name>util/virt_eeprom.c</name>
@@ -735,6 +735,16 @@
 			<name>proc/icc/hw/rsc_table.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/proc/icc/hw/rsc_table.h</locationURI>
+		</link>
+		<link>
+			<name>proc/touch/hw/calibration.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/touch/hw/calibration.c</locationURI>
+		</link>
+		<link>
+			<name>proc/touch/hw/calibration.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proc/touch/hw/calibration.h</locationURI>
 		</link>
 		<link>
 			<name>proc/touch/hw/stm32h747i_discovery_audio.c</name>

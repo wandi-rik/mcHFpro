@@ -29,6 +29,10 @@
 
 osSemaphoreId TSSemaphoreID;
 
+CALIBRATION_Data1Typedef data1;
+CALIBRATION_Data2Typedef data2;
+uint8_t ts_calibration_done = 0;
+
 // Public radio state
 extern struct	TRANSCEIVER_STATE_UI	tsu;
 
